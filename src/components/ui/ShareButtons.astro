@@ -1,0 +1,44 @@
+---
+interface Props {
+  testo: string;
+  url: string;
+  immagineQuadrata: string;
+}
+const { testo, url, immagineQuadrata } = Astro.props;
+---
+<div class="grid gap-4" data-condividi>
+  <label for="testo-condivisione" class="font-semibold">Testo pronto da incollare</label>
+  <textarea id="testo-condivisione" readonly rows="4" class="campo font-mono text-sm leading-relaxed resize-none">{testo}</textarea>
+  <div class="flex flex-wrap gap-3">
+    <button type="button" class="btn btn-primario" data-copia>Copia testo per Reddit o Facebook</button>
+    <a class="btn btn-secondario" href={immagineQuadrata} download>Scarica immagine</a>
+    <button type="button" class="btn btn-secondario hidden" data-condividi-nativo data-url={url}>Condividi</button>
+  </div>
+  <p class="text-sm text-tenue min-h-5" role="status" data-esito></p>
+</div>
+
+<script>
+  const radice = document.querySelector<HTMLElement>('[data-condividi]');
+  const area = radice?.querySelector<HTMLTextAreaElement>('textarea');
+  const esito = radice?.querySelector<HTMLElement>('[data-esito]');
+  const dire = (msg: string) => { if (esito) esito.textContent = msg; };
+
+  radice?.querySelector('[data-copia]')?.addEventListener('click', async () => {
+    if (!area) return;
+    try {
+      await navigator.clipboard.writeText(area.value);
+      dire('Testo copiato. Incollalo nel commento.');
+    } catch {
+      area.select();
+      dire('Seleziona il testo e copialo a mano.');
+    }
+  });
+
+  const nativo = radice?.querySelector<HTMLButtonElement>('[data-condividi-nativo]');
+  if (nativo && typeof navigator.share === 'function') {
+    nativo.classList.remove('hidden');
+    nativo.addEventListener('click', () => {
+      navigator.share({ title: 'Rata Vera', text: area?.value ?? '', url: nativo.dataset.url ?? location.href }).catch(() => undefined);
+    });
+  }
+</script>

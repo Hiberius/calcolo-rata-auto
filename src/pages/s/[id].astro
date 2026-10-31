@@ -1,0 +1,75 @@
+---
+import Base from '~/layouts/Base.astro';
+import ShareButtons from '~/components/ui/ShareButtons.astro';
+import Disclaimer from '~/components/ui/Disclaimer';
+import NumberRow from '~/components/ui/NumberRow';
+import { euro, percentuale, punti } from '~/lib/calc/format';
+import { datiScheda, testoCondivisione } from '~/lib/og/template';
+import { caricaScheda } from '~/lib/scheda';
+
+export const prerender = false;
+
+const env = Astro.locals.runtime.env;
+const id = Astro.params.id ?? '';
+const scheda = await caricaScheda(env, id).catch(() => null);
+if (!scheda) {
+  Astro.response.status = 404;
+}
+const sito = env.PUBLIC_SITE_URL || Astro.url.origin;
+const dati = scheda ? datiScheda(scheda.analisi, id, sito) : null;
+const a = scheda?.analisi;
+const og = `${Astro.url.origin}/s/${id}/og.png`;
+if (scheda) Astro.response.headers.set('cache-control', 'public, max-age=300');
+---
+{dati && a ? (
+  <Base
+    title={`${dati.titolo}: paghi davvero ${dati.totale} | Rata Vera`}
+    description={testoCondivisione(dati)}
+    ogImage={og}
+    canonical={dati.url}
+  >
+    <section class="contenitore sezione grid gap-12 lg:grid-cols-[minmax(0,34rem)_1fr] lg:items-start">
+      <article class="scontrino rounded-t px-6 py-10 sm:px-10 grid gap-6" aria-labelledby="scheda-titolo">
+        <p class="numeri text-sm text-tenue flex justify-between gap-4"><span>RATA VERA</span><span>{dati.taeg}</span></p>
+        <div class="grid gap-1">
+          <h1 id="scheda-titolo" class="text-2xl font-semibold tracking-tight">{dati.titolo}</h1>
+          <p class="numeri text-tenue"><s>a {dati.rataPubblicizzata}</s></p>
+        </div>
+        <p class="grid gap-1">
+          <span class="text-lg font-medium">Paghi davvero</span>
+          <span class="numeri totale-grande">{euro(a.totali.totalePagatoTenendo)}</span>
+        </p>
+        <div class="grid">
+          {a.totali.prezzoRiferimento != null && <NumberRow etichetta="Prezzo" valore={euro(a.totali.prezzoRiferimento)} />}
+          {a.totali.costoCredito != null && (
+            <NumberRow etichetta="Costo del credito" valore={`${euro(a.totali.costoCredito)} · ${percentuale(a.totali.costoCreditoPct)}`} tono="segnale" />
+          )}
+          <NumberRow etichetta="Anticipo" valore={euro(a.preventivo.anticipo)} />
+          <NumberRow etichetta={`${a.preventivo.nRate} rate da ${euro(a.preventivo.rata)}`} valore={euro(a.totali.sommaRate)} />
+          {a.preventivo.maxiRata ? <NumberRow etichetta="Maxi rata finale" valore={euro(a.preventivo.maxiRata)} tono="forte" /> : null}
+          {a.taeg.taegRicostruito != null && <NumberRow etichetta="TAEG ricostruito dai numeri" valore={punti(a.taeg.taegRicostruito)} tono="tenue" />}
+        </div>
+        <p class="font-medium">{a.verdetto.etichetta}</p>
+        {a.ricostruzione.discrepanze.map((d) => <p class="text-sm border-l-4 border-attenzione pl-3">{d.messaggio}</p>)}
+        <Disclaimer />
+      </article>
+
+      <div class="grid gap-10">
+        <ShareButtons testo={testoCondivisione(dati)} url={dati.url} immagineQuadrata={`/s/${id}/og.png?formato=quadrato&scarica=1`} />
+        <div class="grid gap-3">
+          <h2 class="font-semibold text-lg">Hai un preventivo anche tu?</h2>
+          <p class="text-tenue max-w-prose">Fotografalo o scrivi i numeri: vedi il totale, il costo del credito e la fine del contratto.</p>
+          <p><a class="btn btn-secondario" href="/#decodifica">Decodifica il tuo</a></p>
+        </div>
+      </div>
+    </section>
+  </Base>
+) : (
+  <Base title="Scheda non trovata | Rata Vera" description="Questa scheda non esiste o non è più disponibile." noindex>
+    <section class="contenitore sezione grid gap-4 max-w-2xl">
+      <h1 class="text-3xl font-semibold">Scheda non trovata</h1>
+      <p>Il link potrebbe essere incompleto. Controlla di averlo copiato per intero.</p>
+      <p><a class="btn btn-secondario" href="/">Decodifica un preventivo</a></p>
+    </section>
+  </Base>
+)}

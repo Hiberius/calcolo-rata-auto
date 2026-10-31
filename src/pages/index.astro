@@ -1,0 +1,45 @@
+---
+import Base from '~/layouts/Base.astro';
+import DecodeForm from '~/components/decode/DecodeForm';
+import { TURNSTILE_SITE_KEY_TEST } from '~/lib/turnstile';
+
+export const prerender = false;
+const siteKey = Astro.locals.runtime?.env?.PUBLIC_TURNSTILE_SITE_KEY || TURNSTILE_SITE_KEY_TEST;
+---
+<Base
+  title="Rata Vera: quanto paghi davvero, prima di firmare"
+  description="Fotografa o scrivi il preventivo dell'auto: in trenta secondi vedi il totale che paghi, il costo del credito e cosa succede con la maxi rata finale."
+>
+  <section class="contenitore pt-8 pb-12 sm:pt-16">
+    <div class="grid gap-6 lg:grid-cols-[1.2fr_1fr] lg:items-end">
+      <h1 class="font-semibold tracking-tight leading-[1.02] text-[length:var(--testo-titolo)] max-w-[16ch]">
+        Quanto paghi davvero, <span class="text-segnale">prima di firmare.</span>
+      </h1>
+      <p class="text-lg max-w-[40ch] text-tenue lg:pb-2">
+        Fotografa o scrivi il preventivo della concessionaria. Vedi il totale, il costo del credito e cosa succede alla fine con la maxi rata.
+      </p>
+    </div>
+  </section>
+
+  <section id="decodifica" class="contenitore scroll-mt-6" aria-label="Decodifica il preventivo">
+    <DecodeForm client:load siteKey={siteKey} />
+  </section>
+
+  <section class="contenitore sezione grid gap-8 md:grid-cols-[1fr_2fr]" aria-labelledby="come-titolo">
+    <h2 id="come-titolo" class="text-2xl font-semibold tracking-tight">Come facciamo i conti</h2>
+    <ol class="grid gap-6">
+      <li class="grid grid-cols-[3rem_1fr] gap-4">
+        <span class="numeri text-3xl text-segnale">01</span>
+        <p><strong>Sommiamo tutto quello che esce dal tuo conto</strong>: anticipo, rate, maxi rata, spese. Il totale è il numero che il cartello con la rata non dice.</p>
+      </li>
+      <li class="grid grid-cols-[3rem_1fr] gap-4">
+        <span class="numeri text-3xl text-segnale">02</span>
+        <p><strong>Lo confrontiamo con il prezzo</strong>: la differenza è il costo del credito. Ricostruiamo anche il TAEG dai numeri visibili e ti diciamo se torna.</p>
+      </li>
+      <li class="grid grid-cols-[3rem_1fr] gap-4">
+        <span class="numeri text-3xl text-segnale">03</span>
+        <p><strong>Ti mostriamo la fine del contratto</strong>: tenere l’auto pagando la maxi rata, restituirla o cambiarla. I calcoli girano nel tuo browser.</p>
+      </li>
+    </ol>
+  </section>
+</Base>

@@ -1,0 +1,64 @@
+---
+import '~/styles/global.css';
+import { AVVERTENZA } from '~/lib/calc';
+
+interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+  canonical?: string;
+  noindex?: boolean;
+}
+const { title, description, ogImage, canonical, noindex = false } = Astro.props;
+const sito = Astro.site?.toString().replace(/\/$/, '') ?? 'https://ratavera.it';
+const url = canonical ?? `${sito}${Astro.url.pathname}`;
+const FONT_SANS = 'https://fonts.gstatic.com/s/instrumentsans/v4/pxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2';
+---
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={url} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="it_IT" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={url} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    {ogImage && <meta property="og:image:width" content="1200" />}
+    {ogImage && <meta property="og:image:height" content="630" />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    <meta name="theme-color" content="#F6F3EE" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" href={FONT_SANS} as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@400..600&display=swap" />
+  </head>
+  <body class="min-h-dvh flex flex-col">
+    <a href="#contenuto" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 btn btn-primario">Vai al contenuto</a>
+    <header class="contenitore flex items-center justify-between gap-4 py-5">
+      <a href="/" class="group flex items-baseline gap-2 no-underline" aria-label="Rata Vera, pagina iniziale">
+        <span class="font-semibold tracking-tight text-lg">Rata Vera</span>
+        <span class="numeri text-xs text-tenue hidden sm:inline transition-colors group-hover:text-segnale">quanto paghi davvero</span>
+      </a>
+      <nav aria-label="Navigazione principale" class="flex gap-5 text-sm">
+        <a class="link" href="/#decodifica">Decodifica</a>
+        <a class="link" href="/noleggio">Tre strade</a>
+      </nav>
+    </header>
+    <main id="contenuto" class="flex-1">
+      <slot />
+    </main>
+    <footer class="border-t border-riga mt-16">
+      <div class="contenitore py-8 text-sm text-tenue grid gap-3 md:grid-cols-[2fr_1fr]">
+        <p class="max-w-prose">{AVVERTENZA}</p>
+        <p class="md:text-right">Nessun nome di banca o finanziaria, solo aritmetica. Le immagini dei preventivi non vengono mai salvate.</p>
+      </div>
+    </footer>
+  </body>
+</html>
