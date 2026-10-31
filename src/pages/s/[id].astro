@@ -9,6 +9,7 @@ import { euro, percentuale, punti } from '~/lib/calc/format';
 import { datiScheda, testoCondivisione } from '~/lib/og/template';
 import { caricaScheda } from '~/lib/scheda';
 import PromoBox from '~/components/compare/PromoBox.astro';
+import EliminaScheda from '~/components/ui/EliminaScheda.astro';
 import { promoDelloStessoModello } from '~/lib/promo';
 
 export const prerender = false;
@@ -23,7 +24,9 @@ const sito = env.PUBLIC_SITE_URL || Astro.url.origin;
 const dati = scheda ? datiScheda(scheda.analisi, id, sito) : null;
 const a = scheda?.analisi;
 const og = `${Astro.url.origin}/s/${id}/og.png`;
-if (scheda) Astro.response.headers.set('cache-control', 'public, max-age=300');
+// Cache breve: dopo una cancellazione la scheda deve sparire presto anche dai browser che l'hanno già vista.
+if (scheda) Astro.response.headers.set('cache-control', 'public, max-age=60');
+const eliminata = !scheda && Astro.url.searchParams.has('eliminata');
 const TIPO_PREZZO = { contanti: 'Prezzo in contanti', promo: 'Prezzo promozionale', listino: 'Prezzo di listino', assente: 'Prezzo' } as const;
 // La scheda è visibile a chi ha il link ma non va nei motori di ricerca.
 Astro.response.headers.set('x-robots-tag', 'noindex');
@@ -69,6 +72,7 @@ const promo = a ? promoDelloStessoModello(a.preventivo.marca, a.preventivo.model
 
       <div class="grid gap-10">
         <ShareButtons testo={testoCondivisione(dati)} url={dati.url} immagineQuadrata={`/s/${id}/og.png?formato=quadrato&scarica=1`} />
+        <EliminaScheda id={id} />
         {promo && (
           <div class="grid gap-3">
             <h2 class="font-semibold text-lg">La promozione ufficiale dello stesso modello</h2>
@@ -84,10 +88,12 @@ const promo = a ? promoDelloStessoModello(a.preventivo.marca, a.preventivo.model
     </section>
   </Base>
 ) : (
-  <Base title="Scheda non trovata | Rata Vera" description="Questa scheda non esiste o non è più disponibile." noindex>
+  <Base title={eliminata ? 'Scheda eliminata | Rata Vera' : 'Scheda non trovata | Rata Vera'} description="Questa scheda non esiste o non è più disponibile." noindex>
     <section class="contenitore sezione grid gap-4 max-w-2xl">
-      <h1 class="text-3xl font-semibold">Scheda non trovata</h1>
-      <p>Il link potrebbe essere incompleto. Controlla di averlo copiato per intero.</p>
+      <h1 class="text-3xl font-semibold">{eliminata ? 'Scheda eliminata' : 'Scheda non trovata'}</h1>
+      <p>{eliminata
+        ? "La pagina, l'immagine e i numeri non ci sono più, anche per chi aveva il link. Se l'avevi aggiunta all'archivio, è uscita anche da lì."
+        : 'Il link potrebbe essere incompleto. Controlla di averlo copiato per intero.'}</p>
       <p><a class="btn btn-secondario" href="/">Leggi un preventivo</a></p>
     </section>
   </Base>

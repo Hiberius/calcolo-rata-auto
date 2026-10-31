@@ -1,11 +1,10 @@
 import type { APIRoute } from 'astro';
 import { DIMENSIONI_OG, nodoScheda, testoUsato, type FormatoOg } from '~/lib/og/card';
 import { datiScheda } from '~/lib/og/template';
-import { caricaScheda, TTL_CACHE_SCHEDA } from '~/lib/scheda';
+import { caricaScheda, TTL_CACHE_SCHEDA, VERSIONE_OG } from '~/lib/scheda';
 
 export const prerender = false;
 
-const VERSIONE_OG = 'v7';
 
 async function generaPng(id: string, formato: FormatoOg, env: Env): Promise<ArrayBuffer | null> {
   const scheda = await caricaScheda(env, id);

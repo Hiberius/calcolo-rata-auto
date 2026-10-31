@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks';
 import { CONSENSI } from '~/lib/consent';
+import { salvaTokenCancellazione } from '~/lib/client/cancellazione';
 import TurnstileBox from './TurnstileBox';
 
 interface Props {
@@ -25,8 +26,10 @@ export default function CreaScheda({ siteKey, preventivo }: Props) {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ preventivo, consensoArchivio: archivio, versioneConsenso: consenso.versione, turnstileToken: token }),
       });
-      const dati = (await r.json()) as { ok: true; url: string } | { ok: false; errore: string };
+      const dati = (await r.json()) as { ok: true; id: string; url: string; tokenCancellazione?: string } | { ok: false; errore: string };
       if (dati.ok) {
+        // Solo chi crea la scheda riceve il codice per eliminarla: la pagina della scheda mostra il pulsante e il link.
+        if (dati.tokenCancellazione) salvaTokenCancellazione(dati.id, dati.tokenCancellazione);
         window.location.assign(dati.url);
         return;
       }
@@ -39,7 +42,7 @@ export default function CreaScheda({ siteKey, preventivo }: Props) {
 
   return (
     <div class="grid gap-4 border border-inchiostro/20 rounded p-4 bg-white/50 entra">
-      <p class="text-sm">La scheda è anonima: marca, modello, numeri. Nessun nome, targa o concessionario.</p>
+      <p class="text-sm">La scheda è anonima: marca, modello, numeri. Nessun nome, targa o concessionario. Puoi eliminarla quando vuoi dalla sua pagina.</p>
       <label class="flex items-start gap-3 text-sm cursor-pointer">
         <input type="checkbox" class="mt-1 size-5 accent-[#15171A]" checked={archivio} onChange={(e) => setArchivio((e.currentTarget as HTMLInputElement).checked)} />
         <span>{consenso.testo} <span class="text-tenue">(facoltativo)</span></span>

@@ -28,6 +28,7 @@ export interface RigaScheda {
   readonly output_json: string;
   readonly consenso_archivio: 0 | 1;
   readonly versione_consenso: string | null;
+  readonly token_cancellazione_hash: string | null;
   readonly created_at: string;
 }
 
@@ -36,6 +37,8 @@ export interface NuovaScheda {
   readonly analisi: Analisi;
   readonly consensoArchivio: boolean;
   readonly versioneConsenso: string | null;
+  /** Impronta SHA-256 del codice di cancellazione (il codice va solo a chi crea la scheda). */
+  readonly improntaCancellazione: string | null;
 }
 
 /** Riassunto salvato in output_json: solo numeri calcolati, nessun testo libero dell'utente. */
@@ -53,14 +56,16 @@ export function istruzioneInserisciScheda(db: D1Database, s: NuovaScheda): D1Pre
   return db
     .prepare(
       `INSERT INTO schede (id, marca, modello, versione, provincia, tipo, prezzo_riferimento, anticipo, n_rate, rata, maxi_rata,
-        taeg_dichiarato, taeg_ricostruito, totale, costo_credito, costo_credito_pct, input_json, output_json, consenso_archivio, versione_consenso)
-       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20)`,
+        taeg_dichiarato, taeg_ricostruito, totale, costo_credito, costo_credito_pct, input_json, output_json, consenso_archivio, versione_consenso,
+        token_cancellazione_hash)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21)`,
     )
     .bind(
       s.id, vuotoANull(p.marca), vuotoANull(p.modello), vuotoANull(p.versione), vuotoANull(p.provincia), p.tipo,
       t.prezzoRiferimento, p.anticipo, p.nRate, p.rata, vuotoANull(p.maxiRata), vuotoANull(p.taegDichiarato),
       s.analisi.taeg.taegRicostruito, t.totalePagatoTenendo, t.costoCredito, t.costoCreditoPct,
       JSON.stringify(p), riassunto(s.analisi), s.consensoArchivio ? 1 : 0, s.versioneConsenso,
+      s.improntaCancellazione,
     );
 }
 

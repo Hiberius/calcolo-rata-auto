@@ -26,7 +26,7 @@ const PREVENTIVO_208 = { marca: 'Peugeot', modello: '208', versione: 'Style', pr
 test('scheda creata via API, aperta, con immagine OG png', async ({ page, request }) => {
   const r = await request.post('/api/scheda', { data: { preventivo: PREVENTIVO_208, consensoArchivio: false, turnstileToken: TOKEN_TEST } });
   expect(r.status()).toBe(201);
-  const { id } = (await r.json()) as { id: string };
+  const { id, tokenCancellazione } = (await r.json()) as { id: string; tokenCancellazione: string };
   await page.goto(`/s/${id}`);
   await expect(page.locator('h1')).toContainText('Peugeot 208');
   await expect(page.locator('.totale-grande').first()).toHaveText('18.253,25 €');
@@ -34,6 +34,19 @@ test('scheda creata via API, aperta, con immagine OG png', async ({ page, reques
   const og = await request.get(`/s/${id}/og.png`);
   expect(og.status()).toBe(200);
   expect(og.headers()['content-type']).toContain('image/png');
+  await page.goto(`/s/${id}#elimina=${tokenCancellazione}`);
+  await page.getByRole('button', { name: 'Elimina questa scheda' }).click();
+  await page.getByRole('button', { name: 'Sì, elimina per sempre' }).click();
+  await expect(page.locator('h1')).toHaveText('Scheda eliminata');
+  expect((await request.get(`/s/${id}/og.png`)).status()).toBe(404);
+});
+
+test('preventivo d’esempio in home e blocco fiducia', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('[data-fiducia]')).toContainText('progetto indipendente');
+  await page.getByRole('button', { name: "Prova con un preventivo d'esempio" }).click();
+  await expect(page.locator('[data-totale]')).toHaveText('18.253,25 €');
+  await expect(page.locator('[data-etichetta-esempio]')).toHaveText('esempio reale, offerta scaduta il 31/10/2026');
 });
 
 test('tre strade e richiesta di noleggio con Turnstile di test', async ({ page }) => {

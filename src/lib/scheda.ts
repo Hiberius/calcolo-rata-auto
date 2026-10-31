@@ -3,6 +3,13 @@ import { leggiScheda } from './db/queries';
 import { ID_SCHEDA_RE } from './ids';
 
 export const TTL_CACHE_SCHEDA = 60 * 60 * 24 * 30;
+/** Versione dell'immagine OG: cambiarla rigenera tutte le immagini (le vecchie scadono da sole in KV). */
+export const VERSIONE_OG = 'v7';
+
+/** Tutte le chiavi KV di una scheda: dati in cache e le due immagini. Servono anche alla cancellazione. */
+export function chiaviCacheScheda(id: string): readonly string[] {
+  return [`scheda:${id}`, `og:${VERSIONE_OG}:${id}:orizzontale`, `og:${VERSIONE_OG}:${id}:quadrato`];
+}
 
 export interface SchedaCaricata {
   readonly id: string;
@@ -25,7 +32,7 @@ function daCache(id: string, c: InCache): SchedaCaricata | null {
 /** Legge la scheda da KV (30 giorni) o da D1, e ricalcola l'analisi dai numeri salvati. */
 export async function caricaScheda(env: Pick<Env, 'DB' | 'KV'>, id: string): Promise<SchedaCaricata | null> {
   if (!ID_SCHEDA_RE.test(id)) return null;
-  const chiave = `scheda:${id}`;
+  const [chiave = `scheda:${id}`] = chiaviCacheScheda(id);
   const inCache = await env.KV.get<InCache>(chiave, 'json');
   if (inCache) return daCache(id, inCache);
   const riga = await leggiScheda(env.DB, id);

@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { analizza } from '~/lib/calc';
+import { generaTokenCancellazione, impronta } from '~/lib/cancellazione';
 import { MESSAGGIO_TOTALE_INCOERENTE } from '~/lib/calc/totale';
 import { CONSENSI } from '~/lib/consent';
 import { creaScheda } from '~/lib/db/queries';
@@ -48,17 +49,25 @@ export const POST: APIRoute = async ({ request, locals }) => {
   if (corpo.data.consensoArchivio && corpo.data.versioneConsenso !== consenso.versione) return jsonErrore(409, MSG.consenso);
 
   const id = idCorto();
+  // Il codice per eliminare la scheda torna solo a chi la crea; in D1 resta l'impronta.
+  const tokenCancellazione = generaTokenCancellazione();
   try {
     await creaScheda(
       env.DB,
-      { id, analisi: esito.analisi, consensoArchivio: corpo.data.consensoArchivio, versioneConsenso: corpo.data.consensoArchivio ? consenso.versione : null },
+      {
+        id,
+        analisi: esito.analisi,
+        consensoArchivio: corpo.data.consensoArchivio,
+        versioneConsenso: corpo.data.consensoArchivio ? consenso.versione : null,
+        improntaCancellazione: await impronta(tokenCancellazione),
+      },
       corpo.data.consensoArchivio ? { finalita: consenso.finalita, testo: consenso.testo, versione: consenso.versione, accettato: true } : null,
       ipHash,
     );
   } catch {
     return jsonErrore(500, MESSAGGI.interno);
   }
-  return jsonOk({ id, url: `/s/${id}` }, 201);
+  return jsonOk({ id, url: `/s/${id}`, tokenCancellazione }, 201);
 };
 
 export const ALL: APIRoute = () => jsonErrore(405, MESSAGGI.metodo);

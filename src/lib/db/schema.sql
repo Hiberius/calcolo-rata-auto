@@ -90,3 +90,5 @@ CREATE TABLE IF NOT EXISTS richieste_verdetto (
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 CREATE INDEX IF NOT EXISTS idx_verdetto_created ON richieste_verdetto (created_at);
+-- 0003: impronta del codice di cancellazione della scheda (solo SHA-256, mai il codice).
+ALTER TABLE schede ADD COLUMN token_cancellazione_hash TEXT;
