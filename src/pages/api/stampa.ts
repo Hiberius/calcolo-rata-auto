@@ -12,7 +12,7 @@ const PAGINA = '/indice';
 /** §3: la stampa lascia email e testata per ricevere l'Indice appena esce. */
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = locals.runtime.env;
-  const esito = await controllaModulo(request, env, RichiestaStampaSchema, { nome: 'stampa-giorno', massimo: 5, finestraSecondi: 86_400 });
+  const esito = await controllaModulo(request, env, RichiestaStampaSchema, { nome: 'stampa-giorno', massimo: 10, finestraSecondi: 86_400 });
   if (!esito.ok) return rispondi(request, PAGINA, esito);
 
   const consenso = CONSENSI.contatto_stampa;

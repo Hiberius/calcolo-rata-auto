@@ -12,7 +12,7 @@ const PAGINA = '/officina';
 /** §4: salva il preventivo dell'officina (anonimo) e, se c'è, l'email con il suo consenso all'avviso. */
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = locals.runtime.env;
-  const esito = await controllaModulo(request, env, AttesaOfficinaSchema, { nome: 'officina-giorno', massimo: 10, finestraSecondi: 86_400 });
+  const esito = await controllaModulo(request, env, AttesaOfficinaSchema, { nome: 'officina-giorno', massimo: 20, finestraSecondi: 86_400 });
   if (!esito.ok) return rispondi(request, PAGINA, esito);
 
   const consenso = CONSENSI.avviso_officina;

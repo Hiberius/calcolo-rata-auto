@@ -30,7 +30,7 @@ const quota = Math.min(1, e.nValide / SOGLIA_PUBBLICAZIONE);
   {!e.pubblicabile && (
     <section class="contenitore grid gap-10 pb-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end" aria-labelledby="attesa-titolo" data-indice-attesa>
       <div class="grid gap-4">
-        <h2 id="attesa-titolo" class="frase-grande max-w-[22ch]" data-prima-edizione>{e.attesa}</h2>
+        <h2 id="attesa-titolo" class="titolo-sezione" data-prima-edizione>{e.attesa}</h2>
         <p class="max-w-[52ch]">L’Indice esce solo quando le promozioni valide sono almeno {SOGLIA_PUBBLICAZIONE}: con meno, una classifica direbbe più di quello che i dati sanno. Fino ad allora qui trovi come lo costruiamo.</p>
       </div>
       <div class="grid gap-2" aria-label="Promozioni valide raccolte">
@@ -62,7 +62,7 @@ const quota = Math.min(1, e.nValide / SOGLIA_PUBBLICAZIONE);
     </div>
     <dl class="grid gap-x-10 gap-y-6 sm:grid-cols-2" data-metodologia-indice>
       {DEFINIZIONI.map((d) => (
-        <div class="grid gap-1 border-t border-riga pt-3">
+        <div class="grid content-start gap-1 border-t border-riga pt-3">
           <dt class="font-semibold">{d.nome}</dt>
           <dd class="text-tenue">{d.testo}</dd>
         </div>
