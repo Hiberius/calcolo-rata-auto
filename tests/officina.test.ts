@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CONSENSI } from '~/lib/consent';
+import { salvaAttesaOfficina } from '~/lib/db/officina';
 import { CONSERVAZIONE, istruzioniPulizia } from '~/lib/db/pulizia';
 import { AttesaOfficinaSchema, RichiestaStampaSchema } from '~/lib/moduli/schemi';
 import { ALTRO_MODELLO, MODELLI_OFFICINA, SOGLIA_CONTATORE, TESTO_ATTESA, testoContatore } from '~/lib/officina';
@@ -66,9 +67,47 @@ describe('officina (specifica v2, §4)', () => {
     const sql: string[] = [];
     const finto = { prepare: (q: string) => ({ bind: () => { sql.push(q); return {}; } }) } as unknown as D1Database;
     istruzioniPulizia(finto);
-    expect(sql.some((q) => q.startsWith('UPDATE attese_officina SET email = NULL'))).toBe(true);
+    expect(sql.some((q) => q.includes('attese_officina SET email'))).toBe(false);
+    expect(sql.findIndex((q) => q.includes('consensi WHERE avviso_id'))).toBeLessThan(sql.findIndex((q) => q.startsWith('DELETE FROM avvisi_officina')));
     expect(sql.findIndex((q) => q.includes('consensi WHERE officina_id'))).toBeLessThan(sql.findIndex((q) => q.startsWith('DELETE FROM attese_officina')));
     expect(sql.findIndex((q) => q.includes('consensi WHERE stampa_id'))).toBeLessThan(sql.findIndex((q) => q.startsWith('DELETE FROM richieste_stampa')));
+  });
+});
+
+describe('officina: il preventivo resta anonimo anche quando c’è l’email (revisione del 31/10)', () => {
+  function registra() {
+    const scritture: { sql: string; valori: unknown[] }[] = [];
+    const finto = {
+      prepare: (sql: string) => ({ bind: (...valori: unknown[]) => { scritture.push({ sql, valori }); return {}; } }),
+      batch: async () => [],
+    } as unknown as D1Database;
+    return { finto, scritture };
+  }
+  const ATTESA = { id: 'Oabc123456', modello: 'Fiat Panda', intervento: 'freni' as const, importo: 312.5, provincia: 'TO' };
+  const REGISTRO = { finalita: 'avviso_officina' as const, testo: CONSENSI.avviso_officina.testo, versione: CONSENSI.avviso_officina.versione, accettato: true };
+
+  it('l’email va in avvisi_officina con un codice suo, il preventivo non la contiene e il consenso punta solo all’email', async () => {
+    const { finto, scritture } = registra();
+    await salvaAttesaOfficina(finto, ATTESA, { id: 'Vxyz987654', email: 'a@b.it' }, REGISTRO, 'hash', new Date('2026-10-31T23:30:00Z'));
+    const preventivo = scritture.find((s) => s.sql.startsWith('INSERT INTO attese_officina'));
+    const avviso = scritture.find((s) => s.sql.startsWith('INSERT INTO avvisi_officina'));
+    const consenso = scritture.find((s) => s.sql.startsWith('INSERT INTO consensi'));
+    const evento = scritture.find((s) => s.sql.startsWith('INSERT INTO eventi'));
+    expect(preventivo?.sql).not.toContain('email');
+    expect(preventivo?.valori).not.toContain('a@b.it');
+    expect(preventivo?.valori.at(-1)).toBe('2026-11-01');
+    expect(avviso?.valori).toEqual(['Vxyz987654', 'a@b.it', '2026-11-01']);
+    expect(avviso?.valori).not.toContain(ATTESA.id);
+    expect(consenso?.valori).toContain('Vxyz987654');
+    expect(consenso?.valori).not.toContain(ATTESA.id);
+    expect(JSON.stringify(evento?.valori)).not.toMatch(/avviso|freni|a@b\.it/);
+  });
+
+  it('senza email nessuna riga in avvisi_officina e nessun consenso', async () => {
+    const { finto, scritture } = registra();
+    await salvaAttesaOfficina(finto, ATTESA, null, null, 'hash');
+    expect(scritture.some((s) => s.sql.includes('avvisi_officina'))).toBe(false);
+    expect(scritture.some((s) => s.sql.startsWith('INSERT INTO consensi'))).toBe(false);
   });
 });
 

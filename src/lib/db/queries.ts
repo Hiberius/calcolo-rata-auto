@@ -79,12 +79,14 @@ export interface NuovoConsenso {
   readonly richiestaId?: string;
   readonly officinaId?: string;
   readonly stampaId?: string;
+  /** Email dell'avviso officina (avvisi_officina), mai il preventivo. */
+  readonly avvisoId?: string;
 }
 
 export function istruzioneRegistraConsenso(db: D1Database, c: NuovoConsenso): D1PreparedStatement {
   return db
-    .prepare('INSERT INTO consensi (finalita, testo, versione, accettato, scheda_id, richiesta_id, officina_id, stampa_id) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)')
-    .bind(c.finalita, c.testo, c.versione, c.accettato ? 1 : 0, c.schedaId ?? null, c.richiestaId ?? null, c.officinaId ?? null, c.stampaId ?? null);
+    .prepare('INSERT INTO consensi (finalita, testo, versione, accettato, scheda_id, richiesta_id, officina_id, stampa_id, avviso_id) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)')
+    .bind(c.finalita, c.testo, c.versione, c.accettato ? 1 : 0, c.schedaId ?? null, c.richiestaId ?? null, c.officinaId ?? null, c.stampaId ?? null, c.avvisoId ?? null);
 }
 
 export interface NuovoEvento {

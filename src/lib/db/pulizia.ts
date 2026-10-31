@@ -18,8 +18,10 @@ export function istruzioniPulizia(db: D1Database): D1PreparedStatement[] {
     db.prepare(`DELETE FROM eventi WHERE created_at < ${prima}`).bind(e),
     db.prepare(`DELETE FROM consensi WHERE scheda_id IN (SELECT id FROM schede WHERE created_at < ${prima})`).bind(s),
     db.prepare(`DELETE FROM schede WHERE created_at < ${prima}`).bind(s),
-    // Officina: l'email serve solo all'avviso e si toglie dopo 6 mesi; il preventivo anonimo resta 24 mesi.
-    db.prepare(`UPDATE attese_officina SET email = NULL WHERE email IS NOT NULL AND created_at < ${prima}`).bind(eo),
+    // Officina: l'email (tabella a parte) serve solo all'avviso e si toglie dopo 6 mesi con il suo consenso;
+    // il preventivo anonimo resta 24 mesi.
+    db.prepare(`DELETE FROM consensi WHERE avviso_id IN (SELECT id FROM avvisi_officina WHERE created_at < ${prima})`).bind(eo),
+    db.prepare(`DELETE FROM avvisi_officina WHERE created_at < ${prima}`).bind(eo),
     db.prepare(`DELETE FROM consensi WHERE officina_id IN (SELECT id FROM attese_officina WHERE created_at < ${prima})`).bind(o),
     db.prepare(`DELETE FROM attese_officina WHERE created_at < ${prima}`).bind(o),
     db.prepare(`DELETE FROM consensi WHERE stampa_id IN (SELECT id FROM richieste_stampa WHERE created_at < ${prima})`).bind(st),

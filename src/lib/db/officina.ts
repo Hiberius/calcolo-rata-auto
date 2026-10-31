@@ -1,18 +1,40 @@
 import type { AttesaOfficina, RichiestaStampa } from '../moduli/schemi';
 import { istruzioneRegistraConsenso, istruzioneRegistraEvento, type NuovoConsenso } from './queries';
 
-export interface NuovaAttesaOfficina extends Omit<AttesaOfficina, 'consensoAvviso' | 'versioneConsenso'> {
+export interface NuovaAttesaOfficina extends Omit<AttesaOfficina, 'consensoAvviso' | 'versioneConsenso' | 'email'> {
   readonly id: string;
 }
 
-/** Preventivo dell'officina + consenso all'avviso (se c'è l'email) + evento officina_attesa, in un'unica transazione. */
-export async function salvaAttesaOfficina(db: D1Database, a: NuovaAttesaOfficina, consenso: NuovoConsenso | null, ipHash: string): Promise<void> {
+export interface NuovoAvvisoOfficina {
+  readonly id: string;
+  readonly email: string;
+}
+
+/** Oggi a Roma come giorno (2026-10-31): il preventivo e l'email non portano l'orario, così non si collegano tra loro. */
+function giornoDi(adesso: Date): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome', year: 'numeric', month: '2-digit', day: '2-digit' }).format(adesso);
+}
+
+/**
+ * Preventivo dell'officina (anonimo) + email dell'avviso in una tabella a parte, senza un codice che li colleghi
+ * + consenso legato solo all'email + evento officina_attesa senza dettagli, in un'unica transazione.
+ */
+export async function salvaAttesaOfficina(
+  db: D1Database, a: NuovaAttesaOfficina, avviso: NuovoAvvisoOfficina | null, consenso: NuovoConsenso | null, ipHash: string, adesso = new Date(),
+): Promise<void> {
+  const giorno = giornoDi(adesso);
+  const conAvviso = avviso && consenso
+    ? [
+        db.prepare('INSERT INTO avvisi_officina (id, email, created_at) VALUES (?1, ?2, ?3)').bind(avviso.id, avviso.email, giorno),
+        istruzioneRegistraConsenso(db, { ...consenso, avvisoId: avviso.id }),
+      ]
+    : [];
   await db.batch([
     db
-      .prepare('INSERT INTO attese_officina (id, modello, intervento, importo, provincia, email) VALUES (?1, ?2, ?3, ?4, ?5, ?6)')
-      .bind(a.id, a.modello, a.intervento, a.importo, a.provincia, a.email ?? null),
-    ...(consenso ? [istruzioneRegistraConsenso(db, { ...consenso, officinaId: a.id })] : []),
-    istruzioneRegistraEvento(db, { nome: 'officina_attesa', ipHash, meta: { intervento: a.intervento, avviso: Boolean(a.email) } }),
+      .prepare('INSERT INTO attese_officina (id, modello, intervento, importo, provincia, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)')
+      .bind(a.id, a.modello, a.intervento, a.importo, a.provincia, giorno),
+    ...conAvviso,
+    istruzioneRegistraEvento(db, { nome: 'officina_attesa', ipHash }),
   ]);
 }
 

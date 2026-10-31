@@ -12,6 +12,7 @@ export interface DatiAdmin {
   readonly verdetti: readonly Record<string, unknown>[];
   readonly eventi: readonly Record<string, unknown>[];
   readonly officina: readonly Record<string, unknown>[];
+  readonly avvisiOfficina: readonly Record<string, unknown>[];
   readonly stampa: readonly Record<string, unknown>[];
 }
 
@@ -34,7 +35,7 @@ const SQL_CONTATORI_TABELLE = `
 
 export async function leggiDatiAdmin(db: D1Database, adesso = new Date()): Promise<DatiAdmin> {
   const da = new Date(adesso.getTime() - GIORNI * 86_400_000).toISOString();
-  const [contatori, contatoriTabelle, schede, richieste, b2b, verdetti, eventi, officina, stampa] = await db.batch<Record<string, unknown>>([
+  const [contatori, contatoriTabelle, schede, richieste, b2b, verdetti, eventi, officina, avvisi, stampa] = await db.batch<Record<string, unknown>>([
     db.prepare(SQL_CONTATORI).bind(da),
     db.prepare(SQL_CONTATORI_TABELLE).bind(da),
     db.prepare(`SELECT id, marca, modello, tipo, totale, costo_credito_pct, taeg_dichiarato, taeg_ricostruito, consenso_archivio, created_at FROM schede ORDER BY created_at DESC LIMIT ${RIGHE}`),
@@ -42,7 +43,8 @@ export async function leggiDatiAdmin(db: D1Database, adesso = new Date()): Promi
     db.prepare(`SELECT id, nome, azienda, email, sito, messaggio, created_at FROM b2b_contatti ORDER BY created_at DESC LIMIT ${RIGHE}`),
     db.prepare(`SELECT id, scheda_id, email, riferimento_pagamento, nota, stato, created_at FROM richieste_verdetto ORDER BY created_at DESC LIMIT ${RIGHE}`),
     db.prepare(`SELECT nome, scheda_id, meta_json, created_at FROM eventi ORDER BY created_at DESC LIMIT 100`),
-    db.prepare(`SELECT id, modello, intervento, importo, provincia, email, created_at FROM attese_officina ORDER BY created_at DESC LIMIT ${RIGHE}`),
+    db.prepare(`SELECT id, modello, intervento, importo, provincia, created_at FROM attese_officina ORDER BY created_at DESC LIMIT ${RIGHE}`),
+    db.prepare(`SELECT id, email, created_at FROM avvisi_officina ORDER BY created_at DESC LIMIT ${RIGHE}`),
     db.prepare(`SELECT id, email, testata, created_at FROM richieste_stampa ORDER BY created_at DESC LIMIT ${RIGHE}`),
   ]);
   return {
@@ -53,6 +55,7 @@ export async function leggiDatiAdmin(db: D1Database, adesso = new Date()): Promi
     verdetti: verdetti?.results ?? [],
     eventi: eventi?.results ?? [],
     officina: officina?.results ?? [],
+    avvisiOfficina: avvisi?.results ?? [],
     stampa: stampa?.results ?? [],
   };
 }

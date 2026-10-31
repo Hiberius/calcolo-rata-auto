@@ -16,13 +16,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
   if (!esito.ok) return rispondi(request, PAGINA, esito);
 
   const consenso = CONSENSI.avviso_officina;
-  const { consensoAvviso, versioneConsenso, ...dati } = esito.dati;
+  const { consensoAvviso, versioneConsenso, email, ...dati } = esito.dati;
   if (consensoAvviso && versioneConsenso !== consenso.versione) return rispondi(request, PAGINA, { ok: false, codice: 'consenso' });
 
+  // Il preventivo resta anonimo: l'email va in una tabella a parte, con un codice suo, senza legame con il preventivo.
   const attesa = { ...dati, id: `O${idCorto(9)}` };
-  const registro = consensoAvviso ? { finalita: consenso.finalita, testo: consenso.testo, versione: consenso.versione, accettato: true } : null;
+  const avviso = consensoAvviso && email ? { id: `V${idCorto(9)}`, email } : null;
+  const registro = avviso ? { finalita: consenso.finalita, testo: consenso.testo, versione: consenso.versione, accettato: true } : null;
   try {
-    await salvaAttesaOfficina(env.DB, attesa, registro, esito.ipHash);
+    await salvaAttesaOfficina(env.DB, attesa, avviso, registro, esito.ipHash);
   } catch (e) {
     console.error('[officina] salvataggio non riuscito', e instanceof Error ? e.message : e);
     return rispondi(request, PAGINA, { ok: false, codice: 'interno' });

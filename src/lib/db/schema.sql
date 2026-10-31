@@ -55,7 +55,8 @@ CREATE TABLE IF NOT EXISTS consensi (
   b2b_id TEXT,
   officina_id TEXT REFERENCES attese_officina (id),
   stampa_id TEXT REFERENCES richieste_stampa (id),
-  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  avviso_id TEXT REFERENCES avvisi_officina (id)
 );
 
 -- Eventi server-side: nessun IP in chiaro (hash giornaliero), nessun dato personale.
@@ -103,9 +104,15 @@ CREATE TABLE IF NOT EXISTS attese_officina (
   intervento TEXT NOT NULL CHECK (intervento IN ('tagliando', 'freni', 'frizione', 'distribuzione', 'gomme', 'revisione', 'batteria', 'climatizzatore', 'altro')),
   importo REAL NOT NULL CHECK (importo > 0 AND importo <= 20000),
   provincia TEXT NOT NULL CHECK (length(provincia) = 2),
-  email TEXT,
-  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d', 'now'))
 );
+-- Email per l'avviso dell'officina: tabella a parte, nessun collegamento al preventivo (0006).
+CREATE TABLE IF NOT EXISTS avvisi_officina (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL CHECK (length(email) BETWEEN 5 AND 254),
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d', 'now'))
+);
+CREATE INDEX IF NOT EXISTS idx_avvisi_officina_created ON avvisi_officina (created_at);
 CREATE INDEX IF NOT EXISTS idx_officina_created ON attese_officina (created_at);
 CREATE TABLE IF NOT EXISTS richieste_stampa (
   id TEXT PRIMARY KEY,
