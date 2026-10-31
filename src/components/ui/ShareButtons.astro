@@ -18,15 +18,23 @@ const { testo, url, immagineQuadrata } = Astro.props;
 </div>
 
 <script>
+  import { inviaEvento } from '~/lib/client/evento';
   const radice = document.querySelector<HTMLElement>('[data-condividi]');
   const area = radice?.querySelector<HTMLTextAreaElement>('textarea');
   const esito = radice?.querySelector<HTMLElement>('[data-esito]');
   const dire = (msg: string) => { if (esito) esito.textContent = msg; };
+  const idScheda = location.pathname.match(/^\/s\/([1-9A-HJ-NP-Za-km-z]{8})/)?.[1];
+  let segnalato = false;
+  const condivisa = () => {
+    if (!segnalato && idScheda) inviaEvento('scheda_condivisa', idScheda);
+    segnalato = true;
+  };
 
   radice?.querySelector('[data-copia]')?.addEventListener('click', async () => {
     if (!area) return;
     try {
       await navigator.clipboard.writeText(area.value);
+      condivisa();
       dire('Testo copiato. Incollalo nel commento.');
     } catch {
       area.select();
@@ -38,6 +46,7 @@ const { testo, url, immagineQuadrata } = Astro.props;
   if (nativo && typeof navigator.share === 'function') {
     nativo.classList.remove('hidden');
     nativo.addEventListener('click', () => {
+      condivisa();
       navigator.share({ title: 'Rata Vera', text: area?.value ?? '', url: nativo.dataset.url ?? location.href }).catch(() => undefined);
     });
   }

@@ -61,3 +61,10 @@ const FILE = import.meta.glob<unknown>('../../data/promos/*.json', { eager: true
 export function tutteLePromo(oggi: Date = new Date()): readonly PromoDecodificata[] {
   return ordinaPerCostoCredito(validaPromo(FILE).map((p) => decodificaPromo(p, oggi)));
 }
+
+/** §6: la promo in vigore dello stesso modello, se c'è nel dataset (confronto per marca e modello, senza maiuscole). */
+export function promoDelloStessoModello(marca: string | undefined, modello: string | undefined, oggi: Date = new Date()): PromoDecodificata | null {
+  if (!marca || !modello) return null;
+  const chiave = (m: string, n: string) => `${slugDi(m)}|${slugDi(n)}`;
+  return tutteLePromo(oggi).find((d) => !d.scaduta && chiave(d.promo.marca, d.promo.modello) === chiave(marca, modello)) ?? null;
+}

@@ -1,0 +1,39 @@
+---
+import { CONSENSI } from '~/lib/consent';
+import { DURATE_NOLEGGIO } from '~/lib/moduli/schemi';
+import Campo from './Campo.astro';
+import EsitoModulo from './EsitoModulo.astro';
+import TurnstileImplicito from './TurnstileImplicito.astro';
+
+interface Props { siteKey: string }
+const { siteKey } = Astro.props;
+const consenso = CONSENSI.contatto_noleggio;
+---
+<form id="modulo" method="post" action="/api/noleggio" class="grid gap-4 scroll-mt-6" data-modulo-noleggio>
+  <EsitoModulo successo="Richiesta inviata. Un partner di noleggio a lungo termine ti contatterà con un preventivo per il modello che hai indicato." />
+  <div class="grid gap-4 sm:grid-cols-2">
+    <Campo nome="nome" etichetta="Nome e cognome" obbligatorio attributi={{ autocomplete: 'name', maxlength: 80 }} />
+    <Campo nome="email" etichetta="Email" tipo="email" obbligatorio attributi={{ autocomplete: 'email', maxlength: 120 }} />
+    <Campo nome="telefono" etichetta="Telefono" tipo="tel" obbligatorio attributi={{ autocomplete: 'tel', maxlength: 20, pattern: '\\+?[0-9 ]{6,20}' }} />
+    <Campo nome="provincia" etichetta="Provincia (sigla)" obbligatorio attributi={{ maxlength: 2, pattern: '[A-Za-z]{2}', placeholder: 'MI' }} />
+    <Campo nome="modello" etichetta="Modello che ti interessa" obbligatorio attributi={{ maxlength: 80, placeholder: 'Marca e modello' }} />
+    <label class="grid gap-1 text-sm"><span class="font-medium">Durata</span>
+      <select class="campo font-sans" name="durataMesi" required>
+        {DURATE_NOLEGGIO.map((d) => <option value={d} selected={d === 36}>{d} mesi</option>)}
+      </select>
+    </label>
+    <Campo nome="kmAnnui" etichetta="Km all'anno" tipo="number" obbligatorio attributi={{ min: 5000, max: 100000, step: 1000, value: 15000 }} />
+    <label class="flex items-center gap-3 text-sm self-end pb-3 cursor-pointer">
+      <input type="checkbox" name="anticipoZero" class="size-5 accent-[#15171A]" />
+      <span>Preferisco un'offerta senza anticipo</span>
+    </label>
+  </div>
+  <label class="flex items-start gap-3 text-sm cursor-pointer">
+    <input type="checkbox" name="consensoContatto" required class="mt-1 size-5 accent-[#15171A]" />
+    <span>{consenso.testo}</span>
+  </label>
+  <input type="hidden" name="versioneConsenso" value={consenso.versione} />
+  <TurnstileImplicito siteKey={siteKey} />
+  <p class="text-xs text-tenue max-w-prose">Solo noleggio senza obbligo né opzione di acquisto. Non chiediamo reddito, rata massima o anticipo disponibile. <a class="link" href="/privacy">Come trattiamo i dati</a>.</p>
+  <div><button type="submit" class="btn btn-primario w-full sm:w-auto">Chiedi un preventivo di noleggio</button></div>
+</form>

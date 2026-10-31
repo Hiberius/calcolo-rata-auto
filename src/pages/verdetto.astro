@@ -1,0 +1,70 @@
+---
+import Base from '~/layouts/Base.astro';
+import BottonePagamento from '~/components/form/BottonePagamento.astro';
+import Campo from '~/components/form/Campo.astro';
+import EsitoModulo from '~/components/form/EsitoModulo.astro';
+import TurnstileImplicito from '~/components/form/TurnstileImplicito.astro';
+import { ID_SCHEDA_RE } from '~/lib/ids';
+import { linkPagamento } from '~/lib/sito';
+import { TURNSTILE_SITE_KEY_TEST } from '~/lib/turnstile';
+
+export const prerender = false;
+const env = Astro.locals.runtime?.env;
+const siteKey = env?.PUBLIC_TURNSTILE_SITE_KEY || TURNSTILE_SITE_KEY_TEST;
+const link = linkPagamento(env?.PUBLIC_STRIPE_LINK_VERDETTO);
+const schedaDaLink = Astro.url.searchParams.get('scheda') ?? '';
+const scheda = ID_SCHEDA_RE.test(schedaDaLink) ? schedaDaLink : '';
+const INCLUDE = [
+  'Lettura riga per riga del preventivo e, se lo hai, del SECCI',
+  'Controllo di TAEG, importo del credito, totale dovuto e spese',
+  'Le tre strade a fine contratto con i tuoi numeri: tenere, restituire, cambiare',
+  'Le domande precise da fare al venditore sui numeri che non tornano',
+  'Un PDF di due pagine, entro 24 ore',
+] as const;
+---
+<Base
+  title="Verdetto esperto sul preventivo auto: 19 € | Rata Vera"
+  description="Un esperto rilegge il tuo preventivo auto con la maxi rata: TAEG, spese, totale dovuto, fine contratto e domande da fare al venditore. PDF entro 24 ore, 19 €."
+>
+  <section class="contenitore pt-8 pb-10 sm:pt-14 grid gap-5">
+    <h1 class="font-semibold tracking-tight leading-[1.05] text-[length:var(--testo-titolo)] max-w-[20ch]">Il verdetto di un esperto, prima di firmare.</h1>
+    <p class="text-lg max-w-prose text-tenue">Il calcolo automatico ti dà i numeri. Il verdetto è una persona che rilegge il tuo preventivo e ti dice cosa chiedere, voce per voce.</p>
+  </section>
+
+  <section class="contenitore grid gap-10 lg:grid-cols-[1.2fr_1fr]" aria-labelledby="include-titolo">
+    <div class="grid content-start gap-4">
+      <h2 id="include-titolo" class="text-2xl font-semibold tracking-tight">Cosa comprende</h2>
+      <ul class="grid">{INCLUDE.map((v) => <li class="riga-tratteggiata py-3">{v}</li>)}</ul>
+      <p class="text-sm text-tenue max-w-prose">Non è una consulenza finanziaria e non indichiamo finanziatori: lavoriamo solo sui numeri del tuo preventivo.</p>
+    </div>
+    <div class="scontrino rounded-t grid content-start gap-4 px-6 py-7">
+      <p class="numeri text-5xl font-semibold">19 €</p>
+      <ol class="grid gap-2 text-sm">
+        <li><span class="numeri text-segnale">01</span> Crea la scheda del tuo preventivo dalla <a class="link" href="/#decodifica">decodifica</a>.</li>
+        <li><span class="numeri text-segnale">02</span> Paga con il pulsante qui sotto.</li>
+        <li><span class="numeri text-segnale">03</span> Mandaci il codice della scheda con il modulo.</li>
+      </ol>
+      <BottonePagamento href={link} etichetta="Paga 19 €" evento="verdetto_click" />
+    </div>
+  </section>
+
+  <section class="contenitore sezione grid gap-6 lg:grid-cols-[1fr_1.4fr]" aria-labelledby="modulo-titolo">
+    <div class="grid content-start gap-3">
+      <h2 id="modulo-titolo" class="text-2xl font-semibold tracking-tight">Manda la scheda</h2>
+      <p class="text-tenue max-w-prose">Il codice sono gli 8 caratteri dopo /s/ nel link della scheda. Usiamo l'email solo per mandarti il PDF.</p>
+    </div>
+    <form id="modulo" method="post" action="/api/verdetto" class="grid gap-4 scroll-mt-6">
+      <EsitoModulo successo="Richiesta ricevuta. Il PDF arriva all'email indicata entro 24 ore dal pagamento." />
+      <div class="grid gap-4 sm:grid-cols-2">
+        <Campo nome="schedaId" etichetta="Codice della scheda" obbligatorio attributi={{ maxlength: 8, minlength: 8, value: scheda, autocomplete: 'off', class: 'campo numeri' }} />
+        <Campo nome="email" etichetta="Email" tipo="email" obbligatorio attributi={{ autocomplete: 'email', maxlength: 120 }} />
+        <Campo nome="riferimentoPagamento" etichetta="Email o nome usati per pagare" attributi={{ maxlength: 100 }} />
+      </div>
+      <label class="grid gap-1 text-sm"><span class="font-medium">Cosa vuoi sapere <span class="text-tenue font-normal">(facoltativo)</span></span>
+        <textarea class="campo font-sans min-h-24" name="nota" maxlength="500"></textarea>
+      </label>
+      <TurnstileImplicito siteKey={siteKey} />
+      <div><button type="submit" class="btn btn-primario w-full sm:w-auto">Invia</button></div>
+    </form>
+  </section>
+</Base>

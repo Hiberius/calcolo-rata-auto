@@ -1,0 +1,44 @@
+---
+import Testo from '~/layouts/Testo.astro';
+import { AVVERTENZA } from '~/lib/calc/config';
+export const prerender = true;
+---
+<Testo title="Metodologia: come Rata Vera fa i conti del preventivo auto" description="Le formule usate da Rata Vera: totale pagato, costo del credito, TAEG ricostruito, discrepanze, fine contratto e tre strade. Tutte le ipotesi sono dichiarate." titolo="Come facciamo i conti" sopratitolo="Metodologia">
+  <p>Rata Vera fa aritmetica sui numeri che inserisci o che leggiamo dalla foto del preventivo. Non valuta la tua situazione, non suggerisce finanziatori, non dà consigli. Qui trovi ogni formula, con le ipotesi che usiamo quando un numero manca.</p>
+
+  <h2>Il prezzo di riferimento</h2>
+  <p>Usiamo il prezzo in contanti, se c'è. Altrimenti il prezzo promozionale, altrimenti il prezzo di listino, e lo diciamo accanto al risultato. Se non c'è nessun prezzo non calcoliamo il costo del credito e ti chiediamo di farti dare il prezzo in contanti.</p>
+
+  <h2>Quanto paghi davvero</h2>
+  <ul>
+    <li><strong>Somma delle rate</strong>: numero di rate per rata, corretta se la prima rata è diversa.</li>
+    <li><strong>Spese ricorrenti</strong>: spese di incasso per il numero di rate.</li>
+    <li><strong>Spese una tantum</strong>: istruttoria (solo se non è già dentro il credito), imposta di bollo, e IPT, messa su strada, polizze e servizi se non sono compresi nel prezzo.</li>
+    <li><strong>Spese non dettagliate</strong>: se il totale dovuto dichiarato supera rate e maxi rata di una somma piccola (fino al 5%), la consideriamo spesa non dettagliata e la aggiungiamo.</li>
+    <li><strong>Totale tenendo l'auto</strong> = anticipo + rate + maxi rata + spese. <strong>Totale restituendo l'auto</strong> = lo stesso senza la maxi rata, più gli eventuali chilometri in eccesso.</li>
+  </ul>
+  <p>Il <strong>costo del credito</strong> è il totale tenendo l'auto meno il prezzo di riferimento, anche in percentuale del prezzo.</p>
+
+  <h2>Credito, totale dovuto e discrepanze</h2>
+  <p>Ricostruiamo l'importo del credito come prezzo meno anticipo, e come prezzo meno anticipo più istruttoria. Se uno dei due coincide con quello dichiarato (entro 2 €), sappiamo se l'istruttoria è finanziata. Ricostruiamo anche il totale dovuto da rate, maxi rata, spese di incasso e bollo. Quando i numeri non coincidono lo scriviamo così: «non torna di X €, chiedi al venditore». Non diciamo che un numero è sbagliato: spesso la differenza viene da una voce che il preventivo non mostra.</p>
+
+  <h2>Il TAEG ricostruito</h2>
+  <p>Mettiamo in fila i flussi: al mese zero ricevi il credito meno le spese pagate subito; ogni mese paghi rata e spese di incasso; all'ultimo mese la maxi rata. Cerchiamo per bisezione il tasso mensile che rende nullo il valore attuale, tra 0 e 5% al mese, e lo trasformiamo in tasso annuo: (1 + i)<sup>12</sup> − 1. Se la differenza con il TAEG dichiarato supera mezzo punto scriviamo «da verificare», con la nota che spese non indicate possono spiegare la differenza. Senza dati sufficienti il TAEG non si calcola.</p>
+
+  <h2>Fine del contratto con la maxi rata</h2>
+  <ul>
+    <li><strong>Tieni</strong>: paghi la maxi rata, oppure la rifinanzi. Ipotesi: TAN 8% in 36 mesi, modificabile. Mostriamo la nuova rata e gli interessi in più.</li>
+    <li><strong>Restituisci</strong>: hai pagato anticipo, rate e spese senza tenere l'auto; i chilometri oltre quelli inclusi si pagano a parte. Le condizioni sullo stato dell'auto sono nel contratto: chiedi il documento.</li>
+    <li><strong>Cambi</strong>: come restituire, più un nuovo anticipo uguale a quello attuale.</li>
+  </ul>
+
+  <h2>Tre strade</h2>
+  <p>Per la stessa auto mettiamo affiancate tre colonne, senza classifica: contanti o prestito personale (ipotesi TAN 7,5%, TAEG 8,5%, stessa durata, modificabili), il tuo preventivo, il noleggio a lungo termine con il canone che inserisci. Per ognuna: quanto esce dal tuo conto e cosa possiedi alla fine. Il valore dell'auto a fine contratto è un'ipotesi: la maxi rata se c'è, altrimenti il 45% del prezzo.</p>
+
+  <h2>L'etichetta sul costo del credito</h2>
+  <p>Sotto il 5% del prezzo scriviamo «costo del credito basso», tra 5% e 12% «nella media delle promozioni attuali», oltre il 12% «sopra la media delle promozioni attuali». Le soglie verranno ricalibrate sul dataset delle <a href="/promozioni">promozioni ufficiali</a> man mano che cresce.</p>
+
+  <h2>Dove girano i calcoli</h2>
+  <p>I calcoli girano nel tuo browser. Se carichi una foto, il server la legge in memoria per estrarre i numeri e la scarta subito: non viene mai scritta su disco né in archivio. Dettagli in <a href="/privacy">privacy</a>.</p>
+  <blockquote>{AVVERTENZA}</blockquote>
+</Testo>

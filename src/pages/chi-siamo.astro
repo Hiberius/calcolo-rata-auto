@@ -1,0 +1,28 @@
+---
+import Testo from '~/layouts/Testo.astro';
+import { AVVERTENZA } from '~/lib/calc/config';
+import { EMAIL_CONTATTO, TITOLARE } from '~/lib/sito';
+export const prerender = true;
+---
+<Testo title="Chi siamo | Rata Vera" description="Rata Vera fa i conti dei preventivi auto: totale pagato, costo del credito, maxi rata. Non è un mediatore creditizio né un intermediario." titolo="Chi siamo" sopratitolo="Rata Vera">
+  <p>Rata Vera nasce da una domanda semplice: quanto paghi davvero un'auto «a 99 € al mese»? La rata pubblicizzata è il numero più piccolo del preventivo. Il totale, il costo del credito e la maxi rata finale sono scritti in piccolo, quando ci sono.</p>
+  <p>Facciamo una cosa sola: i conti. Fotografi o scrivi il preventivo, vedi quanto esce in tutto dal tuo conto, quanto costa il credito, cosa succede alla fine del contratto e come si confronta con un prestito o con il noleggio.</p>
+
+  <h2>Cosa non siamo</h2>
+  <ul>
+    <li>Non siamo un mediatore creditizio né un agente in attività finanziaria: non proponiamo finanziamenti e non li colleghiamo a nessun finanziatore.</li>
+    <li>Non diamo consigli personalizzati: mostriamo numeri e ipotesi dichiarate.</li>
+    <li>Non vendiamo auto e non riceviamo compensi dalle concessionarie per i conti che vedi.</li>
+  </ul>
+
+  <h2>Come ci sosteniamo</h2>
+  <ul>
+    <li>Il <a href="/verdetto">verdetto esperto</a> da 19 €, pagato da chi lo chiede.</li>
+    <li>Il controllo degli annunci per le <a href="/per-concessionari">concessionarie</a>, che riguarda la forma della pubblicità e non cambia i conti mostrati agli utenti.</li>
+    <li>Le richieste di noleggio a lungo termine passate a un partner, solo su tua richiesta e con il tuo consenso: possiamo ricevere un compenso se firmi un contratto.</li>
+  </ul>
+
+  <h2>Contatti</h2>
+  <p>Rata Vera è un progetto di {TITOLARE}. Scrivi a <a href={`mailto:${EMAIL_CONTATTO}`}>{EMAIL_CONTATTO}</a>.</p>
+  <blockquote>{AVVERTENZA}</blockquote>
+</Testo>

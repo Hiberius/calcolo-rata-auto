@@ -11,6 +11,7 @@ export default defineConfig({
   adapter: cloudflare({
     platformProxy: { enabled: true },
     imageService: 'passthrough',
+    workerEntryPoint: { path: 'src/worker.ts' },
   }),
   integrations: [preact()],
   vite: {

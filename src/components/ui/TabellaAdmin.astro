@@ -1,0 +1,19 @@
+---
+interface Props { titolo: string; righe: readonly Record<string, unknown>[] }
+const { titolo, righe } = Astro.props;
+const colonne = righe[0] ? Object.keys(righe[0]) : [];
+const cella = (v: unknown) => (v == null ? '' : typeof v === 'number' ? (Number.isInteger(v) ? String(v) : v.toFixed(3)) : String(v));
+---
+<section class="grid gap-2">
+  <h2 class="text-lg font-semibold">{titolo} <span class="numeri text-sm text-tenue">({righe.length})</span></h2>
+  {righe.length === 0
+    ? <p class="text-sm text-tenue">Nessuna riga.</p>
+    : (
+      <div class="overflow-x-auto border border-riga">
+        <table class="min-w-full text-xs numeri">
+          <thead class="bg-carta-scura"><tr>{colonne.map((c) => <th class="px-2 py-1.5 text-left font-semibold whitespace-nowrap">{c}</th>)}</tr></thead>
+          <tbody>{righe.map((r) => <tr class="border-t border-riga">{colonne.map((c) => <td class="px-2 py-1 whitespace-nowrap max-w-[24rem] overflow-hidden text-ellipsis">{cella(r[c])}</td>)}</tr>)}</tbody>
+        </table>
+      </div>
+    )}
+</section>

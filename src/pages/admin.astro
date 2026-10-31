@@ -1,0 +1,50 @@
+---
+import Base from '~/layouts/Base.astro';
+import TabellaAdmin from '~/components/ui/TabellaAdmin.astro';
+import { tokenValido } from '~/lib/admin';
+import { leggiDatiAdmin, pivotContatori, type DatiAdmin } from '~/lib/db/admin';
+
+export const prerender = false;
+const env = Astro.locals.runtime.env;
+Astro.response.headers.set('cache-control', 'no-store');
+Astro.response.headers.set('x-robots-tag', 'noindex, nofollow');
+const autorizzato = tokenValido(Astro.url.searchParams.get('token'), env.ADMIN_TOKEN);
+let dati: DatiAdmin | null = null;
+let errore = false;
+if (!autorizzato) {
+  Astro.response.status = 401;
+} else {
+  try {
+    dati = await leggiDatiAdmin(env.DB);
+  } catch (e) {
+    console.error('[admin] lettura non riuscita', e instanceof Error ? e.message : e);
+    errore = true;
+  }
+}
+const pivot = dati ? pivotContatori(dati.contatori) : null;
+---
+<Base title="Admin | Rata Vera" description="Area riservata." noindex>
+  <section class="contenitore py-8 grid gap-8">
+    <h1 class="text-2xl font-semibold">Admin</h1>
+    {!autorizzato && <p>Accesso non consentito. Serve il parametro <code>token</code> corretto{env.ADMIN_TOKEN ? '' : ' (ADMIN_TOKEN non configurato sul server)'}.</p>}
+    {errore && <p class="text-segnale-scuro">Il database non risponde: riprova tra poco.</p>}
+    {pivot && dati && (
+      <>
+        <section class="grid gap-2">
+          <h2 class="text-lg font-semibold">Contatori per giorno, ultimi 30 giorni</h2>
+          <div class="overflow-x-auto border border-riga">
+            <table class="min-w-full text-xs numeri">
+              <thead class="bg-carta-scura"><tr><th class="px-2 py-1.5 text-left">giorno</th>{pivot.voci.map((v) => <th class="px-2 py-1.5 text-left whitespace-nowrap">{v.replace('tabella:', '+ ')}</th>)}</tr></thead>
+              <tbody>{pivot.giorni.map((g) => <tr class="border-t border-riga"><td class="px-2 py-1">{g.giorno}</td>{pivot.voci.map((v) => <td class="px-2 py-1">{g.valori[v] ?? ''}</td>)}</tr>)}</tbody>
+            </table>
+          </div>
+        </section>
+        <TabellaAdmin titolo="Richieste noleggio" righe={dati.richieste} />
+        <TabellaAdmin titolo="Richieste verdetto" righe={dati.verdetti} />
+        <TabellaAdmin titolo="Contatti concessionarie" righe={dati.b2b} />
+        <TabellaAdmin titolo="Schede" righe={dati.schede} />
+        <TabellaAdmin titolo="Eventi recenti" righe={dati.eventi} />
+      </>
+    )}
+  </section>
+</Base>

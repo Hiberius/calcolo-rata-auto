@@ -1,0 +1,54 @@
+---
+import Base from '~/layouts/Base.astro';
+import CalcoloVivo from '~/components/compare/CalcoloVivo';
+import { dataLunga } from '~/lib/date';
+import { tutteLeGuide, type Guida } from '~/lib/guide';
+
+export const prerender = true;
+
+export function getStaticPaths() {
+  return tutteLeGuide().map((g) => ({ params: { slug: g.slug }, props: { g } }));
+}
+
+const { g } = Astro.props as { g: Guida };
+const altre = tutteLeGuide().filter((x) => x.slug !== g.slug);
+const { Content } = g;
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: g.titolo,
+  description: g.descrizione,
+  dateModified: g.aggiornato,
+  inLanguage: 'it-IT',
+  author: { '@type': 'Organization', name: 'Rata Vera' },
+};
+---
+<Base title={g.titoloPagina} description={g.descrizione}>
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+  <article class="contenitore pt-8 pb-12 sm:pt-14 grid gap-10">
+    <header class="grid gap-4">
+      <p class="text-sm"><a class="link" href="/guide">Guide</a> · aggiornata il {dataLunga(g.aggiornato)}</p>
+      <h1 class="font-semibold tracking-tight leading-[1.05] text-[length:var(--testo-titolo)] max-w-[24ch]">{g.titolo}</h1>
+      <p class="text-lg max-w-[62ch] text-tenue">{g.lede}</p>
+    </header>
+
+    <div id="calcolo" class="scroll-mt-6">
+      <CalcoloVivo client:visible variante={g.calcolo} iniziale={g.esempio} titolo={g.titoloCalcolo} />
+    </div>
+
+    <div class="prosa"><Content /></div>
+
+    <section class="grid gap-3 max-w-[68ch]" aria-labelledby="fonti-titolo">
+      <h2 id="fonti-titolo" class="text-lg font-semibold">Fonti</h2>
+      <ul class="grid gap-2 text-sm">
+        {g.fonti.map((f) => <li><a class="link" href={f.url} rel="noopener" target="_blank">{f.titolo}</a></li>)}
+      </ul>
+    </section>
+
+    <aside class="grid gap-4 border-t-4 border-inchiostro pt-6" aria-label="Altre guide">
+      <p class="font-semibold">Altre guide</p>
+      <ul class="grid gap-2 sm:grid-cols-2">{altre.map((x) => <li><a class="link" href={`/guide/${x.slug}`}>{x.titolo}</a></li>)}</ul>
+      <p><a class="btn btn-primario" href="/#decodifica">Decodifica il tuo preventivo</a></p>
+    </aside>
+  </article>
+</Base>

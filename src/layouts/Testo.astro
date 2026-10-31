@@ -1,0 +1,24 @@
+---
+import Base from './Base.astro';
+import { dataLunga } from '~/lib/date';
+import { DATA_AGGIORNAMENTO_TESTI } from '~/lib/sito';
+
+interface Props {
+  title: string;
+  description: string;
+  titolo: string;
+  sopratitolo?: string;
+  aggiornato?: string;
+}
+const { title, description, titolo, sopratitolo, aggiornato = DATA_AGGIORNAMENTO_TESTI } = Astro.props;
+---
+<Base title={title} description={description}>
+  <article class="contenitore pt-8 pb-12 sm:pt-14 grid gap-8">
+    <header class="grid gap-3">
+      {sopratitolo && <p class="numeri text-sm text-tenue">{sopratitolo}</p>}
+      <h1 class="font-semibold tracking-tight leading-[1.05] text-[length:var(--testo-titolo)] max-w-[22ch]">{titolo}</h1>
+      <p class="text-sm text-tenue">Aggiornato il {dataLunga(aggiornato)}</p>
+    </header>
+    <div class="prosa"><slot /></div>
+  </article>
+</Base>

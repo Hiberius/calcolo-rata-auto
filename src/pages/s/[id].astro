@@ -6,6 +6,8 @@ import NumberRow from '~/components/ui/NumberRow';
 import { euro, percentuale, punti } from '~/lib/calc/format';
 import { datiScheda, testoCondivisione } from '~/lib/og/template';
 import { caricaScheda } from '~/lib/scheda';
+import PromoBox from '~/components/compare/PromoBox.astro';
+import { promoDelloStessoModello } from '~/lib/promo';
 
 export const prerender = false;
 
@@ -20,6 +22,7 @@ const dati = scheda ? datiScheda(scheda.analisi, id, sito) : null;
 const a = scheda?.analisi;
 const og = `${Astro.url.origin}/s/${id}/og.png`;
 if (scheda) Astro.response.headers.set('cache-control', 'public, max-age=300');
+const promo = a ? promoDelloStessoModello(a.preventivo.marca, a.preventivo.modello) : null;
 ---
 {dati && a ? (
   <Base
@@ -56,6 +59,12 @@ if (scheda) Astro.response.headers.set('cache-control', 'public, max-age=300');
 
       <div class="grid gap-10">
         <ShareButtons testo={testoCondivisione(dati)} url={dati.url} immagineQuadrata={`/s/${id}/og.png?formato=quadrato&scarica=1`} />
+        {promo && (
+          <div class="grid gap-3">
+            <h2 class="font-semibold text-lg">La promozione ufficiale dello stesso modello</h2>
+            <PromoBox decodificata={promo} link />
+          </div>
+        )}
         <div class="grid gap-3">
           <h2 class="font-semibold text-lg">Hai un preventivo anche tu?</h2>
           <p class="text-tenue max-w-prose">Fotografalo o scrivi i numeri: vedi il totale, il costo del credito e la fine del contratto.</p>

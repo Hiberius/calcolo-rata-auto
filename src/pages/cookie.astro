@@ -1,0 +1,18 @@
+---
+import Testo from '~/layouts/Testo.astro';
+export const prerender = true;
+---
+<Testo title="Cookie | Rata Vera" description="Rata Vera usa solo strumenti tecnici e una misura del traffico senza cookie. Nessun cookie di profilazione, nessun banner di consenso." titolo="Cookie" sopratitolo="Informativa">
+  <p>Rata Vera non usa cookie di profilazione né di pubblicità. Per questo non ti chiediamo un consenso: il banner in basso è solo informativo.</p>
+  <h2>Cosa usiamo</h2>
+  <table>
+    <thead><tr><th>Strumento</th><th>A cosa serve</th><th>Durata</th></tr></thead>
+    <tbody>
+      <tr><td>Cloudflare Turnstile</td><td>Verifica anti-robot sui moduli e sul caricamento delle foto. Può usare dati tecnici del browser solo per questo scopo.</td><td>la sessione</td></tr>
+      <tr><td>Cloudflare Web Analytics</td><td>Conta le visite in forma aggregata, senza cookie e senza seguirti tra siti.</td><td>nessun cookie</td></tr>
+      <tr><td>Memoria del browser (sessionStorage)</td><td>Porta il preventivo dalla home alla pagina delle tre strade. Resta sul tuo dispositivo e si cancella alla chiusura della scheda.</td><td>la sessione</td></tr>
+      <tr><td>Memoria del browser (localStorage)</td><td>Ricorda che hai chiuso il banner informativo.</td><td>finché non la cancelli</td></tr>
+    </tbody>
+  </table>
+  <p>Puoi cancellare la memoria del browser dalle impostazioni in ogni momento: il sito continua a funzionare.</p>
+</Testo>

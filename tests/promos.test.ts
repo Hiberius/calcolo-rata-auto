@@ -74,3 +74,12 @@ describe('schema Promo', () => {
     expect(slugDi('Città Nuova 2.0')).toBe('citta-nuova-2-0');
   });
 });
+
+describe('promo sulla scheda (§6)', () => {
+  it('trova la promo dello stesso modello senza badare a maiuscole e la ignora se scaduta', async () => {
+    const { promoDelloStessoModello } = await import('~/lib/promo');
+    expect(promoDelloStessoModello('peugeot', '208', OGGI)?.promo.id).toBe('peugeot-208-style-2026-10');
+    expect(promoDelloStessoModello('Peugeot', '208', new Date('2026-11-02T00:00:00Z'))).toBeNull();
+    expect(promoDelloStessoModello('Peugeot', undefined, OGGI)).toBeNull();
+  });
+});

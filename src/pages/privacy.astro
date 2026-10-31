@@ -1,0 +1,43 @@
+---
+import Testo from '~/layouts/Testo.astro';
+import { EMAIL_CONTATTO, TITOLARE } from '~/lib/sito';
+export const prerender = true;
+---
+<Testo title="Privacy: cosa salviamo e cosa no | Rata Vera" description="Rata Vera non salva le immagini dei preventivi né i dati di credito. Salva solo schede anonime con consenso e richieste di noleggio con consenso." titolo="Privacy" sopratitolo="Informativa">
+  <h2>Titolare</h2>
+  <p>{TITOLARE}, contatto <a href={`mailto:${EMAIL_CONTATTO}`}>{EMAIL_CONTATTO}</a>.</p>
+
+  <h2>Cosa non salviamo</h2>
+  <ul>
+    <li><strong>Le immagini dei preventivi.</strong> La foto o il PDF vengono letti in memoria per estrarre i numeri e scartati subito. Non finiscono su disco, in archivio o nei registri.</li>
+    <li><strong>I dati di credito.</strong> Anticipo, rata, maxi rata e gli altri numeri del preventivo restano nel tuo browser, salvo che tu crei una scheda (vedi sotto). Non chiediamo mai reddito, rata massima o anticipo disponibile e non inoltriamo i tuoi numeri a nessuno.</li>
+    <li><strong>Il tuo indirizzo IP in chiaro.</strong> Per limitare gli abusi usiamo un'impronta dell'IP che cambia ogni giorno e non permette di risalire a te.</li>
+  </ul>
+
+  <h2>Cosa salviamo, perché e per quanto</h2>
+  <table>
+    <thead><tr><th>Dato</th><th>Perché</th><th>Quanto</th></tr></thead>
+    <tbody>
+      <tr><td>Scheda condivisibile: marca, modello, versione, provincia se la indichi, numeri del preventivo e risultati. Nessun nome, targa o concessionario.</td><td>La crei tu per condividerla; esecuzione della tua richiesta.</td><td>24 mesi</td></tr>
+      <tr><td>Stessa scheda nell'archivio anonimo per i confronti</td><td>Solo con la casella apposita, non preselezionata (consenso). Il testo e la versione del consenso sono registrati.</td><td>24 mesi o fino alla revoca</td></tr>
+      <tr><td>Richiesta di noleggio: nome, email, telefono, provincia, modello, durata, km, preferenza anticipo zero</td><td>Consenso a essere contattato da un partner di noleggio a lungo termine selezionato da Rata Vera.</td><td>12 mesi</td></tr>
+      <tr><td>Contatto delle concessionarie: nome, azienda, email, sito, messaggio</td><td>Consenso a essere ricontattati per la richiesta.</td><td>12 mesi</td></tr>
+      <tr><td>Richiesta di verdetto: codice scheda, email, riferimento del pagamento</td><td>Esecuzione del servizio acquistato.</td><td>12 mesi</td></tr>
+      <tr><td>Eventi anonimi: nome dell'evento, codice scheda se c'è, impronta giornaliera dell'IP</td><td>Misurare come si usa il sito (legittimo interesse).</td><td>12 mesi</td></tr>
+    </tbody>
+  </table>
+
+  <h2>A chi arrivano i dati</h2>
+  <ul>
+    <li>Cloudflare, che ospita il sito, il database e la lettura delle immagini (Workers AI), come responsabile del trattamento.</li>
+    <li>Il servizio di email usato per le notifiche interne.</li>
+    <li>Solo per le richieste di noleggio: il partner di noleggio a lungo termine che ti contatta. Riceve i dati della richiesta, mai i numeri di un preventivo.</li>
+  </ul>
+  <p>Se l'estrazione più precisa è attiva, l'immagine può essere letta anche da Anthropic con le stesse regole: in memoria, senza conservazione da parte nostra.</p>
+
+  <h2>I tuoi diritti</h2>
+  <p>Puoi chiedere accesso, rettifica, cancellazione, limitazione, opposizione e portabilità dei tuoi dati, e revocare un consenso in ogni momento, scrivendo a <a href={`mailto:${EMAIL_CONTATTO}`}>{EMAIL_CONTATTO}</a>. Per cancellare una scheda indica il suo codice. Puoi anche rivolgerti al Garante per la protezione dei dati personali.</p>
+
+  <h2>Cookie</h2>
+  <p>Solo tecnici, nessuna profilazione: vedi la <a href="/cookie">pagina sui cookie</a>.</p>
+</Testo>

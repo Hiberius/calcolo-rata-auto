@@ -1,0 +1,16 @@
+---
+interface Props {
+  nome: string;
+  etichetta: string;
+  tipo?: 'text' | 'email' | 'tel' | 'url' | 'number';
+  obbligatorio?: boolean;
+  aiuto?: string;
+  attributi?: Record<string, string | number | boolean>;
+}
+const { nome, etichetta, tipo = 'text', obbligatorio = false, aiuto, attributi = {} } = Astro.props;
+---
+<label class="grid gap-1 text-sm">
+  <span class="font-medium">{etichetta}{!obbligatorio && <span class="text-tenue font-normal"> (facoltativo)</span>}</span>
+  <input class="campo font-sans" name={nome} type={tipo} required={obbligatorio} {...attributi} />
+  {aiuto && <span class="text-xs text-tenue">{aiuto}</span>}
+</label>
