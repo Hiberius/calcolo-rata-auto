@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'preact/hooks';
-import { percentuale, punti } from '~/lib/calc/format';
+import { costoCreditoPct, punti } from '~/lib/formato';
 import { importo } from '~/lib/formato';
 import type { VoceGlossario } from '~/lib/glossario';
 import type { Analisi } from '~/lib/calc/tipi';
@@ -75,7 +75,7 @@ export default function MostraVenditore({ analisi: a, aperta, onChiudi }: Props)
         <dl class="grid sm:grid-cols-2 sm:gap-x-10">
           <Riga etichetta={t(m, 'venditore.pagoInTutto')} valore={euro(tot.totalePagatoTenendo)} />
           {tot.prezzoRiferimento != null && <Riga etichetta={t(m, TIPO_PREZZO[tot.prezzoRiferimentoTipo])} valore={euro(tot.prezzoRiferimento)} />}
-          {tot.costoCredito != null && <Riga etichetta={t(m, 'risultato.costoCredito')} valore={`${euro(tot.costoCredito)} · ${percentuale(tot.costoCreditoPct, 0)}`} segnale />}
+          {tot.costoCredito != null && <Riga etichetta={t(m, 'risultato.costoCredito')} valore={`${euro(tot.costoCredito)} · ${costoCreditoPct(tot.costoCreditoPct)}`} segnale />}
           {p.maxiRata ? <Riga etichetta={t(m, 'venditore.maxi')} valore={euro(p.maxiRata)} voce="maxi" /> : null}
           {p.taegDichiarato != null && <Riga etichetta={t(m, 'venditore.tassoDichiarato')} valore={punti(p.taegDichiarato)} voce="taeg" />}
           {a.taeg.taegRicostruito != null && <Riga etichetta={t(m, 'venditore.tassoRicostruito')} valore={punti(a.taeg.taegRicostruito)} />}

@@ -73,7 +73,7 @@ export default function Scena({ preventivo, vfg = null, etichetta, mercato }: Pr
       <header class="flex flex-wrap items-start justify-between gap-4">
         <div class="grid gap-2">
           {etichetta && <p class="numeri w-fit rounded-[var(--raggio)] border border-[var(--scena-tenue)] px-2 py-0.5 text-xs uppercase tracking-[0.08em]" data-etichetta-scena>{etichetta}</p>}
-          <h2 class="numeri text-xs font-medium uppercase tracking-[0.08em] text-[var(--scena-tenue)]">{t(m, 'scena.titolo')}</h2>
+          <h2 class="sr-only">{t(m, 'scena.titolo')}</h2>
         </div>
         <button type="button" class="btn btn-scena" onClick={apriVenditore} data-mostra-venditore>{t(m, 'scena.venditore')}</button>
       </header>

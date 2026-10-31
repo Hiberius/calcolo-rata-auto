@@ -5,16 +5,25 @@ function definizione(t: Element): HTMLElement | null {
   return t.querySelector<HTMLElement>('.termine-def');
 }
 
-/** Larghezza massima della definizione: la stessa di global.css (20rem, mai oltre lo schermo meno i margini). */
-function larghezzaMassima(larghezza: number): number {
-  const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-  return Math.min(20 * rem, larghezza - 2 * MARGINE);
+/** Il riquadro dentro cui la definizione deve stare: il pannello scuro della scena (o la vista venditore), se c'è, altrimenti lo schermo. */
+interface Limiti { readonly sinistra: number; readonly destra: number }
+function limitiDi(t: HTMLElement, larghezza: number): Limiti {
+  const pannello = t.closest('.pannello-scena, .vista-venditore');
+  if (!pannello) return { sinistra: 0, destra: larghezza };
+  const r = pannello.getBoundingClientRect();
+  return { sinistra: Math.max(0, r.left), destra: Math.min(larghezza, r.right) };
 }
 
-function spostamento(sinistra: number, ampiezza: number, larghezza: number): number {
-  const fuori = sinistra + ampiezza - (larghezza - MARGINE);
+/** Larghezza massima della definizione: 20rem, mai oltre il riquadro meno i margini. */
+function larghezzaMassima(l: Limiti): number {
+  const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  return Math.min(20 * rem, l.destra - l.sinistra - 2 * MARGINE);
+}
+
+function spostamento(sinistra: number, ampiezza: number, l: Limiti): number {
+  const fuori = sinistra + ampiezza - (l.destra - MARGINE);
   const dx = fuori > 0 ? -fuori : 0;
-  return sinistra + dx < MARGINE ? MARGINE - sinistra : dx;
+  return sinistra + dx < l.sinistra + MARGINE ? l.sinistra + MARGINE - sinistra : dx;
 }
 
 /**
@@ -25,14 +34,17 @@ function spostamento(sinistra: number, ampiezza: number, larghezza: number): num
 function preposiziona(t: HTMLElement, larghezza: number): void {
   const def = definizione(t);
   if (!def) return;
-  def.style.setProperty('--sposta', `${Math.round(spostamento(t.getBoundingClientRect().left, larghezzaMassima(larghezza), larghezza))}px`);
+  const l = limitiDi(t, larghezza);
+  const massima = larghezzaMassima(l);
+  def.style.setProperty('--larghezza-def', `${Math.round(massima)}px`);
+  def.style.setProperty('--sposta', `${Math.round(spostamento(t.getBoundingClientRect().left, massima, l))}px`);
 }
 
 function rifinisci(t: HTMLElement, larghezza: number): void {
   const def = definizione(t);
   const r = def?.getBoundingClientRect();
   if (!def || !r || r.width === 0) return;
-  def.style.setProperty('--sposta', `${Math.round(spostamento(t.getBoundingClientRect().left, r.width, larghezza))}px`);
+  def.style.setProperty('--sposta', `${Math.round(spostamento(t.getBoundingClientRect().left, r.width, limitiDi(t, larghezza)))}px`);
 }
 
 function imposta(t: Element, aperto: boolean): void {

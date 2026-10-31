@@ -14,6 +14,11 @@ export interface StatoCurve {
   readonly serie: SerieValoreDebito;
   /** Massimo dell'asse in euro: il prezzo o il debito più alto. */
   readonly massimo: number;
+  /**
+   * Minimo dell'asse in euro (default 0). Le due curve vivono nella parte alta della scala: partendo da zero il 60% del
+   * grafico restava vuoto e la zona «debito sopra il valore» era alta 15 px. L'asse parte da qui, ed è detto sotto il grafico.
+   */
+  readonly minimo?: number | undefined;
   readonly avanzamento: number;
   readonly etichette?: EtichetteCurve | undefined;
   /** Anteprima della home: niente etichette sugli assi, solo le curve. */
@@ -36,7 +41,7 @@ export function meseSotto(x: number, larghezza: number, durata: number, senzaAss
   return Math.min(durata, Math.max(0, Math.round(((x - m.sinistra) / w) * durata)));
 }
 
-const MARGINE = { sinistra: 52, destra: 14, alto: 18, basso: 30 } as const;
+const MARGINE = { sinistra: 64, destra: 14, alto: 18, basso: 30 } as const;
 /** Senza assi (anteprima della home) le curve prendono quasi tutto lo spazio. */
 const MARGINE_NUDO = { sinistra: 6, destra: 10, alto: 14, basso: 10 } as const;
 
@@ -54,17 +59,34 @@ function scala(a: Area, s: StatoCurve): Scala {
   const w = a.larghezza - m.sinistra - m.destra;
   const h = a.altezza - m.alto - m.basso;
   const durata = Math.max(1, s.serie.durata);
+  const minimo = Math.max(0, Math.min(s.minimo ?? 0, s.massimo - 1));
   return {
     x: (mese) => m.sinistra + (mese / durata) * w,
-    y: (euro) => m.alto + h - (euro / s.massimo) * h,
+    y: (euro) => m.alto + h - ((euro - minimo) / (s.massimo - minimo)) * h,
   };
 }
 
-/** 0 €, 5k €, 12,5k €: etichette corte che stanno nel margine anche sul telefono. */
+/** 0 €, 5.000 €, 12.500 €: in italiano, con il punto delle migliaia (niente «k», che è inglese). */
 function etichettaAsse(v: number): string {
-  if (v === 0) return '0 €';
-  const k = v / 1000;
-  return `${Number.isInteger(k) ? k : k.toFixed(1).replace('.', ',')}k €`;
+  return `${String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}\u00A0€`;
+}
+
+/**
+ * Minimo dell'asse per una serie: il 90% del valore più basso disegnato (valore, debito o valore garantito),
+ * arrotondato in giù al passo delle tacche. Funzione di disegno, non di calcolo: i numeri restano quelli della serie.
+ */
+export function minimoAsse(serie: SerieValoreDebito, massimo: number): number {
+  const valori = serie.punti.flatMap((p) => [p.valore, p.debito]);
+  if (serie.vfg) valori.push(serie.vfg.importo);
+  const basso = Math.min(...valori) * 0.9;
+  if (!(basso > 0) || !(massimo > basso)) return 0;
+  const passo = passoAsse(massimo - basso);
+  return Math.max(0, Math.floor(basso / passo) * passo);
+}
+
+/** Testo dell'asse che non parte da zero, detto sotto il grafico. */
+export function notaAsse(minimo: number): string | null {
+  return minimo > 0 ? `L’asse degli euro parte da ${etichettaAsse(minimo)}, non da zero: così si vede dove il debito supera il valore.` : null;
 }
 
 function passoAsse(massimo: number): number {
@@ -80,14 +102,26 @@ function griglia(ctx: CanvasRenderingContext2D, a: Area, s: StatoCurve, sc: Scal
   ctx.lineWidth = 1;
   ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';
-  const passo = passoAsse(s.massimo);
-  for (let v = 0; v <= s.massimo + 1; v += passo) {
+  const minimo = s.minimo ?? 0;
+  const passo = passoAsse(s.massimo - minimo);
+  for (let v = Math.ceil(minimo / passo) * passo; v <= s.massimo + 1; v += passo) {
     const y = Math.round(sc.y(v)) + 0.5;
     ctx.beginPath();
     ctx.moveTo(MARGINE.sinistra, y);
     ctx.lineTo(a.larghezza - MARGINE.destra, y);
     ctx.stroke();
     ctx.fillText(etichettaAsse(v), MARGINE.sinistra - 8, y);
+  }
+  // Segno di taglio sull'asse quando non parte da zero: due tratti obliqui sul bordo basso.
+  if (minimo > 0) {
+    const yb = a.altezza - MARGINE.basso;
+    ctx.strokeStyle = SCENA.tenue;
+    ctx.beginPath();
+    for (const dy of [0, 5]) {
+      ctx.moveTo(MARGINE.sinistra - 5, yb + 3 - dy);
+      ctx.lineTo(MARGINE.sinistra + 5, yb - 3 - dy);
+    }
+    ctx.stroke();
   }
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
@@ -103,7 +137,7 @@ function griglia(ctx: CanvasRenderingContext2D, a: Area, s: StatoCurve, sc: Scal
 /** Zona in cui il debito supera il valore, riempita: «qui devi all’auto più di quanto vale». */
 function zonaSopra(ctx: CanvasRenderingContext2D, s: StatoCurve, sc: Scala, fino: number): void {
   const punti = s.serie.punti.filter((p) => p.mese <= fino);
-  ctx.fillStyle = 'rgba(242, 130, 95, 0.36)';
+  ctx.fillStyle = 'rgba(242, 130, 95, 0.5)';
   for (let k = 1; k < punti.length; k += 1) {
     const p0 = punti[k - 1];
     const p1 = punti[k];

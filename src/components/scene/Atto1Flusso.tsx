@@ -37,8 +37,10 @@ function riepilogo(r: Ripartizione, quotaTesto: string | null, m: Mercato): stri
 /** Le spese dette una per una, solo quelle che ci sono: «incasso 12,25 € · bollo 16,00 €». */
 function dettaglioSpese(r: Ripartizione): string {
   const s = r.spese;
-  return ([['istruttoria', s.istruttoria], ['incasso', s.incasso], ['bollo', s.bollo], ['altre', s.altre]] as const)
-    .filter(([, v]) => v > 0).map(([k, v]) => `${k} ${importo(v, 'scena')}`).join(' · ');
+  const voci = ([['istruttoria', s.istruttoria], ['incasso', s.incasso], ['bollo', s.bollo], ['altre', s.altre]] as const).filter(([, v]) => v > 0);
+  // Una voce sola ripeterebbe l'importo appena scritto sopra («28,25 € · altre 28,25 €»): si dice solo con più voci.
+  if (voci.length < 2) return '';
+  return voci.map(([k, v]) => `${k} ${importo(v, 'scena')}`).join(' · ');
 }
 
 export default function Atto1Flusso({ ripartizione: r, scala, statico, quotaRata, nRate, rata, sommaRate, m }: Props) {
@@ -76,7 +78,7 @@ export default function Atto1Flusso({ ripartizione: r, scala, statico, quotaRata
           </p>
         )}
         {quotaTesto && <p class="numeri nota text-[var(--scena-tenue)]">{nRate} × {importo(rata, 'scena')} = {importo(sommaRate, 'scena')} su {importo(r.totale, 'scena')}</p>}
-        {r.nota && <p class="nota max-w-[44ch] text-[var(--scena-tenue)]">{r.nota}</p>}
+        {r.nota && <p class="nota max-w-[24em] text-[var(--scena-tenue)]">{r.nota}</p>}
       </div>
       <div class="grid content-start gap-6">
         <canvas ref={tela} class="block h-[200px] w-full sm:h-[280px]" aria-hidden="true" data-tela="flusso" />
@@ -88,7 +90,7 @@ export default function Atto1Flusso({ ripartizione: r, scala, statico, quotaRata
                 <span class="nota text-[var(--scena-tenue)]">{c.etichetta}</span>
               </span>
               <span class={`numeri font-medium tracking-[-0.02em] whitespace-nowrap ${misuraImporto}`} data-importo-vivo>{importo(contatore(0, c.importo, avanzamento), 'scena')}</span>
-              <span class="numeri text-xs text-[var(--scena-tenue)]">{quota(c.importo, r.totale)}{c.chiave === 'spese' && spese ? ` · ${spese}` : ''}</span>
+              <span class="numeri text-[0.8125rem] text-[var(--scena-tenue)]">{quota(c.importo, r.totale)}{c.chiave === 'spese' && spese ? ` · ${spese}` : ''}</span>
             </li>
           ))}
         </ul>

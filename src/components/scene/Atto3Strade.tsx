@@ -19,24 +19,43 @@ const euro = (v: number | null): string => importo(v, 'scena');
 /** La strada del preventivo letto: è il soggetto della scena, le altre due sono il confronto. */
 const DEL_PREVENTIVO: Strada['id'] = 'B';
 
-function StradaScena({ s, possesso, quota, principale, m }: { s: Strada; possesso: string; quota: number; principale: boolean; m: Mercato }) {
+function Ipotesi({ s }: { s: Strada }) {
+  if (s.ipotesi.length === 0) return null;
+  return (
+    <ul class="grid gap-1 nota text-[var(--scena-tenue)]">
+      {s.ipotesi.map((i, k) => <li key={i}><TestoConGlossario testo={i} ambito={`scena-ipotesi-${s.id}-${k}`} /></li>)}
+    </ul>
+  );
+}
+
+/**
+ * Una strada. Quella del preventivo è il blocco grande (numero a 32-56 px, barra spessa) e porta in fondo il link alle
+ * ipotesi, così la cella sotto non resta vuota accanto alle altre due. Una strada senza numeri (noleggio senza canone)
+ * non è un blocco vuoto alla stessa scala: è una riga di testo.
+ */
+function StradaScena({ s, possesso, quota, principale, m, onConfronta }: { s: Strada; possesso: string; quota: number; principale: boolean; m: Mercato; onConfronta?: (() => void) | undefined }) {
+  if (s.totaleUscito == null) {
+    return (
+      <li class="grid content-start gap-1.5 border-t border-[var(--scena-riga)] pt-4" data-strada-scena={s.id} data-strada-vuota>
+        <p class="titolo-scheda">{s.titolo}</p>
+        <p class="nota text-[var(--scena-tenue)]">{s.dettaglio}</p>
+      </li>
+    );
+  }
   return (
     <li class={`grid content-start border-t pt-4 ${principale ? 'strada-principale gap-4 border-[var(--scena-carta)]' : 'gap-2.5 border-[var(--scena-riga)]'}`} data-strada-scena={s.id}>
-      <p class="atto-numero text-[var(--scena-tenue)]">{t(m, 'atto3.strada', { id: s.id })}{principale ? ' · quella del preventivo' : ''}</p>
       <p class={principale ? 'frase-grande' : 'titolo-scheda'}>{s.titolo}</p>
       {/* Stessa scala per le tre barre: la lunghezza si confronta, lo spessore dice solo quale è la tua. */}
       <div class={`w-full overflow-hidden bg-[var(--scena-riga)] ${principale ? 'h-3' : 'h-1.5'}`}>
         <div class={`barra-strada h-full w-full ${principale ? 'bg-[var(--scena-carta)]' : 'bg-[var(--scena-tenue)]'}`} style={{ transform: `scaleX(${quota})` }} />
       </div>
-      <p class={principale ? 'numero-scena text-[clamp(2rem,1.2rem+3vw,3.5rem)] tracking-[-0.04em]' : 'numero-scena'} data-totale-strada>{euro(s.totaleUscito)}</p>
-      <p class={principale ? 'max-w-[48ch]' : 'nota'}>
+      <p class={principale ? 'numero-scena numero-strada-principale' : 'numero-scena'} data-totale-strada>{euro(s.totaleUscito)}</p>
+      <p class={principale ? 'max-w-[26em]' : 'nota'}>
         <span class="text-[var(--scena-tenue)]">{t(m, 'atto3.allaFine')}</span><TestoConGlossario testo={possesso} ambito={`scena-possesso-${s.id}`} />
       </p>
-      {s.totaleUscito == null && <p class="nota text-[var(--scena-tenue)]">{s.dettaglio}</p>}
-      {s.ipotesi.length > 0 && (
-        <ul class="grid gap-1 text-xs text-[var(--scena-tenue)]">
-          {s.ipotesi.map((i, k) => <li key={i}><TestoConGlossario testo={i} ambito={`scena-ipotesi-${s.id}-${k}`} /></li>)}
-        </ul>
+      <Ipotesi s={s} />
+      {principale && onConfronta && (
+        <p class="pt-2"><a class="btn btn-scena" href="/noleggio" onClick={onConfronta}>Cambia le ipotesi delle tre strade</a></p>
       )}
     </li>
   );
@@ -53,17 +72,14 @@ export default function Atto3Strade({ strade, possesso, scala, statico, onConfro
           <p class="atto-numero">03</p>
           <h3 id="atto3-titolo" class="atto-titolo">{t(m, 'atto3.titolo')}</h3>
         </div>
-        <p class="max-w-[52ch] text-[var(--scena-tenue)]">{t(m, 'atto3.sotto')}</p>
+        <p class="max-w-[28em] text-[var(--scena-tenue)]">{t(m, 'atto3.sotto')}</p>
       </div>
       <ol class="strade">
         {ordinate.map((s) => (
-          <StradaScena key={s.id} s={s} possesso={possesso[s.id]} m={m} principale={s.id === DEL_PREVENTIVO}
+          <StradaScena key={s.id} s={s} possesso={possesso[s.id]} m={m} principale={s.id === DEL_PREVENTIVO} onConfronta={onConfronta}
             quota={(s.totaleUscito != null ? Math.min(1, s.totaleUscito / scala) : 0) * avanzamento} />
         ))}
       </ol>
-      {onConfronta && (
-        <p><a class="btn btn-scena" href="/noleggio" onClick={onConfronta}>Cambia le ipotesi delle tre strade</a></p>
-      )}
     </section>
   );
 }
