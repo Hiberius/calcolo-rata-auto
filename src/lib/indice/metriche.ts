@@ -14,7 +14,7 @@ export const ETICHETTE_METRICA: Readonly<Record<Metrica, string>> = {
 
 /** Definizioni pubblicate in /indice e /indice/metodologia: le stesse parole nelle due pagine. */
 export const DEFINIZIONI: readonly { readonly nome: string; readonly testo: string }[] = [
-  { nome: 'Costo del credito', testo: 'Quello che paghi in tutto tenendo l’auto (anticipo, rate, maxi rata, spese) meno il prezzo, in percentuale del prezzo. È il criterio della classifica.' },
+  { nome: 'Costo del credito', testo: 'Quello che paghi per il finanziamento tenendo l’auto (anticipo, rate, maxi rata, spese del credito come istruttoria, incasso e bollo) meno il prezzo, in percentuale del prezzo. IPT, messa su strada, polizze e servizi restano fuori. La colonna «Sul prezzo» dice quale prezzo abbiamo usato: in contanti, della promo o di listino. È il criterio della classifica.' },
   { nome: 'TAEG dichiarato e ricostruito', testo: 'Il TAEG scritto dalla casa e quello che ricaviamo dai numeri visibili della promozione, con lo stesso metodo dei preventivi.' },
   { nome: 'Anticipo', testo: 'L’anticipo in percentuale del prezzo.' },
   { nome: 'Maxi rata', testo: 'La rata finale in percentuale del prezzo; zero se la promozione non la prevede.' },

@@ -1,3 +1,4 @@
+import type { PrezzoRiferimentoTipo } from '../calc/tipi';
 import { dataLunga, oggiItalia } from '../date';
 import type { PromoDecodificata } from '../promo';
 
@@ -23,6 +24,8 @@ export interface RigaIndice {
   readonly taegRicostruito: number | null;
   /** Frazioni del prezzo (0,0842 = 8,42%). */
   readonly costoCreditoPct: number;
+  /** Su quale prezzo sono calcolate le percentuali: contanti, promo o listino. Righe con basi diverse non sono uguali. */
+  readonly prezzoUsato: PrezzoRiferimentoTipo;
   readonly anticipoPct: number;
   readonly maxiRataPct: number;
   readonly abbinati: boolean;
@@ -69,6 +72,7 @@ function riga(d: PromoDecodificata, posizione: number): RigaIndice {
     taegDichiarato: p.taeg ?? null,
     taegRicostruito: d.analisi.taeg.taegRicostruito,
     costoCreditoPct: d.analisi.totali.costoCreditoPct ?? 0,
+    prezzoUsato: d.analisi.totali.prezzoRiferimentoTipo,
     anticipoPct: p.anticipo / prezzo,
     maxiRataPct: (p.maxiRata ?? 0) / prezzo,
     abbinati: (p.polizzeAbbinate ?? 0) + (p.serviziAbbinati ?? 0) > 0,

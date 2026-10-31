@@ -7,13 +7,14 @@ interface Props { righe: readonly RigaIndice[] }
 const { righe } = Astro.props;
 ---
 <div class="overflow-x-auto">
-  <table class="tabella-indice min-w-[44rem]" data-tabella-indice>
+  <table class="tabella-indice min-w-[50rem]" data-tabella-indice>
     <caption class="sr-only">Classifica per costo del credito in percentuale del prezzo, dal più basso</caption>
     <thead>
       <tr>
         <th scope="col" class="num">#</th>
         <th scope="col">Marca e modello</th>
         <th scope="col" class="num">Costo del credito</th>
+        <th scope="col">Sul prezzo</th>
         <th scope="col" class="num">TAEG dichiarato</th>
         <th scope="col" class="num">TAEG ricostruito</th>
         <th scope="col" class="num">Anticipo</th>
@@ -28,6 +29,7 @@ const { righe } = Astro.props;
           <td class="num">{r.posizione}</td>
           <td><a class="link" href={r.percorso}>{r.marca} {r.modello}</a>{r.versione && <span class="block text-xs text-tenue">{r.versione}</span>}</td>
           <td class="num font-semibold">{testoMetrica(r.costoCreditoPct * 100)}</td>
+          <td>{r.prezzoUsato === 'contanti' ? 'in contanti' : r.prezzoUsato === 'promo' ? 'della promo' : 'di listino'}</td>
           <td class="num">{testoMetrica(r.taegDichiarato)}</td>
           <td class="num">{testoMetrica(r.taegRicostruito)}</td>
           <td class="num">{testoMetrica(r.anticipoPct * 100)}</td>

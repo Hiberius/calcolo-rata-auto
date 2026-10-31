@@ -6,7 +6,7 @@ import { LICENZA, type EdizioneIndice, type RigaIndice } from '.';
  * Le prime righe, con #, dicono licenza e frase di citazione.
  */
 const INTESTAZIONE = [
-  'posizione', 'marca', 'modello', 'versione', 'costo_credito_pct_prezzo', 'taeg_dichiarato', 'taeg_ricostruito',
+  'posizione', 'marca', 'modello', 'versione', 'costo_credito_pct_prezzo', 'prezzo_usato', 'taeg_dichiarato', 'taeg_ricostruito',
   'anticipo_pct_prezzo', 'maxi_rata_pct_prezzo', 'polizze_servizi_abbinati', 'scadenza', 'fonte',
 ] as const;
 
@@ -21,7 +21,7 @@ const punti = (v: number | null) => (v == null ? '' : numero(v, 2));
 
 function rigaCsv(r: RigaIndice): string {
   return [
-    String(r.posizione), r.marca, r.modello, r.versione ?? '', pct(r.costoCreditoPct), punti(r.taegDichiarato), punti(r.taegRicostruito),
+    String(r.posizione), r.marca, r.modello, r.versione ?? '', pct(r.costoCreditoPct), r.prezzoUsato, punti(r.taegDichiarato), punti(r.taegRicostruito),
     pct(r.anticipoPct), pct(r.maxiRataPct), r.abbinati ? 'sì' : 'no', r.scadenza, r.urlFonte,
   ].map(campoCsv).join(';');
 }
