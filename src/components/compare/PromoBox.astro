@@ -40,9 +40,11 @@ const righe: readonly (readonly [string, string])[] = [
     </h3>
     <p class="numeri text-xs text-tenue">{p.tipo}</p>
   </header>
-  <p class="text-sm bg-[#FDEEE9] border-l-4 border-segnale px-3 py-2" data-avviso-scaduta hidden={!d.scaduta}>
-    Promozione scaduta il {dataBreve(p.validoAl)}: i numeri restano per confronto.
-  </p>
+  {d.scaduta && (
+    <p class="text-sm bg-[#FDEEE9] border-l-4 border-segnale px-3 py-2" data-avviso-scaduta>
+      Promozione scaduta il {dataBreve(p.validoAl)}: i numeri restano per confronto.
+    </p>
+  )}
   <dl class="grid grid-cols-2 gap-x-6 sm:grid-cols-3">
     {righe.map(([k, v]) => (
       <div class="riga-tratteggiata flex flex-col py-1.5">

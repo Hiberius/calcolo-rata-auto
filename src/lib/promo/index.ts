@@ -1,4 +1,5 @@
 import { analizza, type Analisi, type PreventivoInput } from '../calc';
+import { oggiItalia } from '../date';
 import { PromoSchema, type Promo } from './schema';
 
 export type { Promo } from './schema';
@@ -27,9 +28,9 @@ export function preventivoDaPromo(p: Promo): PreventivoInput {
   };
 }
 
-/** Scaduta se validoAl è prima di oggi (date ISO confrontabili come stringhe). */
+/** Scaduta se validoAl è prima di oggi a Roma: valida per tutto il giorno di validoAl, scaduta dal giorno dopo. */
 export function eScaduta(p: Pick<Promo, 'validoAl'>, oggi: Date = new Date()): boolean {
-  return p.validoAl < oggi.toISOString().slice(0, 10);
+  return p.validoAl < oggiItalia(oggi);
 }
 
 export function decodificaPromo(p: Promo, oggi: Date = new Date()): PromoDecodificata {

@@ -5,15 +5,16 @@ import CalcoloVivo from '~/components/compare/CalcoloVivo';
 import ResultCard from '~/components/decode/ResultCard';
 import { dataBreve } from '~/lib/date';
 import { euro } from '~/lib/calc/format';
-import { tutteLePromo, type PromoDecodificata } from '~/lib/promo';
+import { tutteLePromo } from '~/lib/promo';
+import { paginaNonTrovata } from '~/lib/nonTrovata';
 
-export const prerender = true;
+// Resa a ogni richiesta, come l'elenco: l'avviso «scaduta il…» compare il giorno dopo la scadenza
+// senza ricostruire il sito, e non c'è nell'HTML finché la promozione è in vigore.
+export const prerender = false;
 
-export function getStaticPaths() {
-  return tutteLePromo().map((d) => ({ params: { marca: d.slugMarca, slug: d.slug }, props: { d } }));
-}
-
-const { d } = Astro.props as { d: PromoDecodificata };
+const d = tutteLePromo(new Date()).find((x) => x.slugMarca === Astro.params.marca && x.slug === Astro.params.slug);
+if (!d) return paginaNonTrovata(Astro.locals.runtime?.env, Astro.url);
+Astro.response.headers.set('cache-control', 'public, max-age=900');
 const p = d.promo;
 const a = d.analisi;
 const titolo = [p.marca, p.modello, p.versione].filter(Boolean).join(' ');
@@ -42,8 +43,3 @@ const { fonte: _fonte, ...base } = a.preventivo;
     <CalcoloVivo client:visible variante="promo" base={base} iniziale={{ taegPrestito: '8,5', mesiNoleggio: String(p.nRate + (p.maxiRata ? 1 : 0)) }} />
   </section>
 </Base>
-
-<script>
-  import { segnalaScadute } from '~/lib/client/filtriPromo';
-  segnalaScadute(document);
-</script>

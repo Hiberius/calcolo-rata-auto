@@ -2,6 +2,7 @@
 import Base from '~/layouts/Base.astro';
 import PromoBox from '~/components/compare/PromoBox.astro';
 import { tutteLePromo } from '~/lib/promo';
+import { VUOTO_SENZA_PROMO } from '~/lib/client/filtriPromo';
 
 // Reso a ogni richiesta: le promo scadute spariscono dall'HTML il giorno dopo la scadenza, senza ricostruire (§1.5).
 export const prerender = false;
@@ -43,7 +44,7 @@ const marche = [...new Set(inVigore.map((d) => d.promo.marca))].sort();
     <div class="grid gap-10 lg:grid-cols-2" data-elenco>
       {inVigore.map((d) => <PromoBox decodificata={d} link />)}
     </div>
-    <p class="text-tenue" data-vuoto hidden={inVigore.length > 0}>Nessuna promozione in vigore con questi filtri.</p>
+    <p class="text-tenue empty:hidden" data-vuoto aria-live="polite">{inVigore.length === 0 ? VUOTO_SENZA_PROMO : ''}</p>
     <p class="text-sm text-tenue max-w-prose">
       Le offerte scadute escono dall'elenco in automatico. Il dataset cresce ogni settimana: ogni riquadro riporta la data in cui abbiamo controllato la fonte.
     </p>
@@ -53,7 +54,7 @@ const marche = [...new Set(inVigore.map((d) => d.promo.marca))].sort();
 <script>
   import { applicaFiltri } from '~/lib/client/filtriPromo';
   const modulo = document.querySelector<HTMLFormElement>('[data-filtri]');
-  const aggiorna = () => modulo && applicaFiltri(document, new FormData(modulo));
+  const aggiorna = () => modulo && applicaFiltri(document.querySelectorAll<HTMLElement>('[data-promo]'), document.querySelector<HTMLElement>('[data-vuoto]'), new FormData(modulo));
   modulo?.addEventListener('input', aggiorna);
   aggiorna();
 </script>
