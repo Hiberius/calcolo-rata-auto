@@ -4,7 +4,7 @@ import Fiducia from '~/components/ui/Fiducia.astro';
 import { AVVERTENZA } from '~/lib/calc/config';
 import { SPIEGAZIONE_TAEG_COSTO } from '~/lib/calc/composizione';
 import { MODELLO_VALORE as M } from '~/lib/calc/valore';
-import { numero } from '~/lib/calc/format';
+import { numero } from '~/lib/formato';
 // Resa a richiesta: il blocco «Chi c'è dietro» legge P.IVA e sede dalle variabili pubbliche del Worker.
 export const prerender = false;
 ---
@@ -12,7 +12,7 @@ export const prerender = false;
   <p>Rata Vera fa aritmetica sui numeri che inserisci o che leggiamo dalla foto del preventivo. Non valuta la tua situazione, non suggerisce finanziatori, non dà consigli. Qui trovi ogni formula, con le ipotesi che usiamo quando un numero manca.</p>
 
   <h2>Il prezzo di riferimento</h2>
-  <p>Usiamo il prezzo in contanti, se c'è. Altrimenti il prezzo promozionale, altrimenti il prezzo di listino, e lo diciamo accanto al risultato. Se non c'è nessun prezzo non calcoliamo il costo del credito e ti chiediamo di farti dare il prezzo in contanti.</p>
+  <p>Usiamo il prezzo in contanti, se c’è. Altrimenti il prezzo promozionale, altrimenti il prezzo di listino, e lo diciamo accanto al risultato. Se non c’è nessun prezzo non calcoliamo il costo del credito e ti chiediamo di farti dare il prezzo in contanti.</p>
 
   <h2>Quanto paghi davvero</h2>
   <ul>
@@ -20,45 +20,45 @@ export const prerender = false;
     <li><strong>Spese ricorrenti</strong>: spese di incasso per il numero di rate.</li>
     <li><strong>Spese una tantum</strong>: istruttoria (solo se non è già dentro il credito), imposta di bollo, e IPT, messa su strada, polizze e servizi se non sono compresi nel prezzo.</li>
     <li><strong>Spese non dettagliate</strong>: se il totale dovuto dichiarato supera rate e maxi rata di una somma piccola (fino al 5%), la consideriamo spesa non dettagliata e la aggiungiamo.</li>
-    <li><strong>Totale tenendo l'auto</strong> = anticipo + rate + maxi rata + spese. <strong>Totale restituendo l'auto</strong> = lo stesso senza la maxi rata, più gli eventuali chilometri in eccesso.</li>
+    <li><strong>Totale tenendo l’auto</strong> = anticipo + rate + maxi rata + spese. <strong>Totale restituendo l’auto</strong> = lo stesso senza la maxi rata, più gli eventuali chilometri in eccesso.</li>
   </ul>
   <p>Il <strong>costo del credito</strong> è il totale tenendo l'auto meno il prezzo di riferimento, anche in percentuale del prezzo. {SPIEGAZIONE_TAEG_COSTO} Per questo un TAEG del 4% può stare accanto a un costo del credito del 9%: il primo è per anno, il secondo è su tutti gli anni del contratto.</p>
-  <p>Accanto a ogni totale mostriamo le voci che lo compongono e la somma scritta per esteso, così puoi rifarla a mano. Le spese già comprese nell'importo del credito (spesso l'istruttoria) non si sommano una seconda volta: lo scriviamo sotto la somma.</p>
+  <p>Accanto a ogni totale mostriamo le voci che lo compongono e la somma scritta per esteso, così puoi rifarla a mano. Le spese già comprese nell’importo del credito (spesso l’istruttoria) non si sommano una seconda volta: lo scriviamo sotto la somma.</p>
 
   <h2>Credito, totale dovuto e discrepanze</h2>
-  <p>Ricostruiamo l'importo del credito come prezzo meno anticipo, e come prezzo meno anticipo più istruttoria. Se uno dei due coincide con quello dichiarato (entro 2 €), sappiamo se l'istruttoria è finanziata. Ricostruiamo anche il totale dovuto da rate, maxi rata, spese di incasso e bollo. Quando i numeri non coincidono lo scriviamo così: «non torna di X €, chiedi al venditore». Non diciamo che un numero è sbagliato: spesso la differenza viene da una voce che il preventivo non mostra.</p>
+  <p>Ricostruiamo l’importo del credito come prezzo meno anticipo, e come prezzo meno anticipo più istruttoria. Se uno dei due coincide con quello dichiarato (entro 2 €), sappiamo se l’istruttoria è finanziata. Ricostruiamo anche il totale dovuto da rate, maxi rata, spese di incasso e bollo. Quando i numeri non coincidono lo scriviamo così: «non torna di X €, chiedi al venditore». Non diciamo che un numero è sbagliato: spesso la differenza viene da una voce che il preventivo non mostra.</p>
 
   <h2>Il TAEG ricostruito</h2>
-  <p>Mettiamo in fila i flussi: al mese zero ricevi il credito meno le spese pagate subito; ogni mese paghi rata e spese di incasso; all'ultimo mese la maxi rata. Cerchiamo per bisezione il tasso mensile che rende nullo il valore attuale, tra 0 e 5% al mese, e lo trasformiamo in tasso annuo: (1 + i)<sup>12</sup> − 1. Se la differenza con il TAEG dichiarato supera mezzo punto scriviamo «da verificare», con la nota che spese non indicate possono spiegare la differenza. Senza dati sufficienti il TAEG non si calcola.</p>
+  <p>Mettiamo in fila i flussi: al mese zero ricevi il credito meno le spese pagate subito; ogni mese paghi rata e spese di incasso; all’ultimo mese la maxi rata. Cerchiamo per bisezione il tasso mensile che rende nullo il valore attuale, tra 0 e 5% al mese, e lo trasformiamo in tasso annuo: (1 + i)<sup>12</sup> − 1. Se la differenza con il TAEG dichiarato supera mezzo punto scriviamo «da verificare», con la nota che spese non indicate possono spiegare la differenza. Senza dati sufficienti il TAEG non si calcola.</p>
 
   <h2>Fine del contratto con la maxi rata</h2>
   <ul>
     <li><strong>Tieni</strong>: paghi la maxi rata, oppure la rifinanzi. Ipotesi: TAN 8% in 36 mesi, modificabile. Mostriamo la nuova rata e gli interessi in più.</li>
-    <li><strong>Restituisci</strong>: hai pagato anticipo, rate e spese senza tenere l'auto; i chilometri oltre quelli inclusi si pagano a parte. Le condizioni sullo stato dell'auto sono nel contratto: chiedi il documento.</li>
+    <li><strong>Restituisci</strong>: hai pagato anticipo, rate e spese senza tenere l’auto; i chilometri oltre quelli inclusi si pagano a parte. Le condizioni sullo stato dell’auto sono nel contratto: chiedi il documento.</li>
     <li><strong>Cambi</strong>: come restituire, più un nuovo anticipo uguale a quello attuale.</li>
   </ul>
 
   <h2>Tre strade</h2>
-  <p>Per la stessa auto mettiamo affiancate tre colonne, senza classifica: contanti o prestito personale (ipotesi TAN 7,5%, TAEG 8,5%, stessa durata, modificabili), il tuo preventivo, il noleggio a lungo termine con il canone che inserisci. Per ognuna: quanto esce dal tuo conto e cosa possiedi alla fine. Il valore dell'auto a fine contratto è un'ipotesi: la maxi rata se c'è, altrimenti il 45% del prezzo.</p>
+  <p>Per la stessa auto mettiamo affiancate tre colonne, senza classifica: contanti o prestito personale (ipotesi TAN 7,5%, TAEG 8,5%, stessa durata, modificabili), il tuo preventivo, il noleggio a lungo termine con il canone che inserisci. Per ognuna: quanto esce dal tuo conto e cosa possiedi alla fine. Il valore dell’auto a fine contratto è un’ipotesi: la maxi rata se c’è, altrimenti il 45% del prezzo.</p>
 
   <h2 id="dove-vanno">Dove vanno i tuoi euro</h2>
-  <p>Nella scena del risultato il totale tenendo l'auto si divide in quattro parti, al centesimo: il <strong>prezzo dell'auto</strong> (il prezzo di riferimento), le <strong>spese</strong> (istruttoria e bollo anche quando sono dentro il credito, spese di incasso, spese non dettagliate, immatricolazione e messa su strada), le <strong>polizze e servizi</strong> abbinati, e gli <strong>interessi</strong>, cioè quello che resta. Senza prezzo di riferimento, o nel noleggio, prezzo e interessi non si possono separare: mostriamo solo il totale e le spese.</p>
+  <p>Nella scena del risultato il totale tenendo l’auto si divide in quattro parti, al centesimo: il <strong>prezzo dell’auto</strong> (il prezzo di riferimento), le <strong>spese</strong> (istruttoria e bollo anche quando sono dentro il credito, spese di incasso, spese non dettagliate, immatricolazione e messa su strada), le <strong>polizze e servizi</strong> abbinati, e gli <strong>interessi</strong>, cioè quello che resta. Senza prezzo di riferimento, o nel noleggio, prezzo e interessi non si possono separare: mostriamo solo il totale e le spese.</p>
 
-  <h2 id="valore">Il valore stimato dell'auto contro il debito</h2>
+  <h2 id="valore">Il valore stimato dell’auto contro il debito</h2>
   <p>Il valore dell'auto nel tempo è una stima, non una quotazione, con un modello dichiarato: il primo anno l'auto perde il {M.perditaPrimoAnno * 100}% del prezzo, dal secondo anno il {M.perditaAnniSuccessivi * 100}% all'anno. Ogni {numero(M.passoKm, 0)} km all'anno sopra i {numero(M.kmRiferimento, 0)} la perdita annua cresce di {M.correzionePerPasso * 100} punti, ogni {numero(M.passoKm, 0)} km sotto cala di {M.correzionePerPasso * 100} punti. Il valore non scende mai sotto il {M.quotaMinima * 100}% del prezzo. Quando l'archivio avrà abbastanza valori reali di rivendita useremo quelli, e lo scriveremo qui.</p>
-  <p>Il <strong>debito residuo</strong> è il capitale che resta da rimborsare dopo ogni rata, secondo il piano di ammortamento al TAN del preventivo, ma solo se il TAN torna con la rata: rifacciamo la rata al TAN e, se si discosta di più di 1 € da quella scritta, usiamo il tasso che fa tornare capitale, rate e maxi rata (lo stesso calcolo per bisezione del TAEG, senza le spese) e lo diciamo sotto il grafico. Lo stesso tasso implicito vale se il TAN manca. Se rate e maxi rata non bastano a ricavarlo usiamo il tasso nominale equivalente al TAEG; se non c'è nemmeno quello la curva è solo indicativa e non entra nel testo da condividere. All'ultimo mese il debito è la maxi rata. Il primo mese in cui il debito supera il valore stimato è il punto da cui «devi all'auto più di quanto vale». Se la promozione dichiara un valore futuro garantito, lo segniamo e lo confrontiamo con la stima. Con i cursori cambi anticipo, durata e km: il capitale cambia euro per euro con l'anticipo, la maxi rata resta la stessa e la rata si ricalcola allo stesso tasso. L'anticipo si ferma prima che il capitale scenda sotto la maxi rata: oltre, la rata diventerebbe negativa e la scena scrive che la combinazione non è possibile.</p>
+  <p>Il <strong>debito residuo</strong> è il capitale che resta da rimborsare dopo ogni rata, secondo il piano di ammortamento al TAN del preventivo, ma solo se il TAN torna con la rata: rifacciamo la rata al TAN e, se si discosta di più di 1 € da quella scritta, usiamo il tasso che fa tornare capitale, rate e maxi rata (lo stesso calcolo per bisezione del TAEG, senza le spese) e lo diciamo sotto il grafico. Lo stesso tasso implicito vale se il TAN manca. Se rate e maxi rata non bastano a ricavarlo usiamo il tasso nominale equivalente al TAEG; se non c’è nemmeno quello la curva è solo indicativa e non entra nel testo da condividere. All’ultimo mese il debito è la maxi rata. Il primo mese in cui il debito supera il valore stimato è il punto da cui «devi all’auto più di quanto vale». Se la promozione dichiara un valore futuro garantito, lo segniamo e lo confrontiamo con la stima. Con i cursori cambi anticipo, durata e km: il capitale cambia euro per euro con l’anticipo, la maxi rata resta la stessa e la rata si ricalcola allo stesso tasso. L’anticipo si ferma prima che il capitale scenda sotto la maxi rata: oltre, la rata diventerebbe negativa e la scena scrive che la combinazione non è possibile.</p>
 
-  <h2 id="indice">L'Indice delle promozioni</h2>
-  <p>L'<a href="/indice">Indice Rata Vera</a> usa gli stessi calcoli sulle promozioni ufficiali in vigore: una classifica sola, per costo del credito in percentuale del prezzo, con TAEG dichiarato e ricostruito, anticipo e maxi rata in percentuale del prezzo, polizze o servizi abbinati e scadenza. Esce ogni mese, solo con almeno 20 promozioni valide; i dati si scaricano in CSV con licenza CC BY 4.0. Dettagli nella <a href="/indice/metodologia">metodologia dell'Indice</a>.</p>
+  <h2 id="indice">L’Indice delle promozioni</h2>
+  <p>L'<a href="/indice">Indice Rata Vera</a> usa gli stessi calcoli sulle promozioni ufficiali in vigore: una classifica sola, per costo del credito in percentuale del prezzo, con TAEG dichiarato e ricostruito, anticipo e maxi rata in percentuale del prezzo, polizze o servizi abbinati e scadenza. Esce ogni mese, solo con almeno 20 promozioni valide; i dati si scaricano in CSV con licenza CC BY 4.0. Dettagli nella <a href="/indice/metodologia">metodologia dell’Indice</a>.</p>
 
-  <h2 id="officina">I preventivi dell'officina</h2>
-  <p>Per i preventivi e le fatture dell'officina oggi non facciamo conti né diamo giudizi sul prezzo: raccogliamo modello, intervento, importo e provincia, in forma anonima, per costruire un confronto con il prezzo giusto che arriva a dicembre. Lo pubblicheremo con il suo metodo, come per i preventivi auto.</p>
+  <h2 id="officina">I preventivi dell’officina</h2>
+  <p>Per i preventivi e le fatture dell’officina oggi non facciamo conti né diamo giudizi sul prezzo: raccogliamo modello, intervento, importo e provincia, in forma anonima, per costruire un confronto con il prezzo giusto che arriva a dicembre. Lo pubblicheremo con il suo metodo, come per i preventivi auto.</p>
 
   <h2 id="mercati">Altri paesi</h2>
-  <p>Il calcolo è pronto anche per Spagna, Francia e Germania, con il nome del loro tasso (TAE, TAEG, effektiver Jahreszins), del loro documento precontrattuale e dei loro termini (cuota final, valeur résiduelle, Schlussrate). La formula del tasso è la stessa in tutta l'Unione. Oggi il sito è attivo solo in Italia.</p>
+  <p>Il calcolo è pronto anche per Spagna, Francia e Germania, con il nome del loro tasso (TAE, TAEG, effektiver Jahreszins), del loro documento precontrattuale e dei loro termini (cuota final, valeur résiduelle, Schlussrate). La formula del tasso è la stessa in tutta l’Unione. Oggi il sito è attivo solo in Italia.</p>
 
-  <h2>L'etichetta sul costo del credito</h2>
-  <p>Il risultato riporta il costo del credito in percentuale del prezzo e lo colloca rispetto a due soglie fisse, scelte da noi e non calcolate su una media: sotto il 5%, tra il 5% e il 12%, oltre il 12%. Non è un confronto con le altre offerte del mercato. Le spese fuori prezzo (immatricolazione, messa su strada, polizze e servizi abbinati) entrano nel totale ma non nel costo del credito, perché sono costi dell'auto. Se il totale risulta più basso del prezzo non mostriamo il costo del credito: vuol dire che manca un numero.</p>
+  <h2>L’etichetta sul costo del credito</h2>
+  <p>Il risultato riporta il costo del credito in percentuale del prezzo e lo colloca rispetto a due soglie fisse, scelte da noi e non calcolate su una media: sotto il 5%, tra il 5% e il 12%, oltre il 12%. Non è un confronto con le altre offerte del mercato. Le spese fuori prezzo (immatricolazione, messa su strada, polizze e servizi abbinati) entrano nel totale ma non nel costo del credito, perché sono costi dell’auto. Se il totale risulta più basso del prezzo non mostriamo il costo del credito: vuol dire che manca un numero.</p>
 
   <h2>Dove girano i calcoli</h2>
   <p>I calcoli girano nel tuo browser. Se carichi una foto, il server la legge in memoria per estrarre i numeri e la scarta subito: non viene mai scritta su disco né in archivio. Dettagli in <a href="/privacy">privacy</a>.</p>

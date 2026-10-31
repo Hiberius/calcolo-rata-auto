@@ -25,17 +25,17 @@ const consenso = CONSENSI.contatto_noleggio;
     </label>
     <Campo nome="kmAnnui" etichetta="Km all'anno" tipo="number" obbligatorio attributi={{ min: 5000, max: 100000, step: 1000, value: 15000 }} />
     <label class="flex items-center gap-3 text-sm self-end pb-3 cursor-pointer">
-      <input type="checkbox" name="anticipoZero" class="size-5 accent-[#15171A]" />
-      <span>Preferisco un'offerta senza anticipo</span>
+      <input type="checkbox" name="anticipoZero" class="size-5 shrink-0 accent-[#15171A]" />
+      <span>Preferisco un’offerta senza anticipo</span>
     </label>
   </div>
   <label class="flex items-start gap-3 text-sm cursor-pointer">
-    <input type="checkbox" name="consensoContatto" required class="mt-1 size-5 accent-[#15171A]" />
+    <input type="checkbox" name="consensoContatto" required class="mt-1 size-5 shrink-0 accent-[#15171A]" />
     <span>{consenso.testo}</span>
   </label>
   <input type="hidden" name="versioneConsenso" value={consenso.versione} />
   <TurnstileImplicito siteKey={siteKey} />
   <Fiducia variante="nota" />
-  <p class="text-xs text-tenue max-w-prose">Solo noleggio senza obbligo né opzione di acquisto. Non chiediamo reddito, rata massima o anticipo disponibile. <a class="link" href="/privacy">Come trattiamo i dati</a>.</p>
+  <p class="nota text-tenue max-w-[36em]">Solo noleggio senza obbligo né opzione di acquisto. Non chiediamo reddito, rata massima o anticipo disponibile. <a class="link" href="/privacy">Come trattiamo i dati</a>.</p>
   <div><button type="submit" class="btn btn-primario w-full sm:w-auto">Chiedi un preventivo di noleggio</button></div>
 </form>

@@ -7,13 +7,13 @@ const { id } = Astro.props;
 <div data-elimina data-id={id}></div>
 <template data-elimina-modello>
   <section class="grid gap-3 border-t-4 border-segnale pt-5" aria-labelledby="elimina-titolo">
-    <h2 id="elimina-titolo" class="font-semibold text-lg">Questa scheda l'hai creata tu</h2>
-    <p class="text-sm max-w-prose">Puoi eliminarla quando vuoi: spariscono la pagina, l'immagine e, se avevi dato il consenso, il preventivo dall'archivio.</p>
+    <h2 id="elimina-titolo" class="font-semibold text-lg">Questa scheda l’hai creata tu</h2>
+    <p class="text-sm max-w-prose">Puoi eliminarla quando vuoi: spariscono la pagina, l’immagine e, se avevi dato il consenso, il preventivo dall’archivio.</p>
     <label class="grid gap-1 text-sm">
       <span class="font-medium">Link per eliminarla più tardi, anche da un altro dispositivo</span>
       <input class="campo text-xs" readonly data-link-elimina />
     </label>
-    <p class="text-xs text-tenue max-w-prose">Tienilo per te: chi ha questo link può eliminare la scheda. Per condividere usa il link qui sopra, senza codice.</p>
+    <p class="nota text-tenue max-w-[36em]">Tienilo per te: chi ha questo link può eliminare la scheda. Per condividere usa il link qui sopra, senza codice.</p>
     <div class="flex flex-wrap gap-3">
       <button type="button" class="btn btn-secondario" data-copia-link-elimina>Copia il link per eliminarla</button>
       <button type="button" class="btn btn-secondario !border-segnale-scuro text-segnale-scuro" data-elimina-scheda>Elimina questa scheda</button>

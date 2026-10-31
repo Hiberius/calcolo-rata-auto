@@ -4,18 +4,30 @@ interface Props {
   righe: readonly string[];
   /** Indice della riga in vermiglio (solo a misura display: il contrasto regge). */
   accento?: number;
+  /** Una sola parola in vermiglio (home: «davvero»), invece di una riga intera. */
+  parola?: string;
   id?: string;
   /** Classe della misura, se diversa da quella display di default. */
   classe?: string;
 }
-const { righe, accento = -1, id, classe = 'titolo-display' } = Astro.props;
+const { righe, accento = -1, parola, id, classe = 'titolo-display' } = Astro.props;
+
+/** La riga divisa attorno alla parola in vermiglio, se c'è. */
+function parti(riga: string): readonly [string, string, string] | null {
+  if (!parola) return null;
+  const i = riga.indexOf(parola);
+  return i < 0 ? null : [riga.slice(0, i), parola, riga.slice(i + parola.length)];
+}
 ---
 <h1 id={id} class={classe} aria-label={righe.map((r) => r.trim()).join(' ')}>
-  {righe.map((riga, i) => (
-    <>
-      <span class="riga-maschera" aria-hidden="true"><span class:list={['riga-sale', { 'text-segnale': i === accento }]} style={`--i:${i}`}>{riga.trim()}</span></span>
-      {/* Lo spazio tra le righe tiene giusto il testo copiato o letto senza stile («Il preventivo dell’officina»). */}
-      {i < righe.length - 1 && ' '}
-    </>
-  ))}
+  {righe.map((riga, i) => {
+    const p = parti(riga.trim());
+    return (
+      <>
+        <span class="riga-maschera" aria-hidden="true"><span class:list={['riga-sale', { 'text-segnale': i === accento }]} style={`--i:${i}`}>{p ? <>{p[0]}<span class="text-segnale">{p[1]}</span>{p[2]}</> : riga.trim()}</span></span>
+        {/* Lo spazio tra le righe tiene giusto il testo copiato o letto senza stile («Il preventivo dell’officina»). */}
+        {i < righe.length - 1 && ' '}
+      </>
+    );
+  })}
 </h1>

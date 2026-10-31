@@ -13,7 +13,7 @@ interface Props {
 const { title, description, titolo, sopratitolo, aggiornato = DATA_AGGIORNAMENTO_TESTI } = Astro.props;
 ---
 <Base title={title} description={description} lettura>
-  <article class="contenitore pt-8 pb-12 sm:pt-14 grid gap-8">
+  <article class="contenitore pt-8 pb-12 sm:pt-14 grid grid-cols-[minmax(0,1fr)] gap-8">
     <header class="grid gap-3">
       {sopratitolo && <p class="etichetta">{sopratitolo}</p>}
       <h1 class="titolo-pagina max-w-[20ch]">{titolo}</h1>

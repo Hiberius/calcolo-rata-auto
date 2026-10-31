@@ -27,7 +27,7 @@ export default function CampoNumero({ nome, etichetta, unita, valore, onCambia, 
         />
         <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 numeri text-xs text-tenue">{unita}</span>
       </span>
-      {aiuto && <span id={idAiuto} class="text-xs text-tenue">{aiuto}</span>}
+      {aiuto && <span id={idAiuto} class="text-[0.8125rem] leading-snug text-tenue">{aiuto}</span>}
     </label>
   );
 }

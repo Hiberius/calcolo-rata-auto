@@ -1,4 +1,4 @@
-import { euro } from '~/lib/calc/format';
+import { euro } from '~/lib/formato';
 import { costoNetto } from '~/lib/calc/residuo';
 import type { Strada, TipoContratto } from '~/lib/calc/tipi';
 
@@ -29,7 +29,7 @@ export default function ColonneStrade({ strade, valoreResiduo = null, tipo = 'fi
               )}
               <p class="text-sm text-tenue">{s.dettaglio}</p>
               {s.ipotesi.length > 0 && (
-                <ul class="grid gap-1 border-t border-riga pt-2 text-xs text-tenue">
+                <ul class="grid gap-1 border-t border-riga pt-2 text-[0.8125rem] text-tenue">
                   {s.ipotesi.map((i) => <li key={i}>{i}</li>)}
                 </ul>
               )}

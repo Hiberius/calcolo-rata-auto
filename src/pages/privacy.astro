@@ -17,24 +17,24 @@ const titolare = datiTitolare(Astro.locals.runtime?.env, import.meta.env);
   <ul>
     <li><strong>Le immagini dei preventivi.</strong> La foto o il PDF vengono letti in memoria per estrarre i numeri e scartati subito. Non finiscono su disco, in archivio o nei registri.</li>
     <li><strong>I dati di credito.</strong> Anticipo, rata, maxi rata e gli altri numeri del preventivo restano nel tuo browser, salvo che tu crei una scheda (vedi sotto). Non chiediamo mai reddito, rata massima o anticipo disponibile e non inoltriamo i tuoi numeri a nessuno.</li>
-    <li><strong>Il tuo indirizzo IP in chiaro.</strong> Per limitare gli abusi usiamo un'impronta dell'IP (calcolata con una chiave segreta e diversa ogni giorno). È un dato pseudonimo, non anonimo: lo conserviamo 12 mesi negli eventi e non lo usiamo per identificarti.</li>
+    <li><strong>Il tuo indirizzo IP in chiaro.</strong> Per limitare gli abusi usiamo un’impronta dell’IP (calcolata con una chiave segreta e diversa ogni giorno). È un dato pseudonimo, non anonimo: lo conserviamo 12 mesi negli eventi e non lo usiamo per identificarti.</li>
   </ul>
 
   <h2>Cosa salviamo, perché e per quanto</h2>
   <table>
     <thead><tr><th>Dato</th><th>Perché</th><th>Quanto</th></tr></thead>
     <tbody>
-      <tr><td>Scheda condivisibile: marca, modello, versione, provincia se la indichi, numeri del preventivo e risultati. Nessun nome, targa o concessionario.</td><td>La crei tu per condividerla; esecuzione della tua richiesta. La scheda è visibile a chiunque abbia il link, ma non è indicizzata dai motori di ricerca. Del codice per eliminarla salviamo solo un'impronta, non il codice.</td><td>24 mesi o finché non la elimini</td></tr>
-      <tr><td>Stessa scheda nell'archivio anonimo per i confronti</td><td>Solo con la casella apposita, non preselezionata (consenso). Il testo e la versione del consenso sono registrati.</td><td>24 mesi o fino alla revoca</td></tr>
+      <tr><td>Scheda condivisibile: marca, modello, versione, provincia se la indichi, numeri del preventivo e risultati. Nessun nome, targa o concessionario.</td><td>La crei tu per condividerla; esecuzione della tua richiesta. La scheda è visibile a chiunque abbia il link, ma non è indicizzata dai motori di ricerca. Del codice per eliminarla salviamo solo un’impronta, non il codice.</td><td>24 mesi o finché non la elimini</td></tr>
+      <tr><td>Stessa scheda nell’archivio anonimo per i confronti</td><td>Solo con la casella apposita, non preselezionata (consenso). Il testo e la versione del consenso sono registrati.</td><td>24 mesi o fino alla revoca</td></tr>
       <tr><td>Richiesta di noleggio: nome, email, telefono, provincia, modello, durata, km, preferenza anticipo zero</td><td>Consenso a essere contattato da Rata Vera per offerte di noleggio a lungo termine. Nessun passaggio a terzi senza un nuovo consenso che nomini il partner.</td><td>12 mesi</td></tr>
-      <tr><td>Preventivo dell'officina: modello, intervento, importo, provincia e il giorno in cui lo lasci. Nessun nome, targa, officina né email.</td><td>Costruire il confronto con il prezzo giusto (legittimo interesse). È anonimo: l'email, se la lasci, sta in un archivio a parte, senza un codice o un orario che la colleghi al preventivo.</td><td>24 mesi</td></tr>
-      <tr><td>Email per l'avviso dell'officina, solo se la lasci, con il giorno in cui l'hai lasciata</td><td>Consenso separato, non preselezionato, registrato con testo e versione: una sola email quando il confronto è pronto. È salvata separata dal preventivo.</td><td>Fino all'avviso, al massimo 6 mesi</td></tr>
-      <tr><td>Richiesta della stampa per l'Indice: email e testata</td><td>Consenso a ricevere l'avviso di uscita di ogni edizione, registrato con testo e versione.</td><td>24 mesi o fino alla revoca</td></tr>
-      <tr><td>Eventi anonimi: nome dell'evento, codice scheda se c'è, impronta giornaliera dell'IP</td><td>Misurare come si usa il sito (legittimo interesse).</td><td>12 mesi</td></tr>
+      <tr><td>Preventivo dell’officina: modello, intervento, importo, provincia e il giorno in cui lo lasci. Nessun nome, targa, officina né email.</td><td>Costruire il confronto con il prezzo giusto (legittimo interesse). È anonimo: l’email, se la lasci, sta in un archivio a parte, senza un codice o un orario che la colleghi al preventivo.</td><td>24 mesi</td></tr>
+      <tr><td>Email per l’avviso dell’officina, solo se la lasci, con il giorno in cui l’hai lasciata</td><td>Consenso separato, non preselezionato, registrato con testo e versione: una sola email quando il confronto è pronto. È salvata separata dal preventivo.</td><td>Fino all’avviso, al massimo 6 mesi</td></tr>
+      <tr><td>Richiesta della stampa per l’Indice: email e testata</td><td>Consenso a ricevere l’avviso di uscita di ogni edizione, registrato con testo e versione.</td><td>24 mesi o fino alla revoca</td></tr>
+      <tr><td>Eventi anonimi: nome dell’evento, codice scheda se c’è, impronta giornaliera dell’IP</td><td>Misurare come si usa il sito (legittimo interesse).</td><td>12 mesi</td></tr>
     </tbody>
   </table>
 
-  <p>Scaricare i dati dell'Indice in CSV registra solo un evento anonimo (nome dell'evento ed edizione), come le altre misure.</p>
+  <p>Scaricare i dati dell’Indice in CSV registra solo un evento anonimo (nome dell’evento ed edizione), come le altre misure.</p>
 
   <h2>A chi arrivano i dati</h2>
   <ul>
@@ -45,7 +45,7 @@ const titolare = datiTitolare(Astro.locals.runtime?.env, import.meta.env);
   <p>Oggi la lettura delle immagini avviene solo con Workers AI di Cloudflare. Se attiveremo una lettura più precisa con Anthropic (Stati Uniti), lo scriveremo qui prima, con le garanzie per il trasferimento.</p>
 
   <h2>I tuoi diritti</h2>
-  <p>Puoi chiedere accesso, rettifica, cancellazione, limitazione, opposizione e portabilità dei tuoi dati, e revocare un consenso in ogni momento, scrivendo a <a href={`mailto:${EMAIL_CONTATTO}`}>{EMAIL_CONTATTO}</a>. Per cancellare una scheda che hai creato usa «Elimina questa scheda» nella sua pagina: il pulsante compare nel browser in cui l'hai creata e a chi apre il link di cancellazione che ti mostriamo subito dopo. Per le schede create prima del 31 ottobre 2026, o se hai perso il link, scrivici indicando il codice della scheda. Puoi anche rivolgerti al Garante per la protezione dei dati personali.</p>
+  <p>Puoi chiedere accesso, rettifica, cancellazione, limitazione, opposizione e portabilità dei tuoi dati, e revocare un consenso in ogni momento, scrivendo a <a href={`mailto:${EMAIL_CONTATTO}`}>{EMAIL_CONTATTO}</a>. Per cancellare una scheda che hai creato usa «Elimina questa scheda» nella sua pagina: il pulsante compare nel browser in cui l’hai creata e a chi apre il link di cancellazione che ti mostriamo subito dopo. Per le schede create prima del 31 ottobre 2026, o se hai perso il link, scrivici indicando il codice della scheda. Puoi anche rivolgerti al Garante per la protezione dei dati personali.</p>
 
   <h2>Cookie</h2>
   <p>Solo tecnici, nessuna profilazione: vedi la <a href="/cookie">pagina sui cookie</a>. I caratteri tipografici sono serviti dal nostro dominio: nessuna richiesta a server di terzi per i font.</p>

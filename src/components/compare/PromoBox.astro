@@ -1,5 +1,5 @@
 ---
-import { euro, percentuale, punti } from '~/lib/calc/format';
+import { costoCreditoPct, euro, punti } from '~/lib/formato';
 import { dataBreve } from '~/lib/date';
 import type { PromoDecodificata } from '~/lib/promo';
 import ComposizioneTotale from '~/components/ui/ComposizioneTotale';
@@ -56,25 +56,25 @@ const righe: readonly (readonly [string, string, VoceGlossario?])[] = [
   <dl class="grid grid-cols-2 gap-x-6 sm:grid-cols-3">
     {righe.map(([k, v, voce]) => (
       <div class="riga-tratteggiata flex flex-col py-1.5">
-        <dt class="text-xs text-tenue">{voce ? <Termine voce={voce} ambito={ambito}>{k}</Termine> : k}</dt>
+        <dt class="text-[0.8125rem] leading-snug text-tenue">{voce ? <Termine voce={voce} ambito={ambito}>{k}</Termine> : k}</dt>
         <dd class="numeri">{v}</dd>
       </div>
     ))}
   </dl>
   <div class="grid gap-2">
     <p class="grid gap-0.5">
-      <span class="text-sm">Paghi in tutto, tenendo l'auto</span>
+      <span class="text-sm">Paghi in tutto, tenendo l’auto</span>
       <span class="numeri text-2xl font-semibold">{euro(t.totalePagatoTenendo)}</span>
       {t.costoCredito != null && (
-        <span class="numeri text-segnale-scuro font-semibold">Costo del credito {euro(t.costoCredito)} · {percentuale(t.costoCreditoPct)} del prezzo</span>
+        <span class="numeri text-segnale-scuro font-semibold">Costo del credito {euro(t.costoCredito)} · {costoCreditoPct(t.costoCreditoPct)} del prezzo</span>
       )}
     </p>
-    {t.costoCredito != null && <SpiegazioneTaeg classe="text-xs text-tenue" />}
+    {t.costoCredito != null && <SpiegazioneTaeg classe="nota text-tenue" />}
     {composizione && <p class="text-sm font-medium pt-1">Da dove viene il totale</p>}
     {composizione && <ComposizioneTotale analisi={d.analisi} compatta />}
   </div>
   {p.requisiti.length > 0 && <p class="text-sm"><span class="font-medium">Condizioni: </span>{p.requisiti.join(', ')}</p>}
-  <p class="text-xs text-tenue">
+  <p class="text-[0.8125rem] leading-snug text-tenue">
     Fonte: <a class="link" href={p.urlFonte} rel="nofollow noopener" target="_blank">{new URL(p.urlFonte).hostname}</a>, verificata il {dataBreve(p.dataVerifica)}.
     Cifre riscritte da Rata Vera: fa fede il documento della casa.
   </p>

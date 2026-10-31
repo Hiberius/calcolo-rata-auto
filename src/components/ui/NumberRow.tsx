@@ -27,7 +27,7 @@ export default function NumberRow({ etichetta, valore, tono = 'normale', nota, t
       style={indice != null ? { '--i': indice } : undefined}>
       <span>
         {termine && ambito ? <Termine voce={termine} ambito={ambito}>{etichetta}</Termine> : etichetta}
-        {nota && <span class="block text-xs text-tenue font-normal">{nota}</span>}
+        {nota && <span class="numeri block text-[0.8125rem] text-tenue font-normal">{nota}</span>}
       </span>
       <span class="numeri whitespace-nowrap">{valore}</span>
     </div>

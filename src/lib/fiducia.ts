@@ -4,7 +4,7 @@ import { TITOLARE } from './sito';
  * Chi c'è dietro e come guadagniamo: un solo testo, uguale in home, chi siamo, privacy, metodologia e modulo noleggio.
  * La verità in una riga: non siamo mediatori creditizi; sul noleggio, se si firma, possiamo ricevere un compenso dichiarato.
  */
-export const TITOLO_FIDUCIA = "Chi c'è dietro e come guadagniamo";
+export const TITOLO_FIDUCIA = 'Chi c’è dietro e come guadagniamo';
 
 export const MODELLO_FIDUCIA =
   `Rata Vera è un progetto indipendente di ${TITOLARE} (P.IVA {{PIVA}}, {{SEDE}}). È gratuito. Non prendiamo compensi da banche o finanziarie e non consigliamo finanziamenti. Se chiedi un preventivo di noleggio a lungo termine e lo firmi, il noleggiatore può riconoscerci un compenso: lo diciamo prima, qui.`;
@@ -32,4 +32,17 @@ export function datiTitolare(runtime?: VariabiliTitolare, build?: VariabiliTitol
 
 export function testoFiducia(d: DatiTitolare): string {
   return MODELLO_FIDUCIA.replace('{{PIVA}}', d.piva).replace('{{SEDE}}', d.sede);
+}
+
+/**
+ * Riga di fiducia del primo schermo della home (specifica v2, §1): due frasi, chi c'è dietro e chi ci paga.
+ * Finché P.IVA e sede non sono nelle variabili pubbliche la frase lo dice: «P.IVA e sede in pubblicazione».
+ */
+export function rigaFiducia(d: DatiTitolare): { readonly dietro: string; readonly paga: string } {
+  const mancano = d.piva === IN_AGGIORNAMENTO || d.sede === `sede ${IN_AGGIORNAMENTO}`;
+  const dati = mancano ? 'P.IVA e sede in pubblicazione' : `P.IVA ${d.piva}, ${d.sede}`;
+  return {
+    dietro: `Chi c’è dietro: ${TITOLARE}, ${dati}.`,
+    paga: 'Chi ci paga: nessuna banca o finanziaria. Guadagniamo solo se chiedi un’offerta di noleggio e la firmi: paga il noleggiatore, non tu.',
+  };
 }

@@ -12,7 +12,7 @@ const testo = testoFiducia(datiTitolare(Astro.locals.runtime?.env, import.meta.e
   <section class="grid gap-1.5 border border-riga bg-[#FBF9F5] px-4 py-3.5 max-w-[62ch]" aria-labelledby="fiducia-titolo" data-fiducia>
     <h2 id="fiducia-titolo" class="etichetta text-inchiostro">{TITOLO_FIDUCIA}</h2>
     <p class="text-sm leading-relaxed">{testo}</p>
-    <p class="text-xs text-tenue"><a class="link" href="/chi-siamo">Chi siamo</a> · <a class="link" href="/metodologia">Come facciamo i conti</a></p>
+    <p class="flex flex-wrap gap-x-5 text-sm"><a class="link tocco" href="/chi-siamo">Chi siamo</a><a class="link tocco" href="/metodologia">Come facciamo i conti</a></p>
   </section>
 )}
 {variante === 'testo' && (

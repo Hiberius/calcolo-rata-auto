@@ -1,4 +1,4 @@
-import { numero } from '../calc/format';
+import { numero } from '../formato';
 import { movimentoPermesso } from '../motion';
 
 /**

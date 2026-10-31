@@ -30,6 +30,9 @@
   --color-attenzione: #D9A400;
   --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+  /* Una curva sola anche per le utility di Tailwind (transition-colors e simili): expo-out, 160 ms (specifica, a3-a4). */
+  --default-transition-duration: 160ms;
+  --default-transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 :root {
@@ -60,6 +63,9 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Le regole dei componenti stanno in un livello sotto le utility: una classe di Tailwind sullo stesso elemento
+   (es. text-[clamp(...)] su .numero-scena) vince, come chi l'ha scritta si aspetta (revisione del 31/10). */
+@layer components {
 .numeri, .font-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
 :focus-visible { outline: 3px solid var(--color-segnale); outline-offset: 3px; border-radius: 2px; }
@@ -74,7 +80,7 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
   display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
   min-height: 3rem; padding: 0.75rem 1.25rem; border-radius: var(--raggio);
   font-weight: 600; letter-spacing: 0.005em; text-decoration: none; cursor: pointer;
-  transition: transform var(--durata-breve) var(--curva), background-color var(--durata-breve), color var(--durata-breve), box-shadow var(--durata-breve);
+  transition: transform var(--durata-breve) var(--curva), background-color var(--durata-breve) var(--curva), color var(--durata-breve) var(--curva), box-shadow var(--durata-breve) var(--curva);
 }
 .btn:active { transform: translateY(1px) scale(0.99); }
 .btn[disabled] { opacity: 0.55; cursor: not-allowed; }
@@ -93,8 +99,10 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
   /* Bordo a 3,3:1 sulla carta (WCAG 1.4.11): --color-riga resta per le righe decorative. */
   background: #FFFDF9; border: 1.5px solid var(--color-bordo-campo); color: var(--color-inchiostro);
   font-family: var(--font-mono); font-variant-numeric: tabular-nums;
-  transition: border-color var(--durata-breve), box-shadow var(--durata-breve);
+  transition: border-color var(--durata-breve) var(--curva), box-shadow var(--durata-breve) var(--curva);
 }
+/* Segnaposto a 4,9:1 sul fondo del campo (era a 3,4:1). */
+.campo::placeholder { color: #6F6B64; opacity: 1; }
 .campo:hover { border-color: var(--color-tenue); }
 .campo:focus { outline: none; border-color: var(--color-inchiostro); box-shadow: 0 0 0 3px rgb(228 87 46 / 0.25); }
 .campo[aria-invalid="true"] { border-color: var(--color-segnale); }
@@ -112,7 +120,7 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
               linear-gradient(45deg, transparent 6px, #FBF9F5 0) 0 0 / 12px 10px repeat-x;
 }
 .riga-tratteggiata { border-bottom: 1.5px dashed var(--color-riga); }
-.totale-grande { font-size: var(--testo-totale); line-height: 0.95; letter-spacing: -0.03em; }
+.totale-grande { font-size: var(--testo-totale); line-height: 0.95; letter-spacing: -0.03em; white-space: nowrap; }
 
 /* F1. Lo scontrino si stampa: maschera dall'alto in basso, righe una dopo l'altra (max 14). Senza movimento è intero.
    Margini di 40 px: la maschera non taglia ombra e bordo seghettato; con `backwards` a fine corsa non resta nessun clip. */
@@ -123,12 +131,22 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 @keyframes stampa { from { clip-path: inset(-40px -40px 100% -40px); } to { clip-path: inset(-40px -40px -40px -40px); } }
 @keyframes riga { from { opacity: 0; transform: translateY(6px); } }
 
+/* Il risultato: lo scontrino a 36rem (come scheda e promo), accanto la fine del contratto e le azioni da 1024 px. */
+.risultato-griglia { display: grid; gap: 2.5rem; }
+.risultato-griglia > .scontrino { width: 100%; max-width: 36rem; }
+@media (min-width: 1024px) { .risultato-griglia { grid-template-columns: minmax(0, 36rem) minmax(0, 1fr); gap: 3.5rem; align-items: start; } }
+/* Il totale grande sta nella colonna dello scontrino: 11 caratteri mono a 0,6 em, mai a capo. */
+.numero-eroe.numero-scontrino { font-size: min(clamp(2.75rem, 1rem + 8vw, 5rem), 14.5cqi); }
+.scontrino[data-risultato], .scontrino-misura { container-type: inline-size; }
+
 /* F3. Il costo del credito si sottolinea quando il totale ha finito di contare (NumeroCheConta mette data-contato). */
 .traccia-costo { position: relative; }
-.traccia-costo::after { content: ""; position: absolute; left: 0; right: 0; bottom: -0.15em; height: 2px; background: currentColor; transform-origin: left center; }
+.traccia-costo::after { content: ""; position: absolute; left: 0; right: 0; bottom: -0.22em; height: 2px; background: currentColor; transform-origin: left center; }
 @media (prefers-reduced-motion: no-preference) {
   [data-risultato]:not(:has([data-contato])) .traccia-costo::after { transform: scaleX(0); }
-  [data-risultato]:has([data-contato]) .traccia-costo::after { animation: traccia 400ms var(--curva) backwards; }
+  /* Si disegna quando lo scontrino si stampa (data-stampa arriva alla vista) e il totale ha finito di contare;
+     se il totale non conta (la scena l'ha già fatto), dopo la stampa: --ritardo-traccia. */
+  [data-risultato][data-stampa]:has([data-contato]) .traccia-costo::after { animation: traccia 400ms var(--curva) backwards; animation-delay: var(--ritardo-traccia, 0ms); }
 }
 @keyframes traccia { from { transform: scaleX(0); } }
 
@@ -144,10 +162,12 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 }
 
 /* Testi lunghi: guide e pagine di trasparenza. Misura di lettura stretta, titoli con ritmo. */
-.prosa { max-width: 68ch; text-wrap: pretty; }
-.prosa > p, .prosa li { max-width: 66ch; }
+.prosa { max-width: 40em; min-width: 0; text-wrap: pretty; }
+/* Misura in em e non in ch: 1ch è la larghezza dello zero (0,65 em), il carattere medio del testo è 0,45 em.
+   31em a 17 px fanno 62-70 caratteri per riga, come chiede la specifica (c). */
+.prosa > p, .prosa li, .prosa > blockquote { max-width: 31em; }
 .prosa > * + * { margin-top: 1.1em; }
-.prosa h2 { margin-top: 2.2em; font-size: clamp(1.375rem, 1.1rem + 1.2vw, 1.875rem); font-weight: 600; letter-spacing: -0.025em; line-height: 1.1; text-wrap: balance; }
+.prosa h2 { margin-top: 1.8em; font-size: clamp(1.75rem, 1.1rem + 2.6vw, 3rem); font-weight: 600; letter-spacing: -0.03em; line-height: 1.05; text-wrap: balance; }
 .prosa h3 { margin-top: 1.6em; font-size: clamp(1.125rem, 1rem + 0.6vw, 1.5rem); font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
 .prosa a { text-decoration: underline; text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
 .prosa a:hover { text-decoration-color: var(--color-segnale); text-decoration-thickness: 2px; }
@@ -158,7 +178,7 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 .prosa strong { font-weight: 600; }
 .prosa table { width: 100%; border-collapse: collapse; font-size: 0.95rem; display: block; overflow-x: auto; }
 .prosa th, .prosa td { text-align: left; padding: 0.5rem 0.75rem 0.5rem 0; border-bottom: 1.5px dashed var(--color-riga); vertical-align: top; }
-.prosa td:last-child, .prosa th:last-child { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.prosa td:last-child, .prosa th:last-child { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .prosa blockquote { border-top: 1.5px dashed var(--color-riga); border-bottom: 1.5px dashed var(--color-riga); padding-block: 0.875rem; font-size: 0.875rem; color: var(--color-tenue); }
 
 /* Glossario in linea (components/ui/Termine.tsx): la parola è un pulsante, la definizione compare sotto. */
@@ -166,7 +186,10 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 .termine-voce {
   font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: help;
   text-decoration: underline dotted; text-decoration-thickness: 1.5px; text-underline-offset: 0.22em;
+  position: relative;
 }
+/* Area di tocco di 44 px attorno alla parola, senza cambiare la riga (revisione del 31/10). */
+.termine-voce::before { content: ""; position: absolute; inset: -0.75rem -0.125rem; }
 .termine-voce:hover, .termine[data-aperto] > .termine-voce { text-decoration-color: var(--color-segnale); }
 .termine-icona .termine-voce {
   position: relative; display: inline-grid; place-items: center; width: 1.375rem; height: 1.375rem; margin-left: 0.25rem;
@@ -176,7 +199,7 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 .termine-icona .termine-voce::before { content: ""; position: absolute; inset: -0.6875rem; }
 .termine-def {
   display: none; position: absolute; left: 0; top: calc(100% + 0.4rem); z-index: 40;
-  width: max-content; max-width: min(20rem, calc(100vw - 1.5rem)); transform: translateX(var(--sposta, 0px));
+  width: max-content; max-width: var(--larghezza-def, min(20rem, calc(100vw - 1.5rem))); transform: translateX(var(--sposta, 0px));
   padding: 0.55rem 0.75rem; border-radius: var(--raggio); background: var(--color-inchiostro); color: var(--color-carta);
   font-family: var(--font-sans); font-size: 0.875rem; font-weight: 400; line-height: 1.4; letter-spacing: 0; text-align: left; white-space: normal;
   box-shadow: 0 10px 24px -12px rgb(21 23 26 / 0.5);
@@ -191,7 +214,7 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
   @starting-style { .termine[data-aperto] > .termine-def, .termine:hover > .termine-def { opacity: 0; translate: 0 4px; } }
 }
 /* Sul pannello inchiostro la definizione è di carta: stessa resa, colori invertiti. */
-.pannello-scena .termine-def, .vista-venditore .termine-def { background: var(--scena-carta); color: var(--scena-fondo); box-shadow: none; }
+.pannello-scena .termine-def, .vista-venditore .termine-def { background: var(--scena-carta); color: var(--scena-fondo); box-shadow: none; border: 1px solid var(--scena-tenue); }
 .pannello-scena .termine-voce:hover, .pannello-scena .termine[data-aperto] > .termine-voce,
 .vista-venditore .termine-voce:hover, .vista-venditore .termine[data-aperto] > .termine-voce { text-decoration-color: var(--scena-segnale); }
 
@@ -260,12 +283,16 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 
 /* v2 (§1, §3, §4): titoli display, frasi grandi, scelte della home, chip, anteprima della scena, Indice. */
 .titolo-display { font-size: clamp(2.5rem, 1rem + 6.4vw, 5.75rem); font-weight: 600; line-height: 0.95; letter-spacing: -0.045em; text-wrap: balance; }
-/* In home le due righe scritte a mano stanno intere nella colonna larga. */
-.titolo-home { font-size: clamp(2.5rem, 1rem + 5.4vw, 5rem); }
+/* In home le due righe scritte a mano («Quanto paghi davvero» / «per l’auto a rate?») stanno intere nella colonna:
+   la misura segue la larghezza della colonna (cqi), da 34 px sul telefono a 72 px nella colonna larga. */
+.hero-colonna { container-type: inline-size; }
+.titolo-home { font-size: clamp(1.875rem, 10.2cqi, 4.5rem); }
 .titolo-home .riga-sale { white-space: nowrap; }
+/* Il pulsante pieno si preme: scende di 4 px e l'ombra va a zero (interazione 3). */
+.btn-primario:active:not([disabled]) { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--color-segnale); }
 .titolo-sezione { font-size: clamp(1.75rem, 1.1rem + 2.6vw, 3rem); font-weight: 600; line-height: 1.05; letter-spacing: -0.03em; text-wrap: balance; }
 .frase-grande { font-size: clamp(1.25rem, 1rem + 1.4vw, 2rem); font-weight: 500; line-height: 1.18; letter-spacing: -0.015em; text-wrap: balance; }
-.etichetta { font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-tenue); }
+.etichetta { font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; line-height: 1.3; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-tenue); }
 .testo-segnale { color: var(--color-segnale-scuro); }
 
 /* Titolo a righe: ogni riga sale da una maschera. Senza movimento il testo è subito lì (lo stato iniziale sta nei keyframes). */
@@ -276,30 +303,17 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 }
 @keyframes sale { from { transform: translateY(105%); } }
 
-/* «Che documento hai in mano?»: due scelte con la stessa forma. Quella attiva è un tasto fisico con l'ombra rigida vermiglia. */
-.scelta {
-  position: relative; display: grid; grid-template-rows: auto 1fr auto; gap: 0.875rem; min-height: 100%;
-  padding: 1.125rem 1.25rem 1.25rem; border: 2px solid var(--color-inchiostro); border-radius: 2px;
-  background: #FBF9F5; color: var(--color-inchiostro); text-decoration: none;
-  box-shadow: 4px 4px 0 var(--color-segnale);
-  transition: transform var(--durata-breve) var(--curva), box-shadow var(--durata-breve) var(--curva), background-color var(--durata-breve);
-}
-.scelta:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--color-segnale); }
-.scelta:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--color-segnale); }
-.scelta-titolo { font-size: clamp(1.375rem, 1.1rem + 1.1vw, 1.875rem); font-weight: 600; line-height: 1.08; letter-spacing: -0.025em; text-wrap: balance; }
-.scelta-freccia { font-family: var(--font-mono); font-size: 1.25rem; transition: transform var(--durata-breve) var(--curva); }
-.scelta:hover .scelta-freccia { transform: translateX(4px); }
-/* La porta d'ingresso (officina) ha la stessa forma, ma non è ancora attiva: l'ombra è d'inchiostro e il tasto non si muove. */
-.scelta-ingresso { box-shadow: 4px 4px 0 var(--color-inchiostro); }
-.scelta-ingresso:hover { transform: none; box-shadow: 4px 4px 0 var(--color-inchiostro); background: var(--color-carta-scura); }
-.scelta-ingresso:active { transform: none; box-shadow: 4px 4px 0 var(--color-inchiostro); }
-.scelta-ingresso:hover .scelta-freccia { transform: none; }
+/* Azione di testo accanto al pulsante pieno (home: «Guarda l’esempio»): sottolineata, la freccia si sposta di 4 px. */
+.link-azione { display: inline-block; padding-block: 0.6875rem; font-weight: 600; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 0.25em; }
+.link-azione:hover { text-decoration-color: var(--color-segnale); }
+.link-azione > span { display: inline-block; margin-left: 0.25em; transition: transform var(--durata-breve) var(--curva); }
+.link-azione:hover > span { transform: translateX(4px); }
 
 /* Scelte a pulsante dentro i moduli (intervento dell'officina). */
 .scelta-chip {
-  display: flex; align-items: center; min-height: 2.75rem; padding: 0.5rem 0.75rem; border: 1.5px solid var(--color-riga); border-radius: 2px;
+  display: flex; align-items: center; min-height: 2.75rem; padding: 0.5rem 0.75rem; border: 1.5px solid var(--color-bordo-campo); border-radius: 2px;
   background: #FFFDF9; font-size: 0.875rem; line-height: 1.2; cursor: pointer;
-  transition: border-color var(--durata-breve), background-color var(--durata-breve), color var(--durata-breve);
+  transition: border-color var(--durata-breve) var(--curva), background-color var(--durata-breve) var(--curva), color var(--durata-breve) var(--curva);
 }
 .scelta-chip:hover { border-color: var(--color-inchiostro); }
 .scelta-chip:has(input:checked) { background: var(--color-inchiostro); border-color: var(--color-inchiostro); color: var(--color-carta); }
@@ -311,9 +325,11 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
   border: 1px solid var(--color-inchiostro); background-image: var(--grana);
   box-shadow: inset 0 1px 0 rgb(246 243 238 / 0.07);
 }
-/* Senza JavaScript il canvas resta vuoto: al suo posto il poster della scena (immagine ferma, nel <noscript>). */
+/* Senza JavaScript il canvas resta vuoto: al suo posto lo stesso grafico in SVG (nel <noscript>). */
 @media (scripting: none) { .anteprima canvas { display: none; } }
-.anteprima-poster { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 78%; }
+/* La frase dell'incrocio vale per l'anticipo del preventivo: mentre le curve provano anticipi più bassi si attenua. */
+.anteprima-frase { transition: opacity var(--durata-media) var(--curva-stato); }
+.anteprima:not([data-a-riposo]) .anteprima-frase { opacity: 0.45; }
 
 /* Indice: barre in scala, riordino con FLIP (Web Animations); in vermiglio quando misurano il costo del credito. */
 .grafico-indice { display: grid; gap: 0.375rem; }
@@ -327,11 +343,11 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 }
 @keyframes barra { from { transform: scaleX(0); } }
 .ordina { display: inline-flex; flex-wrap: wrap; border: 2px solid var(--color-inchiostro); border-radius: 2px; }
-.ordina button { min-height: 2.75rem; padding: 0.5rem 0.875rem; font-size: 0.875rem; font-weight: 600; transition: background-color var(--durata-breve), color var(--durata-breve); }
+.ordina button { min-height: 2.75rem; padding: 0.5rem 0.875rem; font-size: 0.875rem; font-weight: 600; transition: background-color var(--durata-breve) var(--curva), color var(--durata-breve) var(--curva); }
 .ordina button:hover { background: var(--color-carta-scura); }
 .ordina button[aria-pressed="true"] { background: var(--color-inchiostro); color: var(--color-carta); }
 .tabella-indice { width: 100%; border-collapse: collapse; font-size: 0.9375rem; }
-.tabella-indice th { text-align: left; font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-tenue); padding: 0.5rem 0.75rem 0.5rem 0; vertical-align: bottom; }
+.tabella-indice th { text-align: left; font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; line-height: 1.3; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-tenue); padding: 0.5rem 0.75rem 0.5rem 0; vertical-align: bottom; }
 .tabella-indice td { padding: 0.625rem 0.75rem 0.625rem 0; border-top: 1.5px dashed var(--color-riga); vertical-align: top; }
 .tabella-indice td.num, .tabella-indice th.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .tabella-indice tbody tr:hover { background: var(--color-carta-scura); }
@@ -343,7 +359,7 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 .titolo-scheda { font-size: clamp(1.125rem, 1rem + 0.6vw, 1.5rem); font-weight: 600; line-height: 1.25; letter-spacing: -0.01em; }
 .nota { font-size: 0.875rem; line-height: 1.45; letter-spacing: 0.005em; }
 /* Numero eroe: il totale pagato. Mono 500, cifre allineate, nessun salto mentre conta (larghezza in ch). */
-.numero-eroe { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 500; font-size: clamp(2.75rem, 1rem + 8vw, 6rem); line-height: 0.92; letter-spacing: -0.05em; }
+.numero-eroe { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 500; font-size: clamp(2.75rem, 1rem + 8vw, 6rem); line-height: 0.92; letter-spacing: -0.05em; white-space: nowrap; }
 .numero-scena { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 500; font-size: clamp(1.375rem, 1.05rem + 1.2vw, 2rem); line-height: 1; letter-spacing: -0.02em; }
 .rata-barrata { font-family: var(--font-mono); font-weight: 400; text-decoration: line-through; text-decoration-thickness: 2px; }
 
@@ -351,7 +367,7 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 .dropzone {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; padding: 2.5rem 1.5rem;
   border: 2px dashed var(--color-bordo-campo); border-radius: var(--raggio); background: #FBF9F5 var(--grana); text-align: center; cursor: pointer;
-  transition: border-color var(--durata-breve), background-color var(--durata-breve);
+  transition: border-color var(--durata-breve) var(--curva), background-color var(--durata-breve) var(--curva);
 }
 .dropzone:hover { border-color: var(--color-inchiostro); }
 .dropzone-sopra { border-color: var(--color-segnale); background-color: #FDEEE9; }
@@ -384,7 +400,8 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
     .si-accende { animation: accendi linear both; animation-timeline: view(); animation-range: entry 10% cover 40%; }
   }
 }
-@keyframes accendi { from { opacity: 0.28; } }
+/* Da 0,6, non da 0,28: anche a metà strada i passi restano leggibili (contrasto, stampa, lettura semplificata). */
+@keyframes accendi { from { opacity: 0.6; } }
 
 /* Interazione 11: barra di lettura di 2 px sotto la testata, guidata dallo scorrimento. Senza supporto non c'è. */
 .barra-lettura { display: none; }
@@ -396,10 +413,6 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 }
 @keyframes avanza { to { transform: scaleX(1); } }
 
-/* Interazione 12: cambio pagina con una dissolvenza di 180 ms, la testata resta ferma. Firefox e meno movimento: istantaneo. */
-@media (prefers-reduced-motion: no-preference) {
-  @view-transition { navigation: auto; }
-}
 .testata { view-transition-name: testata; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 180ms; animation-timing-function: var(--curva); }
 
@@ -408,12 +421,14 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 html[data-cookie-letto] .riga-cookie { display: none; }
 
 /* Callout: niente bordo laterale colorato (f). Un filo in alto del colore del significato, il resto è carta. */
-.callout { border-top: 2px solid var(--colore-callout, var(--color-riga)); background: var(--sfondo-callout, transparent); padding: 0.75rem 1rem 0.875rem; }
+.callout { border-top: 2px solid var(--colore-callout, var(--color-riga)); padding: 0.75rem 0 0.875rem; }
 
 /* Atto 3: la strada del preventivo è il blocco grande, le altre due stanno accanto, più piccole, sulla stessa scala. */
 .strade { display: grid; gap: 2rem; }
 @media (min-width: 768px) { .strade { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 1.5rem 3rem; align-items: start; } }
 .strada-principale { grid-row: span 2; }
+/* Numeri che devono pesare più degli altri della scena: la strada del preventivo e il debito a fine piano. */
+.numero-strada-principale { font-size: clamp(2rem, 1.2rem + 3vw, 3.5rem); letter-spacing: -0.04em; }
 
 /* Indice in attesa: anteprima disegnata, tratteggiata e senza numeri, dichiarata come tale. */
 .anteprima-indice { position: relative; border: 1.5px dashed var(--color-bordo-campo); padding: clamp(1rem, 0.6rem + 2vw, 2rem); background: #FBF9F5 var(--grana); }
@@ -443,3 +458,68 @@ html[data-cookie-letto] .riga-cookie { display: none; }
 
 /* Nella scena il totale sta a tutta larghezza: il minimo scende perché «18.253,25 €» resti su una riga a 375 px. */
 .numero-atto { font-size: clamp(2.25rem, 0.6rem + 8vw, 6rem); }
+} /* fine @layer components */
+
+/* Interazione 12: cambio pagina con una dissolvenza di 180 ms, la testata resta ferma. Firefox e meno movimento: istantaneo. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+}
+
+/* Menu (revisione del 31/10): voci con lo stesso respiro (padding, non larghezza minima), sottolineate solo
+   all'hover, al fuoco e sulla pagina corrente; sotto i 1024 px un pannello a scomparsa con le stesse sei voci. */
+@layer components {
+  .voce-menu { display: inline-flex; align-items: center; min-height: 2.75rem; padding-inline: 0.625rem; text-decoration: none; text-underline-offset: 0.3em; text-decoration-thickness: 1.5px; }
+  .voce-menu:hover { text-decoration: underline; text-decoration-color: var(--color-segnale); }
+  .voce-menu[aria-current="page"] { text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: var(--color-inchiostro); }
+  .menu-compatto > summary { list-style: none; cursor: pointer; gap: 0.5rem; padding-inline: 0.75rem; margin-right: -0.75rem; }
+  .menu-compatto > summary::-webkit-details-marker { display: none; }
+  .menu-segno { position: relative; display: block; width: 1rem; height: 1.5px; background: currentColor; box-shadow: 0 -5px 0 currentColor, 0 5px 0 currentColor; transition: transform var(--durata-breve) var(--curva), box-shadow var(--durata-breve) var(--curva); }
+  .menu-compatto[open] .menu-segno { transform: rotate(45deg); box-shadow: none; }
+  .menu-compatto[open] .menu-segno::after { content: ""; position: absolute; inset: 0; background: currentColor; transform: rotate(90deg); }
+  .menu-pannello {
+    position: absolute; left: -1rem; right: -1rem; top: 100%; z-index: 50; display: grid; padding: 0.5rem 1rem 1rem;
+    background: var(--color-carta); border-block: 1px solid var(--color-inchiostro); font-size: 1.0625rem;
+  }
+  .menu-pannello .voce-menu { padding-inline: 0; border-bottom: 1px solid var(--color-riga); }
+  .menu-pannello .voce-menu:last-child { border-bottom: 0; }
+  @media (prefers-reduced-motion: no-preference) {
+    .menu-compatto[open] .menu-pannello { animation: entra var(--durata-media) var(--curva) backwards; }
+  }
+}
+
+@layer components {
+  /* Il testo pronto da incollare si mostra intero: l'area cresce con il contenuto dove il browser lo sa fare. */
+  .campo-testo { field-sizing: content; min-height: 7lh; }
+}
+
+@layer components {
+  /* Tabella disegnata dell'Indice in attesa: tre colonne sul telefono, tutte da 768 px. */
+  .tabella-finta th, .tabella-finta td { white-space: normal; }
+  @media (max-width: 767px) { .tabella-finta .solo-largo { display: none; } }
+}
+
+@layer components {
+  /* Riquadro dei moduli: carta alzata con un filo, senza ombra né bordo seghettato (lo scontrino resta alle ricevute). */
+  .riquadro { background: #FBF9F5; border: 1px solid var(--color-riga); border-radius: var(--raggio); }
+}
+
+@layer components {
+  /* Guide: titolo alla misura delle sezioni (28-48 px) e attacco a 20-26 px, come chiede la revisione del 31/10. */
+  .titolo-guida { font-size: clamp(1.75rem, 1.1rem + 2.6vw, 3rem); font-weight: 600; line-height: 1.05; letter-spacing: -0.03em; text-wrap: balance; }
+  .attacco-guida { font-size: clamp(1.1875rem, 1rem + 0.7vw, 1.625rem); font-weight: 500; line-height: 1.25; letter-spacing: -0.01em; text-wrap: pretty; }
+  /* Sottosezione: la seconda e ultima misura di h2 (24 px). */
+  .titolo-sottosezione { font-size: 1.5rem; font-weight: 600; line-height: 1.2; letter-spacing: -0.015em; }
+  .voce-guida { text-decoration: none; }
+  .voce-guida-titolo { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+  .voce-guida:hover .voce-guida-titolo { text-decoration-color: var(--color-segnale); text-decoration-thickness: 2px; }
+}
+
+@layer components {
+  /* Vista per il venditore: le parole del glossario sono righe da 44 px, toccabili col pollice in concessionaria. */
+  .vista-venditore dt .termine-voce { display: inline-flex; align-items: center; min-height: 2.75rem; }
+}
+
+@layer components {
+  /* Chiuso, il pannello del menu non esiste nemmeno per l'impaginazione (a 320 px allargava la pagina). */
+  .menu-compatto:not([open]) .menu-pannello { display: none; }
+}

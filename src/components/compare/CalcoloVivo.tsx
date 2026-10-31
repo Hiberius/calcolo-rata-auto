@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'preact/hooks';
-import { euro, percentuale, punti } from '~/lib/calc/format';
+import { costoCreditoPct, euro, punti } from '~/lib/formato';
 import { analizzaLeggero, type NumeriLeggeri } from '~/lib/calc/leggero';
 import type { Analisi } from '~/lib/calc/tipi';
 import Disclaimer from '../ui/Disclaimer';
@@ -27,9 +27,9 @@ function Totale({ a }: { a: Analisi }) {
         <span class="numeri text-4xl font-semibold tracking-tight" data-totale-vivo>{euro(t.totalePagatoTenendo)}</span>
       </p>
       {t.costoCredito != null && (
-        <p class="numeri text-segnale-scuro font-semibold">Costo del credito {euro(t.costoCredito)} · {percentuale(t.costoCreditoPct)} del prezzo</p>
+        <p class="numeri text-segnale-scuro font-semibold">Costo del credito {euro(t.costoCredito)} · {costoCreditoPct(t.costoCreditoPct)} del prezzo</p>
       )}
-      {t.costoCredito != null && <SpiegazioneTaeg classe="text-xs text-tenue" />}
+      {t.costoCredito != null && <SpiegazioneTaeg classe="nota text-tenue" />}
       {a.verdetto.fraseQuotaRata && <p class="text-sm text-tenue">{a.verdetto.fraseQuotaRata}</p>}
       <ComposizioneTotale analisi={a} compatta />
     </div>
@@ -70,7 +70,7 @@ export default function CalcoloVivo({ variante, iniziale, base, titolo }: Props)
 
   return (
     <section class="scontrino rounded-t grid gap-6 px-5 py-7 sm:px-8" aria-label={titolo ?? 'Calcolo'} data-calcolo-vivo={variante}>
-      {titolo && <h2 class="text-xl font-semibold tracking-tight">{titolo}</h2>}
+      {titolo && <h2 class="titolo-sottosezione">{titolo}</h2>}
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {campi.map((k) => (
           <CampoNumero key={k} nome={k} etichetta={CAMPI_VIVO[k].etichetta} unita={CAMPI_VIVO[k].unita} valore={valori[k] ?? ''}

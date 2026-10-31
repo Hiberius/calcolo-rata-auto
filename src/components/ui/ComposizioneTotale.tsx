@@ -1,6 +1,6 @@
 import type { Analisi } from '~/lib/calc';
 import { composizioneTotale, formulaTotale } from '~/lib/calc/composizione';
-import { euro } from '~/lib/calc/format';
+import { euro } from '~/lib/formato';
 import NumberRow from './NumberRow';
 
 interface Props {
@@ -23,8 +23,8 @@ export default function ComposizioneTotale({ analisi, compatta = false, ambito, 
           termine={v.chiave === 'maxiRata' ? 'maxi' : undefined} ambito={ambito} indice={primaRiga != null ? primaRiga + k : undefined} />
       ))}
       <NumberRow etichetta="Totale" valore={euro(c.totale)} tono="forte" indice={primaRiga != null ? primaRiga + c.voci.length : undefined} />
-      <p class="numeri text-xs text-tenue pt-2 break-words" data-formula>{formulaTotale(c)}</p>
-      {c.note.map((n) => <p key={n} class="text-xs text-tenue pt-1">{n}</p>)}
+      <p class="numeri text-[0.8125rem] text-tenue pt-2 break-words" data-formula>{formulaTotale(c)}</p>
+      {c.note.map((n) => <p key={n} class="nota text-tenue pt-1">{n}</p>)}
     </div>
   );
 }

@@ -27,7 +27,7 @@ const { righe } = Astro.props;
       {righe.map((r) => (
         <tr data-posizione={r.posizione}>
           <td class="num">{r.posizione}</td>
-          <td><a class="link" href={r.percorso}>{r.marca} {r.modello}</a>{r.versione && <span class="block text-xs text-tenue">{r.versione}</span>}</td>
+          <td><a class="link" href={r.percorso}>{r.marca} {r.modello}</a>{r.versione && <span class="block text-[0.8125rem] text-tenue">{r.versione}</span>}</td>
           <td class="num font-semibold">{testoMetrica(r.costoCreditoPct * 100)}</td>
           <td>{r.prezzoUsato === 'contanti' ? 'in contanti' : r.prezzoUsato === 'promo' ? 'della promo' : 'di listino'}</td>
           <td class="num">{testoMetrica(r.taegDichiarato)}</td>
