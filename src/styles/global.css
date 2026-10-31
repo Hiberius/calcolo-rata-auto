@@ -153,3 +153,70 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 @media (hover: hover) and (pointer: fine) {
   .termine:hover:not([data-chiuso]) > .termine-def { display: block; }
 }
+
+/* Scena del risultato (v2, §2): pannello inchiostro dentro la pagina chiara, grana leggera, tipografia grande. */
+:root {
+  --scena-fondo: #15171A;
+  --scena-carta: #F6F3EE;
+  --scena-tenue: #A6A29A;
+  --scena-riga: rgb(246 243 238 / 0.14);
+  --scena-segnale: #F2825F;
+  --scena-attenzione: #E2B93B;
+}
+.pannello-scena {
+  position: relative; isolation: isolate; display: grid; gap: clamp(3rem, 2rem + 5vw, 6.5rem);
+  padding: clamp(1.25rem, 0.6rem + 3vw, 3.5rem); border-radius: 0.375rem;
+  background: var(--scena-fondo); color: var(--scena-carta);
+  box-shadow: 0 2px 0 rgb(21 23 26 / 0.08), 0 40px 80px -48px rgb(21 23 26 / 0.7);
+}
+/* Grana statica: un'immagine sola, nessuna animazione, nessun ridisegno allo scorrimento. */
+.pannello-scena::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.96 0 0 0 0 0.95 0 0 0 0 0.93 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.pannello-scena .link:hover { text-decoration-color: var(--scena-segnale); }
+.pannello-scena :focus-visible { outline-color: var(--scena-segnale); }
+.atto + .atto { border-top: 1px solid var(--scena-riga); padding-top: clamp(2.5rem, 1.5rem + 4vw, 5rem); }
+.atto-numero { font-family: var(--font-mono); font-size: 0.8125rem; letter-spacing: 0.12em; color: var(--scena-segnale); }
+.atto-titolo { font-size: clamp(2rem, 1.1rem + 4.2vw, 4.25rem); font-weight: 600; line-height: 0.98; letter-spacing: -0.035em; max-width: 14ch; }
+.atto-frase { font-size: clamp(1.375rem, 1rem + 1.8vw, 2.25rem); font-weight: 500; line-height: 1.15; letter-spacing: -0.015em; max-width: 26ch; }
+.etichetta-stima {
+  font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 0.2rem 0.5rem; border: 1px solid var(--scena-attenzione); color: var(--scena-attenzione); background: var(--scena-fondo);
+}
+.barra-strada { transform-origin: left center; transition: transform var(--durata-media) var(--curva); }
+.btn-scena { background: transparent; color: var(--scena-carta); border: 1.5px solid var(--scena-carta); }
+.btn-scena:hover { background: var(--scena-carta); color: var(--scena-fondo); }
+.btn-scena:focus-visible { outline: 3px solid var(--scena-segnale); outline-offset: 3px; }
+
+/* Cursori: input range nativi. Traccia sottile, parte piena in vermiglio, pomello di carta con area di tocco di 44 px. */
+.cursore { -webkit-appearance: none; appearance: none; width: 100%; height: 2.75rem; background: transparent; cursor: pointer; touch-action: pan-y; }
+.cursore::-webkit-slider-runnable-track {
+  height: 3px; border-radius: 2px;
+  background: linear-gradient(to right, var(--scena-segnale) var(--pieno, 0%), rgb(246 243 238 / 0.22) var(--pieno, 0%));
+}
+.cursore::-moz-range-track { height: 3px; border-radius: 2px; background: rgb(246 243 238 / 0.22); }
+.cursore::-moz-range-progress { height: 3px; border-radius: 2px; background: var(--scena-segnale); }
+.cursore::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 1.375rem; height: 1.375rem; margin-top: -0.6rem; border-radius: 999px;
+  background: var(--scena-carta); border: 2px solid var(--scena-fondo); box-shadow: 0 0 0 1.5px var(--scena-carta);
+  transition: transform var(--durata-breve) var(--curva);
+}
+.cursore::-moz-range-thumb {
+  width: 1.375rem; height: 1.375rem; border-radius: 999px; background: var(--scena-carta); border: 2px solid var(--scena-fondo);
+  box-shadow: 0 0 0 1.5px var(--scena-carta); transition: transform var(--durata-breve) var(--curva);
+}
+.cursore:hover::-webkit-slider-thumb { transform: scale(1.12); }
+.cursore:hover::-moz-range-thumb { transform: scale(1.12); }
+.cursore:active::-webkit-slider-thumb { transform: scale(0.96); }
+.cursore:focus { outline: none; }
+.cursore:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--scena-segnale); }
+.cursore:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px var(--scena-segnale); }
+
+/* Mostralo al venditore: schermo intero, caratteri grandi, sul fondo inchiostro. */
+.vista-venditore {
+  position: fixed; inset: 0; width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; padding: 0; border: 0;
+  overflow-y: auto; background: var(--scena-fondo); color: var(--scena-carta);
+}
+.vista-venditore[open] { animation: entra var(--durata-media) var(--curva) both; }
+.vista-venditore::backdrop { background: var(--scena-fondo); }

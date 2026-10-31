@@ -1,0 +1,95 @@
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { analizzaLeggero, type NumeriLeggeri } from '~/lib/calc/leggero';
+import { ripartizioneTotale } from '~/lib/calc/ripartizione';
+import { baseScena, cursoriIniziali, possessoFinale, scalaEuro, type Cursori } from '~/lib/calc/scena';
+import { inviaEvento } from '~/lib/client/evento';
+import { salvaPreventivo } from '~/lib/client/sessione';
+import { allaPrimaVista, menoMovimento, seguiMenoMovimento } from '~/lib/motion';
+import Atto1Flusso from './Atto1Flusso';
+import Atto2Curve from './Atto2Curve';
+import Atto3Strade from './Atto3Strade';
+import MostraVenditore from './MostraVenditore';
+
+interface Props {
+  /** Numeri del preventivo già validati (home) o della promozione: la scena li ricalcola con il motore leggero. */
+  preventivo: NumeriLeggeri;
+  /** Valore futuro garantito dalla casa, se la promozione lo dichiara. */
+  vfg?: number | null | undefined;
+  /** Etichetta sopra la scena (es. preventivo d'esempio). */
+  etichetta?: string | undefined;
+}
+
+function useMenoMovimento(): boolean {
+  const [ridotto, setRidotto] = useState(menoMovimento);
+  useEffect(() => seguiMenoMovimento(setRidotto), []);
+  return ridotto;
+}
+
+/** La scena del risultato (specifica v2, §2): tre atti su un pannello inchiostro, poi la tabella completa resta sotto. */
+export default function Scena({ preventivo, vfg = null, etichetta }: Props) {
+  const analisi = useMemo(() => analizzaLeggero(preventivo), [preventivo]);
+  const base = useMemo(() => (analisi ? baseScena(analisi, vfg) : null), [analisi, vfg]);
+  const [cursori, setCursori] = useState<Cursori | null>(base ? cursoriIniziali(base) : null);
+  const [venditore, setVenditore] = useState(false);
+  const statico = useMenoMovimento();
+  const radice = useRef<HTMLDivElement>(null);
+  const interagito = useRef(false);
+
+  useEffect(() => {
+    setCursori(base ? cursoriIniziali(base) : null);
+    interagito.current = false;
+  }, [base]);
+
+  useEffect(() => {
+    const el = radice.current;
+    return el ? allaPrimaVista(el, () => inviaEvento('scena_vista'), 0.2) : undefined;
+  }, []);
+
+  const ripartizione = useMemo(() => (analisi ? ripartizioneTotale(analisi) : null), [analisi]);
+  const possesso = useMemo(() => (analisi && base ? possessoFinale(analisi, base) : null), [analisi, base]);
+
+  if (!analisi || !base || !cursori || !ripartizione || !possesso) return null;
+  const scala = scalaEuro(analisi);
+
+  function cambiaCursori(c: Cursori) {
+    setCursori(c);
+    if (interagito.current) return;
+    interagito.current = true;
+    inviaEvento('scena_atto2_interagito');
+  }
+
+  function apriVenditore() {
+    setVenditore(true);
+    inviaEvento('mostra_venditore');
+  }
+
+  return (
+    <div ref={radice} class="pannello-scena" data-scena data-scena-statica={statico ? 'true' : 'false'}>
+      <header class="flex flex-wrap items-start justify-between gap-4">
+        <div class="grid gap-2">
+          {etichetta && <p class="numeri w-fit border border-[var(--scena-riga)] px-2 py-0.5 text-xs uppercase tracking-wide">{etichetta}</p>}
+          <h2 class="text-sm uppercase tracking-[0.18em] text-[var(--scena-tenue)]">La scena del tuo preventivo</h2>
+        </div>
+        <button type="button" class="btn btn-scena" onClick={apriVenditore} data-mostra-venditore>Mostralo al venditore</button>
+      </header>
+      <Atto1Flusso
+        ripartizione={ripartizione}
+        scala={scala}
+        statico={statico}
+        quotaRata={analisi.verdetto.quotaRata}
+        nRate={analisi.preventivo.nRate}
+        rata={analisi.preventivo.rata}
+        sommaRate={analisi.totali.sommaRate}
+      />
+      <Atto2Curve base={base} cursori={cursori} onCursori={cambiaCursori} statico={statico} tipo={analisi.preventivo.tipo} />
+      <Atto3Strade
+        strade={analisi.treStrade}
+        possesso={possesso}
+        scala={scala}
+        statico={statico}
+        onConfronta={() => salvaPreventivo(analisi.preventivo)}
+      />
+      <MostraVenditore analisi={analisi} aperta={venditore} onChiudi={() => setVenditore(false)} />
+    </div>
+  );
+}

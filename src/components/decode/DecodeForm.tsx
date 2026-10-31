@@ -9,6 +9,7 @@ import CreaScheda from './CreaScheda';
 import { MESSAGGIO_TOTALE_INCOERENTE } from '~/lib/calc/totale';
 import FieldGroup from './FieldGroup';
 import ResultCard from './ResultCard';
+import ScenaPigra from '../scene/ScenaPigra';
 import UploadDropzone from './UploadDropzone';
 
 const ETICHETTE_TIPO: Record<TipoContratto, string> = { finanziamento: 'Finanziamento', leasing: 'Leasing', noleggio: 'Noleggio' };
@@ -124,7 +125,8 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
         )}
       </div>
 
-      <div id="risultato" class="scroll-mt-6" aria-live="polite">
+      <div id="risultato" class="scroll-mt-6 grid gap-10" aria-live="polite">
+        {calcolo?.analisi && <ScenaPigra preventivo={calcolo.analisi.preventivo} etichetta={esempio ? ETICHETTA_ESEMPIO : undefined} />}
         {calcolo?.analisi && (
           <ResultCard
             analisi={calcolo.analisi}
