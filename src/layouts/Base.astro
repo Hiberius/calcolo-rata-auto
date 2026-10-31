@@ -20,7 +20,7 @@ const sito = (Astro.site?.toString() ?? URL_SITO).replace(/\/$/, '');
 const percorso = Astro.url.pathname.replace(/\.html$/, '').replace(/\/index$/, '/') || '/';
 const url = canonical ?? `${sito}${percorso}`;
 const immagine = ogImage ?? `${sito}/og-default.png`;
-const immagineAlt = ogAlt ?? (ogImage ? title : 'Uno scontrino bianco su carta, attraversato da una barra vermiglia: Rata Vera, quanto paghi davvero.');
+const immagineAlt = ogAlt ?? (ogImage ? title : 'Rata Vera: quanto paghi davvero per l’auto a rate? Accanto, uno scontrino bianco attraversato da una barra vermiglia.');
 const tokenAnalytics = import.meta.env.PUBLIC_CF_ANALYTICS_TOKEN;
 const NAV = [
   ['/#decodifica', 'Leggi il preventivo'], ['/promozioni', 'Promozioni'], ['/indice', 'Indice'], ['/noleggio', 'Confronta'], ['/guide', 'Guide'], ['/metodologia', 'Metodologia'],

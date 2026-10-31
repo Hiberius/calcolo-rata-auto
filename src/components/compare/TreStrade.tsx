@@ -40,6 +40,9 @@ function numeri(valori: Valori, chiavi: readonly Campo[]): Record<string, number
   return Object.fromEntries(voci);
 }
 
+/** L'esempio della home (offerta ufficiale Peugeot 208, ottobre 2026): stessi numeri, dichiarato come esempio. */
+const ESEMPIO: Valori = { prezzoContanti: '14.950', anticipo: '4.326', nRate: '35', rata: '99', maxiRata: '10.434' };
+
 const IPOTESI_INIZIALI: Valori = {
   taegPrestito: aTesto(IPOTESI_PREDEFINITE.taegPrestito),
   kmAnnui: String(IPOTESI_PREDEFINITE.kmAnnui),
@@ -49,6 +52,7 @@ const IPOTESI_INIZIALI: Valori = {
 export default function TreStrade() {
   const [base, setBase] = useState<Readonly<Record<string, unknown>>>({});
   const [valori, setValori] = useState<Valori>({});
+  const [esempio, setEsempio] = useState(false);
   const [ipotesi, setIpotesi] = useState<Valori>(IPOTESI_INIZIALI);
   const segnalato = useRef(false);
 
@@ -80,7 +84,7 @@ export default function TreStrade() {
 
   const campo = (c: Campo, v: Valori, imposta: (f: (s: Valori) => Valori) => void) => (
     <CampoNumero key={c.chiave} nome={c.chiave} etichetta={c.etichetta} unita={c.unita} aiuto={c.aiuto} valore={v[c.chiave] ?? ''}
-      onCambia={(nuovo) => imposta((s) => ({ ...s, [c.chiave]: nuovo }))} />
+      onCambia={(nuovo) => { setEsempio(false); imposta((s) => ({ ...s, [c.chiave]: nuovo })); }} />
   );
 
   return (
@@ -98,7 +102,14 @@ export default function TreStrade() {
       <div aria-live="polite">
         {calcolo
           ? <ColonneStrade strade={calcolo.analisi.treStrade} valoreResiduo={calcolo.residuo} tipo={calcolo.analisi.preventivo.tipo} />
-          : <p class="text-tenue">Scrivi almeno anticipo, numero di rate e rata: le tre colonne si aggiornano mentre scrivi.</p>}
+          : (
+            // A riposo non un muro di campi vuoti: una frase e l'esempio pronto, dichiarato come tale.
+            <div class="riquadro grid gap-3 px-5 py-5 sm:flex sm:items-center sm:justify-between sm:gap-6" data-tre-strade-vuoto>
+              <p class="max-w-[30em]">Scrivi anticipo, numero di rate e rata del tuo preventivo: le tre strade compaiono qui e si aggiornano mentre scrivi.</p>
+              <button type="button" class="btn btn-secondario shrink-0" onClick={() => { setValori(ESEMPIO); setEsempio(true); }}>Prova con la Peugeot 208 d’esempio</button>
+            </div>
+          )}
+        {calcolo && esempio && <p class="etichetta pt-3" data-tre-strade-esempio>Esempio: Peugeot 208 Style, offerta ufficiale di ottobre 2026. Aggiungi un canone di noleggio per la terza strada.</p>}
       </div>
       <Disclaimer ambito="tre-strade" />
     </div>
