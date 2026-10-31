@@ -1,26 +1,28 @@
-import { SOGLIE_VERDETTO } from './config';
+import { MERCATO_IT } from '../../markets/it';
+import { t } from '../../markets';
+import type { Mercato } from '../../markets/tipi';
 import { MESSAGGIO_TOTALE_INCOERENTE } from './totale';
 import { percentuale } from './format';
 import type { Totali, Verdetto } from './tipi';
 
-function fraseQuota(t: Totali): { quota: number | null; frase: string | null } {
-  if (t.totalePagatoTenendo <= 0 || t.sommaRate <= 0) return { quota: null, frase: null };
-  const quota = t.sommaRate / t.totalePagatoTenendo;
-  return { quota, frase: `Le rate pubblicizzate coprono il ${percentuale(quota, 0)} di quello che paghi.` };
+function fraseQuota(t0: Totali, m: Mercato): { quota: number | null; frase: string | null } {
+  if (t0.totalePagatoTenendo <= 0 || t0.sommaRate <= 0) return { quota: null, frase: null };
+  const quota = t0.sommaRate / t0.totalePagatoTenendo;
+  return { quota, frase: t(m, 'verdetto.quota', { quota: percentuale(quota, 0) }) };
 }
 
-/** Etichetta fattuale sul costo del credito: nessun consiglio, solo il confronto con le soglie dichiarate. */
-export function verdetto(t: Totali): Verdetto {
-  const { quota, frase } = fraseQuota(t);
-  const pct = t.costoCreditoPct;
-  if (t.messaggi.includes(MESSAGGIO_TOTALE_INCOERENTE)) {
+/** Etichetta fattuale sul costo del credito: nessun consiglio, solo il confronto con le soglie dichiarate del mercato. */
+export function verdetto(totali: Totali, m: Mercato = MERCATO_IT): Verdetto {
+  const { quota, frase } = fraseQuota(totali, m);
+  const pct = totali.costoCreditoPct;
+  if (totali.messaggi.includes(MESSAGGIO_TOTALE_INCOERENTE)) {
     return { livello: 'non_applicabile', etichetta: MESSAGGIO_TOTALE_INCOERENTE, quotaRata: quota, fraseQuotaRata: frase };
   }
   if (pct == null) {
-    return { livello: 'non_applicabile', etichetta: 'Costo del credito non calcolabile: conta il totale.', quotaRata: quota, fraseQuotaRata: frase };
+    return { livello: 'non_applicabile', etichetta: t(m, 'verdetto.nonCalcolabile'), quotaRata: quota, fraseQuotaRata: frase };
   }
-  const quanto = `Costo del credito: ${percentuale(pct, 1)} del prezzo`;
-  if (pct < SOGLIE_VERDETTO.basso) return { livello: 'basso', etichetta: `${quanto}, sotto il 5%`, quotaRata: quota, fraseQuotaRata: frase };
-  if (pct <= SOGLIE_VERDETTO.alto) return { livello: 'medio', etichetta: `${quanto}, tra il 5% e il 12%`, quotaRata: quota, fraseQuotaRata: frase };
-  return { livello: 'alto', etichetta: `${quanto}, oltre il 12%`, quotaRata: quota, fraseQuotaRata: frase };
+  const valori = { costo: t(m, 'verdetto.costo', { pct: percentuale(pct, 1) }), basso: percentuale(m.soglie.basso, 0), alto: percentuale(m.soglie.alto, 0) };
+  if (pct < m.soglie.basso) return { livello: 'basso', etichetta: t(m, 'verdetto.basso', valori), quotaRata: quota, fraseQuotaRata: frase };
+  if (pct <= m.soglie.alto) return { livello: 'medio', etichetta: t(m, 'verdetto.medio', valori), quotaRata: quota, fraseQuotaRata: frase };
+  return { livello: 'alto', etichetta: t(m, 'verdetto.alto', valori), quotaRata: quota, fraseQuotaRata: frase };
 }

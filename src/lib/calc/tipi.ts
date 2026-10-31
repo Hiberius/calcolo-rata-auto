@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { Mercato } from '../../markets/tipi';
 import { EURO_MAX, IPOTESI_PREDEFINITE as D } from './config';
 import { normalizzaMarca, normalizzaModello, normalizzaVersione } from './veicolo';
 
@@ -148,6 +149,8 @@ export interface Verdetto {
 }
 
 export interface Analisi {
+  /** Mercato del calcolo (specifica v2, §5): nome del tasso, del documento, termini, soglie e testi. */
+  readonly mercato: Mercato;
   readonly preventivo: Preventivo;
   readonly ipotesi: Ipotesi;
   readonly ricostruzione: Ricostruzione;

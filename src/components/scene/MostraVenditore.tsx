@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'preact/hooks';
 import { euro, percentuale, punti } from '~/lib/calc/format';
 import type { Analisi } from '~/lib/calc/tipi';
+import { t } from '~/markets';
+import type { ChiaveTesto } from '~/markets/tipi';
 
 interface Props {
   analisi: Analisi;
@@ -8,19 +10,20 @@ interface Props {
   onChiudi: () => void;
 }
 
-const TIPO_PREZZO = { contanti: 'Prezzo in contanti', promo: 'Prezzo promozionale', listino: 'Prezzo di listino', assente: 'Prezzo' } as const;
+const TIPO_PREZZO: Readonly<Record<Analisi['totali']['prezzoRiferimentoTipo'], ChiaveTesto>> = { contanti: 'prezzo.contanti', promo: 'prezzo.promo', listino: 'prezzo.listino', assente: 'prezzo.assente' };
 
 /** Le domande da fare al venditore, a partire da quello che manca o non torna nel preventivo. */
 export function domandeAlVenditore(a: Analisi): readonly string[] {
   const p = a.preventivo;
-  const domande = [
-    ...(a.totali.prezzoRiferimentoTipo !== 'contanti' ? ['Qual è il prezzo in contanti?'] : []),
-    'Il TAEG include le spese di incasso delle rate?',
-    ...(p.maxiRata ? ['La maxi rata è un valore futuro garantito? Con quali km e in che stato deve essere l’auto?'] : []),
-    ...(a.ricostruzione.discrepanze.length > 0 || a.taeg.stato === 'da_verificare' ? ['Mi mostra le spese che spiegano la differenza nel SECCI?'] : []),
-    'Mi dà il SECCI da portare a casa prima di firmare?',
+  const m = a.mercato;
+  const chiavi: readonly ChiaveTesto[] = [
+    ...(a.totali.prezzoRiferimentoTipo !== 'contanti' ? (['domanda.contanti'] as const) : []),
+    'domanda.incasso',
+    ...(p.maxiRata ? (['domanda.maxi'] as const) : []),
+    ...(a.ricostruzione.discrepanze.length > 0 || a.taeg.stato === 'da_verificare' ? (['domanda.differenza'] as const) : []),
+    'domanda.documento',
   ];
-  return domande;
+  return chiavi.map((k) => t(m, k));
 }
 
 function Riga({ etichetta, valore, segnale = false }: { etichetta: string; valore: string; segnale?: boolean }) {
@@ -35,8 +38,9 @@ function Riga({ etichetta, valore, segnale = false }: { etichetta: string; valor
 /** Vista a schermo intero per il telefono in concessionaria: pochi numeri, grandi, e le domande da fare. */
 export default function MostraVenditore({ analisi: a, aperta, onChiudi }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
-  const t = a.totali;
+  const tot = a.totali;
   const p = a.preventivo;
+  const m = a.mercato;
 
   useEffect(() => {
     const d = ref.current;
@@ -59,26 +63,26 @@ export default function MostraVenditore({ analisi: a, aperta, onChiudi }: Props)
     <dialog ref={ref} class="vista-venditore" aria-labelledby="venditore-titolo" onClose={onChiudi} data-vista-venditore>
       <div class="contenitore grid min-h-[100dvh] content-start gap-8 py-6">
         <div class="flex items-start justify-between gap-4">
-          <h2 id="venditore-titolo" class="text-2xl font-semibold leading-tight">Prima di firmare, questi numeri</h2>
-          <button type="button" class="btn btn-scena shrink-0" onClick={chiudi} data-esci-venditore>Esci</button>
+          <h2 id="venditore-titolo" class="text-2xl font-semibold leading-tight">{t(m, 'venditore.titolo')}</h2>
+          <button type="button" class="btn btn-scena shrink-0" onClick={chiudi} data-esci-venditore>{t(m, 'venditore.esci')}</button>
         </div>
         <dl class="grid sm:grid-cols-2 sm:gap-x-10">
-          <Riga etichetta="Pago in tutto" valore={euro(t.totalePagatoTenendo)} />
-          {t.prezzoRiferimento != null && <Riga etichetta={TIPO_PREZZO[t.prezzoRiferimentoTipo]} valore={euro(t.prezzoRiferimento)} />}
-          {t.costoCredito != null && <Riga etichetta="Costo del credito" valore={`${euro(t.costoCredito)} · ${percentuale(t.costoCreditoPct, 0)}`} segnale />}
-          {p.maxiRata ? <Riga etichetta="Maxi rata finale" valore={euro(p.maxiRata)} /> : null}
-          {p.taegDichiarato != null && <Riga etichetta="TAEG dichiarato" valore={punti(p.taegDichiarato)} />}
-          {a.taeg.taegRicostruito != null && <Riga etichetta="TAEG dai numeri del preventivo" valore={punti(a.taeg.taegRicostruito)} />}
+          <Riga etichetta={t(m, 'venditore.pagoInTutto')} valore={euro(tot.totalePagatoTenendo)} />
+          {tot.prezzoRiferimento != null && <Riga etichetta={t(m, TIPO_PREZZO[tot.prezzoRiferimentoTipo])} valore={euro(tot.prezzoRiferimento)} />}
+          {tot.costoCredito != null && <Riga etichetta={t(m, 'risultato.costoCredito')} valore={`${euro(tot.costoCredito)} · ${percentuale(tot.costoCreditoPct, 0)}`} segnale />}
+          {p.maxiRata ? <Riga etichetta={t(m, 'venditore.maxi')} valore={euro(p.maxiRata)} /> : null}
+          {p.taegDichiarato != null && <Riga etichetta={t(m, 'venditore.tassoDichiarato')} valore={punti(p.taegDichiarato)} />}
+          {a.taeg.taegRicostruito != null && <Riga etichetta={t(m, 'venditore.tassoRicostruito')} valore={punti(a.taeg.taegRicostruito)} />}
         </dl>
         <div class="grid gap-3">
-          <h3 class="text-xl font-semibold">Le domande da fare</h3>
+          <h3 class="text-xl font-semibold">{t(m, 'venditore.domande')}</h3>
           <ol class="grid gap-3 text-[clamp(1.125rem,1rem+1vw,1.5rem)] leading-snug">
             {domandeAlVenditore(a).map((d, k) => (
               <li key={d} class="grid grid-cols-[2rem_1fr] gap-2"><span class="numeri text-[var(--scena-segnale)]">{k + 1}</span>{d}</li>
             ))}
           </ol>
         </div>
-        <p class="text-sm text-[var(--scena-tenue)]">Conti fatti da Rata Vera sui numeri del preventivo. Rata Vera non è un mediatore creditizio.</p>
+        <p class="text-sm text-[var(--scena-tenue)]">{t(m, 'venditore.piede')}</p>
       </div>
     </dialog>
   );

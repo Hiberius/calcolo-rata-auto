@@ -1,8 +1,9 @@
+import { MERCATO_IT } from '../../markets/it';
+
 /** Avvertenza fissa §1.9, in ogni risultato. Dice solo ciò che è vero sempre: sul noleggio un compenso dichiarato può esserci (vedi lib/fiducia). */
-export const AVVERTENZA =
-  'Rata Vera non è un mediatore creditizio e non propone finanziamenti: fa i conti sui numeri che inserisci. Prima di firmare chiedi il SECCI (modulo Informazioni europee di base).';
-/** Soglie del verdetto sul costo del credito in rapporto al prezzo. Da ricalibrare sul dataset promo. */
-export const SOGLIE_VERDETTO = { basso: 0.05, alto: 0.12 } as const;
+export const AVVERTENZA = MERCATO_IT.avvertenza;
+/** Soglie del verdetto sul costo del credito in rapporto al prezzo, per l'Italia (ogni mercato ha le sue). Da ricalibrare sul dataset promo. */
+export const SOGLIE_VERDETTO = MERCATO_IT.soglie;
 /** Tolleranza in euro per dire che due importi coincidono. */
 export const TOLLERANZA_EURO = 2;
 /** Oltre questa distanza in punti il TAEG ricostruito va verificato. */

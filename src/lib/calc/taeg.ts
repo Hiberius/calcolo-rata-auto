@@ -1,3 +1,6 @@
+import { t } from '../../markets';
+import { MERCATO_IT } from '../../markets/it';
+import type { Mercato } from '../../markets/tipi';
 import { TOLLERANZA_TAEG_PUNTI } from './config';
 import { arrotonda, punti } from './format';
 import type { EsitoTaeg, Preventivo, Ricostruzione } from './tipi';
@@ -59,20 +62,19 @@ function esitoNonCalcolabile(p: Preventivo, nota: string): EsitoTaeg {
   return { taegRicostruito: null, taegDichiarato: p.taegDichiarato ?? null, differenzaPunti: null, stato: 'non_calcolabile', nota };
 }
 
-export function verificaTaeg(p: Preventivo, r: Ricostruzione): EsitoTaeg {
-  if (p.tipo === 'noleggio') return esitoNonCalcolabile(p, 'Nel noleggio non c’è un TAEG: si confronta il totale dei canoni.');
+export function verificaTaeg(p: Preventivo, r: Ricostruzione, m: Mercato = MERCATO_IT): EsitoTaeg {
+  if (p.tipo === 'noleggio') return esitoNonCalcolabile(p, t(m, 'taeg.noleggio'));
   const flussi = flussiCliente(p, r);
-  if (!flussi) return esitoNonCalcolabile(p, 'Per ricostruire il TAEG servono importo del credito (o prezzo e anticipo), numero di rate e rata.');
+  if (!flussi) return esitoNonCalcolabile(p, t(m, 'taeg.mancanoDati'));
   const calcolato = taegDaFlussi(flussi);
-  if (calcolato == null) return esitoNonCalcolabile(p, 'Con questi numeri il TAEG non si può ricostruire: controlla rata, anticipo e maxi rata.');
+  if (calcolato == null) return esitoNonCalcolabile(p, t(m, 'taeg.nonRicostruibile'));
   const taeg = arrotonda(calcolato, 2);
   if (p.taegDichiarato == null) {
-    return { taegRicostruito: taeg, taegDichiarato: null, differenzaPunti: null, stato: 'non_dichiarato', nota: `Il preventivo non indica il TAEG: dai numeri visibili è circa ${punti(taeg)}. Chiedilo per iscritto.` };
+    return { taegRicostruito: taeg, taegDichiarato: null, differenzaPunti: null, stato: 'non_dichiarato', nota: t(m, 'taeg.nonDichiarato', { calcolato: punti(taeg) }) };
   }
   const differenza = arrotonda(taeg - p.taegDichiarato, 2);
   const inLinea = Math.abs(differenza) <= TOLLERANZA_TAEG_PUNTI;
-  const nota = inLinea
-    ? `Il TAEG dichiarato (${punti(p.taegDichiarato)}) torna con i numeri del preventivo.`
-    : `Dai numeri visibili il TAEG è circa ${punti(taeg)}, quello dichiarato è ${punti(p.taegDichiarato)}: da verificare. Di solito la differenza viene da spese non indicate nel preventivo, che il SECCI deve elencare.`;
+  const valori = { calcolato: punti(taeg), dichiarato: punti(p.taegDichiarato) };
+  const nota = inLinea ? t(m, 'taeg.inLinea', valori) : t(m, 'taeg.daVerificare', valori);
   return { taegRicostruito: taeg, taegDichiarato: p.taegDichiarato, differenzaPunti: differenza, stato: inLinea ? 'in_linea' : 'da_verificare', nota };
 }

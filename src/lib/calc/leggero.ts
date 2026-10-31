@@ -1,3 +1,4 @@
+import type { Mercato } from '../../markets/tipi';
 import { EURO_MAX, IPOTESI_PREDEFINITE } from './config';
 import { calcolaAnalisi } from './motore';
 import type { Analisi, Ipotesi, Preventivo } from './tipi';
@@ -28,8 +29,8 @@ function numeriValidi(p: NumeriLeggeri, i: IpotesiLeggere): boolean {
  * Versione senza zod per le isole delle guide e delle promo: stessi calcoli di analizza(),
  * con un controllo minimo sui numeri (finiti, non negativi). Restituisce null se i numeri non vanno.
  */
-export function analizzaLeggero(p: NumeriLeggeri, i: IpotesiLeggere = {}): Analisi | null {
+export function analizzaLeggero(p: NumeriLeggeri, i: IpotesiLeggere = {}, mercato?: Mercato): Analisi | null {
   if (!numeriValidi(p, i)) return null;
   const ipotesi: Ipotesi = { ...IPOTESI_PREDEFINITE, ...i };
-  return calcolaAnalisi({ tipo: 'finanziamento', accessoriInclusiNelPrezzo: false, ...p }, ipotesi);
+  return calcolaAnalisi({ tipo: 'finanziamento', accessoriInclusiNelPrezzo: false, ...p }, ipotesi, mercato);
 }

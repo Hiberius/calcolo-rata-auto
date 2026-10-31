@@ -1,3 +1,4 @@
+import { TESTI_IT } from '../../markets/it';
 import { arrotonda } from './format';
 
 /**
@@ -26,7 +27,7 @@ export const MODELLO_VALORE: ModelloValore = {
 };
 
 /** La frase che accompagna sempre la curva del valore. */
-export const ETICHETTA_STIMA = 'stima, non quotazione';
+export const ETICHETTA_STIMA = TESTI_IT['scena.stima'];
 
 /** Fattore annuo di conservazione del valore: mai sotto 0,5 né sopra 1, qualunque sia il chilometraggio. */
 function fattoreAnnuo(perdita: number, kmAnnui: number, m: ModelloValore): number {

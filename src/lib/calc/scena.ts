@@ -1,7 +1,10 @@
+import { t } from '../../markets';
+import { MERCATO_IT } from '../../markets/it';
+import type { Mercato } from '../../markets/tipi';
 import { euro, euroIntero } from './format';
 import type { Analisi } from './tipi';
 import { durataMesi } from './totale';
-import { ETICHETTA_STIMA, rataDelPiano, serieValoreDebito, valoreStimato, type PianoDebito, type SerieValoreDebito } from './valore';
+import { rataDelPiano, serieValoreDebito, valoreStimato, type PianoDebito, type SerieValoreDebito } from './valore';
 
 /** Dati della scena del risultato (specifica v2, §2): funzioni pure, senza DOM, usate dall'isola e dall'immagine della scheda. */
 export interface BaseScena {
@@ -82,11 +85,11 @@ export function serieScena(b: BaseScena, c: Cursori): SerieValoreDebito | null {
   return serieValoreDebito({ prezzo: b.prezzo, piano, kmAnnui: c.kmAnnui, vfg: c.durata === b.durata ? b.vfg : null });
 }
 
-/** "Dal mese 14 devi all'auto più di quanto vale (stima)." oppure la frase opposta. */
-export function fraseIncrocio(s: SerieValoreDebito): string {
-  if (s.meseIncrocio == null) return `Per tutta la durata il debito resta sotto il valore stimato dell’auto (${ETICHETTA_STIMA}).`;
-  if (s.meseIncrocio === 0) return `Dalla firma devi all’auto più di quanto vale (${ETICHETTA_STIMA}).`;
-  return `Dal mese ${s.meseIncrocio} devi all’auto più di quanto vale (${ETICHETTA_STIMA}).`;
+/** "Dal mese 14 devi all'auto più di quanto vale (stima)." oppure la frase opposta, nella lingua del mercato. */
+export function fraseIncrocio(s: SerieValoreDebito, m: Mercato = MERCATO_IT): string {
+  if (s.meseIncrocio == null) return t(m, 'atto2.incrocioMai');
+  if (s.meseIncrocio === 0) return t(m, 'atto2.incrocioFirma');
+  return t(m, 'atto2.incrocioMese', { mese: s.meseIncrocio });
 }
 
 /** Riga breve per il testo da condividere: solo se c'è un incrocio. */
@@ -97,14 +100,15 @@ export function rigaIncrocio(s: SerieValoreDebito | null): string | null {
 
 /** Cosa resta in mano alla fine, strada per strada, con il valore stimato dove l'auto è tua. Nessuna classifica. */
 export function possessoFinale(a: Analisi, b: BaseScena): Readonly<Record<'A' | 'B' | 'C', string>> {
+  const m = a.mercato;
   const valore = b.prezzo != null ? valoreStimato(b.prezzo, b.durata, b.kmAnnui) : null;
-  const vale = valore != null ? ` Alla fine vale circa ${euroIntero(valore)} (${ETICHETTA_STIMA}).` : '';
+  const vale = valore != null ? t(m, 'possesso.vale', { valore: euroIntero(valore) }) : '';
   const maxi = a.preventivo.maxiRata ?? 0;
-  const nulla = 'Nulla: a fine contratto riconsegni l’auto.';
+  const nulla = t(m, 'possesso.nulla');
   const strada = a.preventivo.tipo === 'noleggio'
     ? nulla
-    : maxi > 0 ? `L’auto è tua se paghi anche la maxi rata di ${euro(maxi)}.${vale} Se la restituisci, nulla.` : `L’auto è tua con l’ultima rata.${vale}`;
-  return { A: `L’auto è tua dal primo giorno.${vale}`, B: strada, C: nulla };
+    : maxi > 0 ? t(m, 'possesso.conMaxi', { importo: euro(maxi), vale }) : t(m, 'possesso.ultimaRata', { vale });
+  return { A: t(m, 'possesso.dalPrimoGiorno', { vale }), B: strada, C: nulla };
 }
 
 /** Una sola scala in euro per tutta la scena: il totale e le tre strade si confrontano a vista. */

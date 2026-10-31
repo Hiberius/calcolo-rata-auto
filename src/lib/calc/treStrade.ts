@@ -1,12 +1,15 @@
+import { t } from '../../markets';
+import { MERCATO_IT } from '../../markets/it';
+import type { Mercato } from '../../markets/tipi';
 import { arrotonda, euro, numero, punti } from './format';
 import { rataCostante, tanNominaleDaTaeg } from './rata';
 import type { Ipotesi, Preventivo, Strada, Totali } from './tipi';
 import { durataMesi, speseAccessorie } from './totale';
 
-function stradaContanti(p: Preventivo, t: Totali, ipotesi: Ipotesi): Strada {
-  const titolo = 'Contanti o prestito personale';
-  const possiedi = "L'auto è tua dal primo giorno.";
-  const prezzo = t.prezzoRiferimento;
+function stradaContanti(p: Preventivo, tot: Totali, ipotesi: Ipotesi, m: Mercato): Strada {
+  const titolo = t(m, 'strade.contanti');
+  const possiedi = t(m, 'strade.dalPrimoGiorno');
+  const prezzo = tot.prezzoRiferimento;
   if (prezzo == null) {
     return { id: 'A', titolo, totaleUscito: null, possiediAllaFine: possiedi, ipotesi: [], dettaglio: 'Serve il prezzo in contanti per calcolare questa strada.' };
   }
@@ -30,26 +33,26 @@ function stradaContanti(p: Preventivo, t: Totali, ipotesi: Ipotesi): Strada {
   };
 }
 
-function stradaPreventivo(p: Preventivo, t: Totali): Strada {
+function stradaPreventivo(p: Preventivo, tot: Totali, m: Mercato): Strada {
   const maxi = p.maxiRata ?? 0;
   const possiedi = maxi > 0
-    ? `L'auto è tua solo se paghi la maxi rata di ${euro(maxi)}. Se la restituisci hai pagato ${euro(t.totalePagatoRestituendo)} senza tenerla.`
+    ? t(m, 'strade.conMaxi', { importo: euro(maxi), restituendo: euro(tot.totalePagatoRestituendo) })
     : p.tipo === 'noleggio'
-      ? "Nulla: a fine contratto riconsegni l'auto."
-      : "L'auto è tua con l'ultima rata.";
+      ? t(m, 'strade.nulla')
+      : t(m, 'strade.ultimaRata');
   return {
     id: 'B',
-    titolo: 'Il tuo preventivo',
-    totaleUscito: t.totalePagatoTenendo,
+    titolo: t(m, 'strade.preventivo'),
+    totaleUscito: tot.totalePagatoTenendo,
     possiediAllaFine: possiedi,
     ipotesi: ['Numeri del preventivo, nessuna ipotesi aggiunta'],
     dettaglio: `Anticipo ${euro(p.anticipo)}, ${p.nRate} rate da ${euro(p.rata)}${maxi > 0 ? `, maxi rata ${euro(maxi)}` : ''}.`,
   };
 }
 
-function stradaNoleggio(p: Preventivo, ipotesi: Ipotesi): Strada {
-  const titolo = 'Noleggio a lungo termine';
-  const possiedi = "Nulla: a fine contratto riconsegni l'auto.";
+function stradaNoleggio(p: Preventivo, ipotesi: Ipotesi, m: Mercato): Strada {
+  const titolo = t(m, 'strade.noleggio');
+  const possiedi = t(m, 'strade.nulla');
   const mesi = ipotesi.mesiNoleggio ?? Math.max(12, durataMesi(p));
   if (ipotesi.canoneNoleggio == null) {
     return { id: 'C', titolo, totaleUscito: null, possiediAllaFine: possiedi, ipotesi: [`${mesi} mesi`], dettaglio: 'Inserisci un canone mensile di noleggio per confrontare questa strada.' };
@@ -70,7 +73,7 @@ function stradaNoleggio(p: Preventivo, ipotesi: Ipotesi): Strada {
   };
 }
 
-/** Tre colonne affiancate, nessuna classifica. */
-export function treStrade(p: Preventivo, t: Totali, ipotesi: Ipotesi): readonly Strada[] {
-  return [stradaContanti(p, t, ipotesi), stradaPreventivo(p, t), stradaNoleggio(p, ipotesi)];
+/** Tre colonne affiancate, nessuna classifica. Titoli e possesso nella lingua del mercato. */
+export function treStrade(p: Preventivo, tot: Totali, ipotesi: Ipotesi, m: Mercato = MERCATO_IT): readonly Strada[] {
+  return [stradaContanti(p, tot, ipotesi, m), stradaPreventivo(p, tot, m), stradaNoleggio(p, ipotesi, m)];
 }

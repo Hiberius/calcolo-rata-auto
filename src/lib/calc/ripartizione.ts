@@ -1,3 +1,5 @@
+import { t } from '../../markets';
+import type { Mercato } from '../../markets/tipi';
 import type { Analisi } from './tipi';
 
 /** Dove vanno i tuoi euro (specifica v2, §2 atto 1): il totale pagato diviso in contenitori, al centesimo. */
@@ -53,10 +55,10 @@ function contenitore(chiave: ChiaveContenitore, etichetta: string, centesimi: nu
   return { chiave, etichetta, importo: euro(centesimi) };
 }
 
-function senzaPrezzo(totale: number, spese: number, polizze: number, etichettaResto: string): readonly Contenitore[] {
+function senzaPrezzo(m: Mercato, totale: number, spese: number, polizze: number, etichettaResto: string): readonly Contenitore[] {
   const resto = totale - spese - polizze;
-  if (resto < 0) return [contenitore('resto', 'Totale', totale)];
-  return [contenitore('resto', etichettaResto, resto), contenitore('spese', 'Spese', spese), contenitore('polizze', 'Polizze e servizi', polizze)]
+  if (resto < 0) return [contenitore('resto', t(m, 'contenitore.totale'), totale)];
+  return [contenitore('resto', etichettaResto, resto), contenitore('spese', t(m, 'contenitore.spese'), spese), contenitore('polizze', t(m, 'contenitore.polizze'), polizze)]
     .filter((c) => c.chiave !== 'polizze' || c.importo > 0);
 }
 
@@ -76,17 +78,17 @@ export function ripartizioneTotale(a: Analisi): Ripartizione {
   const interessi = prezzo != null ? totale - cent(prezzo) - spese - polizze : -1;
   if (noleggio || prezzo == null || a.totali.costoCredito == null || interessi < 0) {
     const nota = noleggio ? NOTA_NOLEGGIO : prezzo == null ? NOTA_SENZA_PREZZO : NOTA_INCOERENTE;
-    const etichetta = noleggio ? 'Canoni e anticipo' : 'Auto e credito, insieme';
-    return { totale: euro(totale), conPrezzo: false, contenitori: senzaPrezzo(totale, spese, polizze, etichetta), spese: speseEuro, nota };
+    const etichetta = t(a.mercato, noleggio ? 'contenitore.canoni' : 'contenitore.insieme');
+    return { totale: euro(totale), conPrezzo: false, contenitori: senzaPrezzo(a.mercato, totale, spese, polizze, etichetta), spese: speseEuro, nota };
   }
   return {
     totale: euro(totale),
     conPrezzo: true,
     contenitori: [
-      contenitore('capitale', 'Prezzo dell’auto', cent(prezzo)),
-      contenitore('interessi', 'Interessi', interessi),
-      contenitore('spese', 'Spese', spese),
-      contenitore('polizze', 'Polizze e servizi', polizze),
+      contenitore('capitale', t(a.mercato, 'contenitore.capitale'), cent(prezzo)),
+      contenitore('interessi', t(a.mercato, 'contenitore.interessi'), interessi),
+      contenitore('spese', t(a.mercato, 'contenitore.spese'), spese),
+      contenitore('polizze', t(a.mercato, 'contenitore.polizze'), polizze),
     ],
     spese: speseEuro,
     nota: null,

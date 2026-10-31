@@ -2,6 +2,8 @@ import { useCallback } from 'preact/hooks';
 import { euro, euroIntero, percentuale } from '~/lib/calc/format';
 import type { Ripartizione } from '~/lib/calc/ripartizione';
 import { contatore } from '~/lib/motion';
+import { attorno, t } from '~/markets';
+import type { Mercato } from '~/markets/tipi';
 import { COLORE_CONTENITORE } from './disegno/colori';
 import { disegnaFlusso } from './disegno/flusso';
 import { useAvanzamento } from './useAvanzamento';
@@ -16,14 +18,15 @@ interface Props {
   nRate: number;
   rata: number;
   sommaRate: number;
+  m: Mercato;
 }
 
-function riepilogo(r: Ripartizione, quota: string | null): string {
+function riepilogo(r: Ripartizione, quota: string | null, m: Mercato): string {
   const parti = r.contenitori.map((c) => `${c.etichetta} ${euro(c.importo)}`).join(', ');
-  return `Paghi in tutto ${euro(r.totale)}: ${parti}.${quota ? ` La rata pubblicizzata copre il ${quota} di quello che paghi.` : ''}`;
+  return `${t(m, 'atto1.riepilogo', { totale: euro(r.totale), parti })}${quota ? ` ${t(m, 'atto1.quota', { quota })}` : ''}`;
 }
 
-export default function Atto1Flusso({ ripartizione: r, scala, statico, quotaRata, nRate, rata, sommaRate }: Props) {
+export default function Atto1Flusso({ ripartizione: r, scala, statico, quotaRata, nRate, rata, sommaRate, m }: Props) {
   const { ref, avanzamento } = useAvanzamento(statico, 1800);
   const disegno = useCallback(
     (ctx: CanvasRenderingContext2D, area: Area) => disegnaFlusso(ctx, area, { voci: r.contenitori, totale: r.totale, scala, avanzamento }),
@@ -32,15 +35,16 @@ export default function Atto1Flusso({ ripartizione: r, scala, statico, quotaRata
   const tela = useTela(disegno);
   const quota = quotaRata != null ? percentuale(quotaRata, 0) : null;
   const colonne = r.contenitori.length;
+  const [primaQuota, dopoQuota] = attorno(m, 'atto1.quota', 'quota');
 
   return (
     <section ref={ref} class="atto grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14" aria-labelledby="atto1-titolo" data-atto="1" data-avanzamento={avanzamento >= 1 ? '1' : '0'}>
       <div class="grid content-start gap-5">
         <p class="atto-numero">01</p>
-        <h3 id="atto1-titolo" class="atto-titolo">Dove vanno i tuoi euro</h3>
+        <h3 id="atto1-titolo" class="atto-titolo">{t(m, 'atto1.titolo')}</h3>
         {quota && (
           <p class="atto-frase" data-frase-quota>
-            La rata pubblicizzata copre il <span class="numeri text-[var(--scena-segnale)]">{quota}</span> di quello che paghi.
+            {primaQuota}<span class="numeri text-[var(--scena-segnale)]">{quota}</span>{dopoQuota}
           </p>
         )}
         {quota && <p class="numeri text-sm text-[var(--scena-tenue)]">{nRate} × {euro(rata)} = {euro(sommaRate)} su {euro(r.totale)}</p>}
@@ -48,7 +52,7 @@ export default function Atto1Flusso({ ripartizione: r, scala, statico, quotaRata
       </div>
       <div class="grid gap-4" aria-hidden="true">
         <p class="numeri flex items-baseline justify-between gap-3 text-sm text-[var(--scena-tenue)]">
-          <span>Dalla tua tasca</span>
+          <span>{t(m, 'atto1.tasca')}</span>
           <span class="text-[var(--scena-carta)] text-base" data-totale-scena>{euro(contatore(0, r.totale, avanzamento))}</span>
         </p>
         <canvas ref={tela} class="block h-[220px] w-full sm:h-[300px]" aria-hidden="true" data-tela="flusso" />
@@ -66,7 +70,7 @@ export default function Atto1Flusso({ ripartizione: r, scala, statico, quotaRata
           ))}
         </ul>
       </div>
-      <p class="sr-only" data-riepilogo="1">{riepilogo(r, quota)}</p>
+      <p class="sr-only" data-riepilogo="1">{riepilogo(r, quota, m)}</p>
     </section>
   );
 }

@@ -6,6 +6,7 @@ import Disclaimer from '../ui/Disclaimer';
 import ComposizioneTotale from '../ui/ComposizioneTotale';
 import SpiegazioneTaeg from '../ui/SpiegazioneTaeg';
 import ScenariFine from './ScenariFine';
+import { t as testo } from '~/markets';
 
 const TIPO_PREZZO = { contanti: 'in contanti', promo: 'promozionale', listino: 'di listino', assente: '' } as const;
 
@@ -31,14 +32,15 @@ interface Props {
 export default function ResultCard({ analisi: a, azioni, ambito = 'risultato', etichetta }: Props) {
   const t = a.totali;
   const p = a.preventivo;
+  const m = a.mercato;
   const titolo = [p.marca, p.modello, p.versione].filter(Boolean).join(' ');
   return (
     <article class="scontrino rounded-t px-5 py-8 sm:px-10 sm:py-12 grid gap-10 entra" aria-labelledby="totale-titolo" data-risultato>
       <header class="grid gap-3">
         {etichetta && <p class="numeri w-fit border border-inchiostro px-2 py-0.5 text-xs uppercase tracking-wide" data-etichetta-esempio>{etichetta}</p>}
-        <p class="numeri text-sm text-tenue">{titolo || 'Il tuo preventivo'} · <s>a {euro(p.rata)} al mese</s></p>
+        <p class="numeri text-sm text-tenue">{titolo || testo(m, 'risultato.tuoPreventivo')} · <s>{testo(m, 'risultato.alMese', { importo: euro(p.rata) })}</s></p>
         <h2 id="totale-titolo" class="grid gap-1">
-          <span class="text-lg font-medium">Paghi davvero</span>
+          <span class="text-lg font-medium">{testo(m, 'risultato.paghiDavvero')}</span>
           <span class="numeri totale-grande" data-totale>{euro(t.totalePagatoTenendo)}</span>
         </h2>
         {t.prezzoRiferimento != null && (
@@ -49,10 +51,10 @@ export default function ResultCard({ analisi: a, azioni, ambito = 'risultato', e
       {t.costoCredito != null && (
         <section class="grid gap-2 border-y-2 border-segnale py-4" aria-label="Costo del credito">
           <p class="flex flex-wrap items-baseline justify-between gap-3 text-segnale-scuro">
-            <span class="font-semibold text-lg">Costo del credito</span>
+            <span class="font-semibold text-lg">{testo(m, 'risultato.costoCredito')}</span>
             <span class="numeri flex flex-wrap items-baseline gap-x-3 font-semibold">
               <span class="text-3xl sm:text-4xl whitespace-nowrap">{euro(t.costoCredito)}</span>
-              <span class="text-xl sm:text-2xl whitespace-nowrap">{percentuale(t.costoCreditoPct)} del prezzo</span>
+              <span class="text-xl sm:text-2xl whitespace-nowrap">{percentuale(t.costoCreditoPct)} {testo(m, 'risultato.delPrezzo')}</span>
             </span>
           </p>
           <p class="font-medium">{a.verdetto.etichetta}</p>
@@ -65,7 +67,7 @@ export default function ResultCard({ analisi: a, azioni, ambito = 'risultato', e
       {t.messaggi.length > 0 && <div class="grid gap-2">{t.messaggi.map((m) => <Callout key={m}>{m}</Callout>)}</div>}
 
       <section class="grid gap-3" aria-labelledby="composizione-titolo">
-        <h3 id="composizione-titolo" class="font-semibold text-lg">Da dove viene il totale</h3>
+        <h3 id="composizione-titolo" class="font-semibold text-lg">{testo(m, 'risultato.composizione')}</h3>
         <ComposizioneTotale analisi={a} ambito={`${ambito}-voci`} />
       </section>
 
@@ -79,7 +81,7 @@ export default function ResultCard({ analisi: a, azioni, ambito = 'risultato', e
       </section>
 
       <section class="grid gap-3" aria-labelledby="fine-titolo">
-        <h3 id="fine-titolo" class="font-semibold text-lg">Alla fine del contratto</h3>
+        <h3 id="fine-titolo" class="font-semibold text-lg">{testo(m, 'risultato.fineContratto')}</h3>
         <ScenariFine scenari={a.scenari} />
       </section>
 

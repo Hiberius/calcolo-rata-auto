@@ -2,14 +2,31 @@ import type { SerieValoreDebito } from '~/lib/calc/valore';
 import type { Area } from '../useTela';
 import { MONO, SANS, SCENA } from './colori';
 
+/** Testi disegnati sul canvas, nella lingua del mercato. */
+export interface EtichetteCurve {
+  readonly vfg: string;
+  readonly mese: (n: number) => string;
+}
+
+const ETICHETTE_IT: EtichetteCurve = { vfg: 'valore garantito dalla casa', mese: (n) => `mese ${n}` };
+
 export interface StatoCurve {
   readonly serie: SerieValoreDebito;
   /** Massimo dell'asse in euro: il prezzo o il debito più alto. */
   readonly massimo: number;
   readonly avanzamento: number;
+  readonly etichette?: EtichetteCurve | undefined;
+  /** Anteprima della home: niente etichette sugli assi, solo le curve. */
+  readonly senzaAssi?: boolean | undefined;
 }
 
 const MARGINE = { sinistra: 52, destra: 14, alto: 18, basso: 30 } as const;
+/** Senza assi (anteprima della home) le curve prendono quasi tutto lo spazio. */
+const MARGINE_NUDO = { sinistra: 6, destra: 10, alto: 14, basso: 10 } as const;
+
+function margine(s: StatoCurve): { readonly sinistra: number; readonly destra: number; readonly alto: number; readonly basso: number } {
+  return s.senzaAssi ? MARGINE_NUDO : MARGINE;
+}
 
 interface Scala {
   readonly x: (mese: number) => number;
@@ -17,12 +34,13 @@ interface Scala {
 }
 
 function scala(a: Area, s: StatoCurve): Scala {
-  const w = a.larghezza - MARGINE.sinistra - MARGINE.destra;
-  const h = a.altezza - MARGINE.alto - MARGINE.basso;
+  const m = margine(s);
+  const w = a.larghezza - m.sinistra - m.destra;
+  const h = a.altezza - m.alto - m.basso;
   const durata = Math.max(1, s.serie.durata);
   return {
-    x: (mese) => MARGINE.sinistra + (mese / durata) * w,
-    y: (euro) => MARGINE.alto + h - (euro / s.massimo) * h,
+    x: (mese) => m.sinistra + (mese / durata) * w,
+    y: (euro) => m.alto + h - (euro / s.massimo) * h,
   };
 }
 
@@ -69,7 +87,7 @@ function griglia(ctx: CanvasRenderingContext2D, a: Area, s: StatoCurve, sc: Scal
 /** Zona in cui il debito supera il valore, riempita: «qui devi all’auto più di quanto vale». */
 function zonaSopra(ctx: CanvasRenderingContext2D, s: StatoCurve, sc: Scala, fino: number): void {
   const punti = s.serie.punti.filter((p) => p.mese <= fino);
-  ctx.fillStyle = 'rgba(242, 130, 95, 0.22)';
+  ctx.fillStyle = 'rgba(242, 130, 95, 0.36)';
   for (let k = 1; k < punti.length; k += 1) {
     const p0 = punti[k - 1];
     const p1 = punti[k];
@@ -82,6 +100,38 @@ function zonaSopra(ctx: CanvasRenderingContext2D, s: StatoCurve, sc: Scala, fino
     ctx.closePath();
     ctx.fill();
   }
+}
+
+/**
+ * Segno verticale sul primo mese in cui il debito supera il valore: quando le due curve sono vicine la zona è sottile,
+ * il segno con il mese la rende leggibile comunque.
+ */
+function segnoIncrocio(ctx: CanvasRenderingContext2D, a: Area, s: StatoCurve, sc: Scala, fino: number): void {
+  const mese = s.serie.meseIncrocio;
+  if (mese == null || mese > fino) return;
+  const x = Math.round(sc.x(mese)) + 0.5;
+  const mg = margine(s);
+  ctx.save();
+  ctx.strokeStyle = SCENA.segnale;
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3, 4]);
+  ctx.beginPath();
+  ctx.moveTo(x, mg.alto);
+  ctx.lineTo(x, a.altezza - mg.basso);
+  ctx.stroke();
+  ctx.restore();
+  if (s.senzaAssi) return;
+  const testo = (s.etichette ?? ETICHETTE_IT).mese(mese);
+  ctx.font = `600 11px ${MONO}`;
+  const larghezza = ctx.measureText(testo).width;
+  const vicinoDestra = x + 6 + larghezza > a.larghezza - mg.destra;
+  const xTesto = vicinoDestra ? x - 6 - larghezza : x + 6;
+  ctx.fillStyle = SCENA.fondo;
+  ctx.fillRect(xTesto - 3, mg.alto - 2, larghezza + 6, 16);
+  ctx.fillStyle = SCENA.segnale;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillText(testo, xTesto, mg.alto);
 }
 
 function linea(ctx: CanvasRenderingContext2D, s: StatoCurve, sc: Scala, fino: number, campo: 'valore' | 'debito', colore: string, spessore: number): void {
@@ -117,7 +167,7 @@ function puntiFinali(ctx: CanvasRenderingContext2D, s: StatoCurve, sc: Scala): v
   const y = sc.y(s.serie.vfg.importo);
   punto(ctx, x, y, SCENA.attenzione, true);
   // L'etichetta sta su un riquadro del colore del fondo: sopra le curve resta leggibile.
-  const testo = 'valore garantito dalla casa';
+  const testo = (s.etichette ?? ETICHETTE_IT).vfg;
   ctx.font = `600 12px ${SANS}`;
   const larghezza = ctx.measureText(testo).width;
   const yTesto = Math.max(16, y - 16);
@@ -133,9 +183,10 @@ function puntiFinali(ctx: CanvasRenderingContext2D, s: StatoCurve, sc: Scala): v
 export function disegnaCurve(ctx: CanvasRenderingContext2D, a: Area, s: StatoCurve): void {
   const sc = scala(a, s);
   const fino = s.serie.durata * s.avanzamento;
-  griglia(ctx, a, s, sc);
+  if (!s.senzaAssi) griglia(ctx, a, s, sc);
   zonaSopra(ctx, s, sc, fino);
+  segnoIncrocio(ctx, a, s, sc, fino);
   linea(ctx, s, sc, fino, 'valore', SCENA.carta, 2);
   linea(ctx, s, sc, fino, 'debito', SCENA.segnale, 2.5);
-  if (s.avanzamento >= 1) puntiFinali(ctx, s, sc);
+  if (s.avanzamento >= 1 && !s.senzaAssi) puntiFinali(ctx, s, sc);
 }

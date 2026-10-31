@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { analizzaLeggero, type NumeriLeggeri } from '~/lib/calc/leggero';
+import { t } from '~/markets';
+import type { Mercato } from '~/markets/tipi';
 import { ripartizioneTotale } from '~/lib/calc/ripartizione';
 import { baseScena, cursoriIniziali, possessoFinale, scalaEuro, type Cursori } from '~/lib/calc/scena';
 import { inviaEvento } from '~/lib/client/evento';
@@ -17,6 +19,8 @@ interface Props {
   vfg?: number | null | undefined;
   /** Etichetta sopra la scena (es. preventivo d'esempio). */
   etichetta?: string | undefined;
+  /** Mercato del calcolo e dei testi (specifica v2, §5). Senza, l'Italia. */
+  mercato?: Mercato | undefined;
 }
 
 function useMenoMovimento(): boolean {
@@ -26,8 +30,8 @@ function useMenoMovimento(): boolean {
 }
 
 /** La scena del risultato (specifica v2, §2): tre atti su un pannello inchiostro, poi la tabella completa resta sotto. */
-export default function Scena({ preventivo, vfg = null, etichetta }: Props) {
-  const analisi = useMemo(() => analizzaLeggero(preventivo), [preventivo]);
+export default function Scena({ preventivo, vfg = null, etichetta, mercato }: Props) {
+  const analisi = useMemo(() => analizzaLeggero(preventivo, {}, mercato), [preventivo, mercato]);
   const base = useMemo(() => (analisi ? baseScena(analisi, vfg) : null), [analisi, vfg]);
   const [cursori, setCursori] = useState<Cursori | null>(base ? cursoriIniziali(base) : null);
   const [venditore, setVenditore] = useState(false);
@@ -50,6 +54,7 @@ export default function Scena({ preventivo, vfg = null, etichetta }: Props) {
 
   if (!analisi || !base || !cursori || !ripartizione || !possesso) return null;
   const scala = scalaEuro(analisi);
+  const m = analisi.mercato;
 
   function cambiaCursori(c: Cursori) {
     setCursori(c);
@@ -68,9 +73,9 @@ export default function Scena({ preventivo, vfg = null, etichetta }: Props) {
       <header class="flex flex-wrap items-start justify-between gap-4">
         <div class="grid gap-2">
           {etichetta && <p class="numeri w-fit border border-[var(--scena-riga)] px-2 py-0.5 text-xs uppercase tracking-wide">{etichetta}</p>}
-          <h2 class="text-sm uppercase tracking-[0.18em] text-[var(--scena-tenue)]">La scena del tuo preventivo</h2>
+          <h2 class="text-sm uppercase tracking-[0.18em] text-[var(--scena-tenue)]">{t(m, 'scena.titolo')}</h2>
         </div>
-        <button type="button" class="btn btn-scena" onClick={apriVenditore} data-mostra-venditore>Mostralo al venditore</button>
+        <button type="button" class="btn btn-scena" onClick={apriVenditore} data-mostra-venditore>{t(m, 'scena.venditore')}</button>
       </header>
       <Atto1Flusso
         ripartizione={ripartizione}
@@ -80,14 +85,16 @@ export default function Scena({ preventivo, vfg = null, etichetta }: Props) {
         nRate={analisi.preventivo.nRate}
         rata={analisi.preventivo.rata}
         sommaRate={analisi.totali.sommaRate}
+        m={m}
       />
-      <Atto2Curve base={base} cursori={cursori} onCursori={cambiaCursori} statico={statico} tipo={analisi.preventivo.tipo} />
+      <Atto2Curve base={base} cursori={cursori} onCursori={cambiaCursori} statico={statico} tipo={analisi.preventivo.tipo} m={m} />
       <Atto3Strade
         strade={analisi.treStrade}
         possesso={possesso}
         scala={scala}
         statico={statico}
         onConfronta={() => salvaPreventivo(analisi.preventivo)}
+        m={m}
       />
       <MostraVenditore analisi={analisi} aperta={venditore} onChiudi={() => setVenditore(false)} />
     </div>
