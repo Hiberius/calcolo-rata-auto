@@ -1,0 +1,6 @@
+# Copiare in .dev.vars (ignorato da git). Valori di TEST di Cloudflare Turnstile: passano sempre.
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+# Sale per l'hash giornaliero degli IP (qualsiasi stringa lunga e casuale)
+HASH_SALT=cambiami-in-produzione
+# Opzionale: estrazione con Claude Haiku (spenta se vuota)
+ANTHROPIC_API_KEY=

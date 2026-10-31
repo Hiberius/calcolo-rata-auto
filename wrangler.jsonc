@@ -1,0 +1,29 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ratavera",
+  "main": "./dist/_worker.js/index.js",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "binding": "ASSETS", "directory": "./dist" },
+  "observability": { "enabled": true },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ratavera-db",
+      "database_id": "fe67497f-635f-41ad-b006-d1168b159f34",
+      "migrations_dir": "src/lib/db/migrations"
+    }
+  ],
+  "kv_namespaces": [
+    { "binding": "KV", "id": "d2347e80ecb846d4af2491ddec46b477" }
+  ],
+  "ai": { "binding": "AI" },
+  // Variabili pubbliche. La chiave Turnstile qui sotto e' quella di TEST di Cloudflare (passa sempre):
+  // sostituirla con la chiave vera quando il sito e' sul dominio. I segreti vanno con `wrangler secret put`.
+  "vars": {
+    "PUBLIC_TURNSTILE_SITE_KEY": "1x00000000000000000000AA",
+    "PUBLIC_SITE_URL": "https://ratavera.it",
+    "ESTRAZIONE_LIMITE_GIORNO": "20",
+    "ESTRAZIONE_LIMITE_MINUTO": "3"
+  }
+}
