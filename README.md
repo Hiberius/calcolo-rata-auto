@@ -27,6 +27,10 @@ Finché `PUBLIC_TURNSTILE_SITE_KEY` e `TURNSTILE_SECRET_KEY` non sono quelle ver
 - `src/lib/db` schema D1, migrazioni, query tipizzate
 - `src/lib/og` scheda condivisibile: testo e immagine (workers-og, lasciato esterno a Vite e impacchettato da wrangler per i file .wasm)
 - `src/components/decode` isola Preact della home
+- `src/components/scene` la scena del risultato (v2, §2): isola Preact con canvas 2D in tre atti (dove vanno i tuoi euro, valore stimato contro debito con cursori, tre strade), vista «mostralo al venditore». In home si scarica solo quando c'è un risultato (`ScenaPigra`), nella pagina promo è `client:only`. Peso: circa 10 kB gzip propri, 21 kB con il runtime Preact condiviso
+- `src/lib/calc/valore.ts` modello dichiarato del valore stimato (−20% il primo anno, −12% dopo, ±2% ogni 5.000 km, minimo 10%), debito residuo al TAN, primo mese di incrocio; `ripartizione.ts` divide il totale in prezzo, interessi, spese, polizze al centesimo; `scena.ts` dati della scena e dei cursori
+- `src/lib/motion.ts` tween, curve, contatore, IntersectionObserver e prefers-reduced-motion, senza librerie
+- `src/lib/og/scena.ts` + `/s/:id/scena.png` immagine statica dell'atto 2 nella scheda
 - `src/lib/promo` + `src/data/promos/*.json` promozioni (§7), validate con zod a build time; pagine `/promozioni`
 - `src/data/guide/*.md` le 5 guide (§3), frontmatter validato in `src/lib/guide.ts`; calcolo vivo `src/components/compare/CalcoloVivo.tsx` (senza zod)
 - `src/lib/moduli` moduli pubblici (noleggio, eventi): zod `.strict()`, Turnstile, limite KV, 303 per i form HTML
