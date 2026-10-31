@@ -1,0 +1,16 @@
+{
+  "name": "Rata Vera: quanto paghi davvero",
+  "short_name": "Rata Vera",
+  "description": "Leggi il preventivo di finanziamento dell'auto e vedi il costo vero, prima di firmare.",
+  "lang": "it-IT",
+  "start_url": "/",
+  "scope": "/",
+  "display": "browser",
+  "background_color": "#F6F3EE",
+  "theme_color": "#F6F3EE",
+  "icons": [
+    { "src": "/favicon.svg", "type": "image/svg+xml", "sizes": "any" },
+    { "src": "/icone/icon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/icone/icon-512.png", "type": "image/png", "sizes": "512x512", "purpose": "any maskable" }
+  ]
+}

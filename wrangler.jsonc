@@ -5,7 +5,7 @@
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   // Il Worker passa anche sulle pagine statiche per aggiungere CSP con nonce e intestazioni di sicurezza (src/worker.ts).
-  "assets": { "binding": "ASSETS", "directory": "./dist", "run_worker_first": ["/*", "!/_astro/*", "!/fonts/*", "!/favicon.svg", "!/og-default.png"] },
+  "assets": { "binding": "ASSETS", "directory": "./dist", "run_worker_first": ["/*", "!/_astro/*", "!/fonts/*", "!/img/*", "!/icone/*", "!/favicon.svg", "!/og-default.png", "!/manifest.webmanifest"] },
   // Pulizia notturna secondo i tempi di conservazione di /privacy (src/lib/db/pulizia.ts).
   "triggers": { "crons": ["17 3 * * *"] },
   "observability": { "enabled": true },

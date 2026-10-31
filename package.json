@@ -16,7 +16,8 @@
     "db:migrate:remote": "wrangler d1 migrations apply ratavera-db --remote",
     "cf-typegen": "wrangler types",
     "promo:raccogli": "vite-node --config vitest.config.ts scripts/promo/raccogli.ts",
-    "deploy:controlla": "vite-node --config vitest.config.ts scripts/controlla-deploy.ts"
+    "deploy:controlla": "vite-node --config vitest.config.ts scripts/controlla-deploy.ts",
+    "immagini": "vite-node --config vitest.config.ts scripts/immagini.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.6.13",
