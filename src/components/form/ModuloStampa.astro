@@ -1,0 +1,24 @@
+---
+import { CONSENSI } from '~/lib/consent';
+import Campo from './Campo.astro';
+import EsitoModulo from './EsitoModulo.astro';
+import TurnstileImplicito from './TurnstileImplicito.astro';
+
+interface Props { siteKey: string }
+const { siteKey } = Astro.props;
+const consenso = CONSENSI.contatto_stampa;
+---
+<form id="modulo" method="post" action="/api/stampa" class="grid gap-4 scroll-mt-6" data-modulo-stampa>
+  <EsitoModulo etichette={{ email: 'email', testata: 'testata', consensoStampa: 'consenso' }} successo="Fatto: ti scriviamo quando esce ogni edizione dell’Indice, con il CSV e la frase di citazione." />
+  <div class="grid gap-4 sm:grid-cols-2">
+    <Campo nome="email" etichetta="Email di redazione" tipo="email" obbligatorio attributi={{ autocomplete: 'email', maxlength: 120 }} />
+    <Campo nome="testata" etichetta="Testata" obbligatorio attributi={{ maxlength: 80, autocomplete: 'organization' }} />
+  </div>
+  <label class="flex cursor-pointer items-start gap-3 text-sm">
+    <input type="checkbox" name="consensoStampa" required class="mt-1 size-5 shrink-0 accent-[#15171A]" />
+    <span>{consenso.testo}</span>
+  </label>
+  <input type="hidden" name="versioneConsenso" value={consenso.versione} />
+  <TurnstileImplicito siteKey={siteKey} />
+  <div><button type="submit" class="btn btn-primario w-full sm:w-auto">Avvisami all’uscita</button></div>
+</form>

@@ -1,0 +1,36 @@
+---
+import type { RigaIndice } from '~/lib/indice';
+import { ETICHETTE_METRICA, METRICHE, testoMetrica, valoreMetrica } from '~/lib/indice/metriche';
+
+interface Props { righe: readonly RigaIndice[] }
+const { righe } = Astro.props;
+const massimo = Math.max(...righe.map((r) => valoreMetrica(r, 'costo') ?? 0), 0.0001);
+---
+<figure class="grid gap-5" aria-labelledby="grafico-titolo">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <figcaption id="grafico-titolo" class="grid gap-1">
+      <span class="text-lg font-semibold">Le promozioni in barre</span>
+      <span class="text-sm text-tenue">Riordina per vedere le altre misure. La classifica resta quella del costo del credito.</span>
+    </figcaption>
+    <div class="ordina" role="group" aria-label="Ordina il grafico per">
+      {METRICHE.map((m) => <button type="button" data-ordina={m} aria-pressed={m === 'costo' ? 'true' : 'false'}>{ETICHETTE_METRICA[m]}</button>)}
+    </div>
+  </div>
+  <ol class="grafico-indice" data-grafico-indice data-metrica="costo" aria-describedby="grafico-titolo">
+    {righe.map((r, i) => {
+      const v = valoreMetrica(r, 'costo') ?? 0;
+      return (
+        <li class="riga-grafico" data-riga-indice style={`--i:${Math.min(i, 20)};`}
+          data-costo={valoreMetrica(r, 'costo') ?? ''} data-taeg={valoreMetrica(r, 'taeg') ?? ''} data-anticipo={valoreMetrica(r, 'anticipo') ?? ''} data-maxi={valoreMetrica(r, 'maxi') ?? ''}>
+          <a class="link truncate text-sm" href={r.percorso}>{r.marca} {r.modello}</a>
+          <span class="traccia-indice" aria-hidden="true"><span class="barra-indice block" style={`--quota:${(v / massimo).toFixed(4)};`} /></span>
+          <span class="numeri text-right text-sm" data-valore>{testoMetrica(v)}</span>
+        </li>
+      );
+    })}
+  </ol>
+</figure>
+<script>
+  import { avviaGraficoIndice } from '~/lib/client/graficoIndice';
+  avviaGraficoIndice(document);
+</script>

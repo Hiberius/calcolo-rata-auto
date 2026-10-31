@@ -1,0 +1,36 @@
+---
+import Testo from '~/layouts/Testo.astro';
+import { dataLunga } from '~/lib/date';
+import { CRITERIO, LICENZA, PRIMA_EDIZIONE, SOGLIA_PUBBLICAZIONE } from '~/lib/indice';
+import { DEFINIZIONI } from '~/lib/indice/metriche';
+export const prerender = true;
+---
+<Testo title="Metodologia dell’Indice Rata Vera: fonti, misure, classifica, licenza" description="Come costruiamo l’Indice Rata Vera: quali promozioni entrano, come calcoliamo costo del credito e TAEG ricostruito, l’ordine unico, la soglia di 20 promozioni, il CSV con licenza CC BY 4.0." titolo="Come costruiamo l’Indice" sopratitolo="Indice Rata Vera · Metodologia">
+  <p>L’Indice Rata Vera mette in fila, ogni mese, le promozioni auto ufficiali in vigore con un solo metro: quanto paghi in più del prezzo, in percentuale del prezzo. Non giudica le case e non consiglia un’offerta: confronta numeri pubblicati, ricalcolati tutti allo stesso modo.</p>
+
+  <h2>Quali promozioni entrano</h2>
+  <ul>
+    <li>Solo offerte pubblicate dalle case sui loro siti ufficiali, con la pagina della promozione come fonte e la data in cui l’abbiamo verificata. Niente annunci di portali o di concessionari.</li>
+    <li>Solo finanziamenti e leasing con un prezzo dichiarato (in contanti, promozionale o di listino, in quest’ordine): senza prezzo il costo del credito non si calcola. Il noleggio non entra, perché non c’è un credito.</li>
+    <li>Solo promozioni in vigore il giorno in cui si legge la pagina: una promozione scaduta esce dall’edizione il giorno dopo la sua scadenza.</li>
+  </ul>
+
+  <h2>Le misure</h2>
+  <ul>
+    {DEFINIZIONI.map((d) => <li><strong>{d.nome}</strong>: {d.testo}</li>)}
+  </ul>
+  <p>I calcoli sono quelli della <a href="/metodologia">metodologia dei preventivi</a>: stesso totale, stessa ricostruzione del TAEG per bisezione, stesse regole sulle spese già comprese nel credito. Le polizze e i servizi abbinati entrano nel totale ma non nel costo del credito, perché sono costi dell’auto: per questo li segnaliamo a parte, con un sì o un no.</p>
+
+  <h2>La classifica</h2>
+  <p>{CRITERIO} Il grafico della pagina si può riordinare per TAEG ricostruito, anticipo o maxi rata: cambia la vista, non la classifica.</p>
+
+  <h2>Quando esce</h2>
+  <p>Un’edizione al mese, intitolata con il mese («Novembre 2026»). Si pubblica solo con almeno {SOGLIA_PUBBLICAZIONE} promozioni valide: con meno, una classifica direbbe più di quello che i dati sanno. La prima edizione è prevista il {dataLunga(PRIMA_EDIZIONE)}. In futuro l’Indice userà anche le schede anonime dei preventivi che le persone aggiungono all’archivio con il loro consenso, e lo scriveremo qui prima.</p>
+
+  <h2>Dati e citazione</h2>
+  <p>Ogni edizione si scarica in CSV (separatore punto e virgola, decimali con la virgola, UTF-8): posizione, marca, modello, versione, costo del credito, TAEG dichiarato e ricostruito, anticipo, maxi rata, polizze o servizi abbinati, scadenza e fonte. Le prime due righe, che iniziano con #, riportano licenza e citazione.</p>
+  <p>I dati sono rilasciati con licenza <a href={LICENZA.url} rel="license">{LICENZA.nome}</a>: puoi riusarli e rielaborarli citando la fonte con la frase «Fonte: Indice Rata Vera, novembre 2026» (con il mese dell’edizione).</p>
+
+  <h2>Correzioni</h2>
+  <p>Se un numero non corrisponde alla fonte scrivi a <a href="mailto:ciao@ratavera.it">ciao@ratavera.it</a>: verifichiamo, correggiamo e aggiorniamo la data di verifica. Fa sempre fede il documento della casa. Nessuna posizione è a pagamento e nessuna casa può chiedere di comparire o di sparire.</p>
+</Testo>

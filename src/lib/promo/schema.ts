@@ -31,6 +31,9 @@ export const PromoSchema = z
     speseIstruttoria: euro.optional(),
     speseIncassoRata: euro.optional(),
     impostaBollo: euro.optional(),
+    /** Polizze e servizi abbinati obbligatori, se la promozione li richiede (Indice: «abbinati sì/no»). */
+    polizzeAbbinate: euro.optional(),
+    serviziAbbinati: euro.optional(),
     kmInclusi: z.number().int().nonnegative().optional(),
     costoKmEccedente: euro.optional(),
     requisiti: z.array(z.enum(REQUISITI)).default([]),

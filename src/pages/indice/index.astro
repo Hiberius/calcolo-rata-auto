@@ -1,0 +1,80 @@
+---
+import Base from '~/layouts/Base.astro';
+import GraficoIndice from '~/components/indice/GraficoIndice.astro';
+import TabellaIndice from '~/components/indice/TabellaIndice.astro';
+import ModuloStampa from '~/components/form/ModuloStampa.astro';
+import { CRITERIO, edizioneIndice, LICENZA, SOGLIA_PUBBLICAZIONE } from '~/lib/indice';
+import { DEFINIZIONI } from '~/lib/indice/metriche';
+import { tutteLePromo } from '~/lib/promo';
+import { TURNSTILE_SITE_KEY_TEST } from '~/lib/turnstile';
+
+// Reso a ogni richiesta: l'edizione dipende dalle promo in vigore oggi (le scadute escono da sole).
+export const prerender = false;
+const siteKey = Astro.locals.runtime?.env?.PUBLIC_TURNSTILE_SITE_KEY || TURNSTILE_SITE_KEY_TEST;
+const modulo = Astro.url.searchParams.has('inviato') || Astro.url.searchParams.has('errore');
+Astro.response.headers.set('cache-control', modulo ? 'no-store' : 'public, max-age=900');
+const adesso = new Date();
+const e = edizioneIndice(tutteLePromo(adesso), adesso);
+const quota = Math.min(1, e.nValide / SOGLIA_PUBBLICAZIONE);
+---
+<Base
+  title={e.pubblicabile ? `Indice Rata Vera, ${e.mese}: il costo del credito delle promozioni auto` : 'Indice Rata Vera: il costo del credito delle promozioni auto, ogni mese'}
+  description="Ogni mese le promozioni auto ufficiali messe in fila per costo del credito in percentuale del prezzo, con TAEG ricostruito, anticipo e maxi rata. Dati in CSV, licenza CC BY 4.0."
+>
+  <section class="contenitore grid gap-6 pt-8 pb-10 sm:pt-14" aria-labelledby="indice-titolo">
+    <p class="etichetta">Indice Rata Vera{e.pubblicabile ? ` · ${e.titolo}` : ''}</p>
+    <h1 id="indice-titolo" class="titolo-display max-w-[14ch]">Quanto costa il credito delle promozioni auto.</h1>
+    <p class="max-w-[58ch] text-lg text-tenue">Ogni mese mettiamo in fila le promozioni ufficiali delle case con lo stesso metro: quanto paghi in più del prezzo, in percentuale. Fonte e scadenza per ognuna, dati scaricabili.</p>
+  </section>
+
+  {!e.pubblicabile && (
+    <section class="contenitore grid gap-10 pb-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end" aria-labelledby="attesa-titolo" data-indice-attesa>
+      <div class="grid gap-4">
+        <h2 id="attesa-titolo" class="frase-grande max-w-[22ch]" data-prima-edizione>{e.attesa}</h2>
+        <p class="max-w-[52ch]">L’Indice esce solo quando le promozioni valide sono almeno {SOGLIA_PUBBLICAZIONE}: con meno, una classifica direbbe più di quello che i dati sanno. Fino ad allora qui trovi come lo costruiamo.</p>
+      </div>
+      <div class="grid gap-2" aria-label="Promozioni valide raccolte">
+        <p class="flex items-baseline justify-between gap-3"><span class="etichetta">Promozioni valide oggi</span><span class="numeri text-2xl" data-promo-valide>{e.nValide} su {SOGLIA_PUBBLICAZIONE}</span></p>
+        <span class="block h-1.5 bg-carta-scura" aria-hidden="true"><span class="block h-full origin-left bg-inchiostro" style={`transform: scaleX(${quota.toFixed(3)});`} /></span>
+      </div>
+    </section>
+  )}
+
+  {e.pubblicabile && (
+    <section class="contenitore grid gap-10 pb-6" aria-labelledby="edizione-titolo" data-indice-edizione>
+      <div class="grid gap-3">
+        <h2 id="edizione-titolo" class="titolo-sezione">Edizione di {e.mese}</h2>
+        <p class="max-w-[64ch] text-sm">{CRITERIO} <a class="link" href="/indice/metodologia">Metodologia</a>.</p>
+      </div>
+      <GraficoIndice righe={e.righe} />
+      <TabellaIndice righe={e.righe} />
+      <div class="grid gap-3 border-y border-riga py-5 sm:grid-cols-[auto_1fr] sm:items-center sm:gap-8">
+        <a class="btn btn-secondario" href="/indice/dati.csv" download data-scarica-csv>Scarica i dati in CSV</a>
+        <p class="text-sm">Licenza <a class="link" href={LICENZA.url} rel="license">{LICENZA.nome}</a>: puoi riusarli citando «<span data-citazione>{e.citazione}</span>».</p>
+      </div>
+    </section>
+  )}
+
+  <section class="contenitore sezione grid gap-8 md:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]" aria-labelledby="misure-titolo">
+    <div class="grid content-start gap-3">
+      <h2 id="misure-titolo" class="titolo-sezione">Cosa misuriamo</h2>
+      <p class="text-sm"><a class="link" href="/indice/metodologia">Metodologia completa dell’Indice</a></p>
+    </div>
+    <dl class="grid gap-x-10 gap-y-6 sm:grid-cols-2" data-metodologia-indice>
+      {DEFINIZIONI.map((d) => (
+        <div class="grid gap-1 border-t border-riga pt-3">
+          <dt class="font-semibold">{d.nome}</dt>
+          <dd class="text-tenue">{d.testo}</dd>
+        </div>
+      ))}
+    </dl>
+  </section>
+
+  <section class="contenitore grid gap-8 pb-4 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]" aria-labelledby="stampa-titolo">
+    <div class="grid content-start gap-3">
+      <h2 id="stampa-titolo" class="titolo-sezione">Per la stampa</h2>
+      <p class="max-w-[40ch] text-tenue">Lascia email e testata: ti avvisiamo all’uscita di ogni edizione, con il CSV e la frase di citazione.</p>
+    </div>
+    <ModuloStampa siteKey={siteKey} />
+  </section>
+</Base>
