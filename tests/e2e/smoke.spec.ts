@@ -86,7 +86,7 @@ test('promozioni e guida con calcolo vivo', async ({ page }) => {
 test('nessuna violazione della CSP sulle pagine principali', async ({ page }) => {
   const violazioni: string[] = [];
   page.on('console', (m) => { if (m.type() === 'error' && /Content Security Policy|Refused to/i.test(m.text())) violazioni.push(m.text()); });
-  for (const p of ['/', '/noleggio', '/promozioni', '/promozioni/seat/arona-black-edition-2026-11', '/guide/noleggio-lungo-termine-privati-conviene', '/chi-siamo', '/privacy']) {
+  for (const p of ['/', '/noleggio', '/promozioni', '/promozioni/seat/arona-black-edition-2026-11', '/guide/noleggio-lungo-termine-privati-conviene', '/chi-siamo', '/privacy', '/officina', '/indice', '/indice/metodologia']) {
     await page.goto(p, { waitUntil: 'load' });
     if (await page.locator('.cf-turnstile').count()) await expect(page.locator('input[name="cf-turnstile-response"]')).not.toHaveValue('', { timeout: 20_000 });
   }

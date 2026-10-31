@@ -106,7 +106,7 @@ test('scheda: immagine della scena accanto allo scontrino', async ({ page, reque
   await expect(page.locator('#testo-condivisione')).toContainText('Dal mese 36 devi all’auto più di quanto vale, stima.');
 });
 
-for (const larghezza of [375, 1440]) {
+for (const larghezza of [375, 768, 1024, 1440]) {
   test(`screenshot della scena a ${larghezza}`, async ({ browser }) => {
     const contesto = await browser.newContext({ viewport: { width: larghezza, height: 900 }, deviceScaleFactor: 2, locale: 'it-IT' });
     const page = await contesto.newPage();
