@@ -7,6 +7,8 @@ interface Props {
   stato: StatoForm;
   daConfermare: ReadonlySet<string>;
   errori: ReadonlyMap<string, string>;
+  /** Campi appena letti dalla foto e il loro ordine: si accendono uno dopo l'altro (specifica di movimento, F5). */
+  letti?: ReadonlyMap<string, number> | undefined;
   onCambia: (chiave: DefCampo['chiave'], valore: string) => void;
 }
 
@@ -20,7 +22,7 @@ function Aiuto({ def }: { def: DefCampo }) {
   return <>{testo.slice(0, i)}<Termine voce={voce} ambito="modulo-aiuto" />{testo.slice(i + parola.length)}</>;
 }
 
-function Campo({ def, valore, incerto, errore, onCambia }: { def: DefCampo; valore: string; incerto: boolean; errore?: string | undefined; onCambia: Props['onCambia'] }) {
+function Campo({ def, valore, incerto, errore, letto, onCambia }: { def: DefCampo; valore: string; incerto: boolean; errore?: string | undefined; letto?: number | undefined; onCambia: Props['onCambia'] }) {
   const id = `campo-${def.chiave}`;
   const descrizione = [def.aiuto && `${id}-aiuto`, incerto && `${id}-incerto`, errore && `${id}-errore`].filter(Boolean).join(' ') || undefined;
   return (
@@ -36,7 +38,8 @@ function Campo({ def, valore, incerto, errore, onCambia }: { def: DefCampo; valo
       <input
         id={id}
         name={def.chiave}
-        class={`campo ${incerto ? 'campo-da-confermare' : ''}`}
+        class={`campo ${incerto ? 'campo-da-confermare' : ''} ${letto != null ? 'campo-letto' : ''}`}
+        style={letto != null ? { '--i': letto } : undefined}
         inputMode={def.tipo === 'testo' ? 'text' : def.tipo === 'intero' ? 'numeric' : 'decimal'}
         autoComplete="off"
         value={valore}
@@ -53,7 +56,7 @@ function Campo({ def, valore, incerto, errore, onCambia }: { def: DefCampo; valo
   );
 }
 
-export default function FieldGroup({ gruppo, stato, daConfermare, errori, onCambia }: Props) {
+export default function FieldGroup({ gruppo, stato, daConfermare, errori, letti, onCambia }: Props) {
   const incerti = gruppo.campi.filter((c) => daConfermare.has(c.chiave)).length;
   const conErrori = gruppo.campi.some((c) => errori.has(c.chiave));
   return (
@@ -68,7 +71,7 @@ export default function FieldGroup({ gruppo, stato, daConfermare, errori, onCamb
       {gruppo.nota && <p class="mt-2 text-sm text-tenue max-w-prose">{gruppo.nota}</p>}
       <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {gruppo.campi.map((def) => (
-          <Campo key={def.chiave} def={def} valore={stato[def.chiave] ?? ''} incerto={daConfermare.has(def.chiave)} errore={errori.get(def.chiave)} onCambia={onCambia} />
+          <Campo key={def.chiave} def={def} valore={stato[def.chiave] ?? ''} incerto={daConfermare.has(def.chiave)} errore={errori.get(def.chiave)} letto={letti?.get(def.chiave)} onCambia={onCambia} />
         ))}
       </div>
     </details>

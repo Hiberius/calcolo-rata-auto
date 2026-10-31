@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { analizza, TIPI_CONTRATTO, type Analisi, type TipoContratto } from '~/lib/calc';
+import type { Analisi, TipoContratto } from '~/lib/calc';
 import { GRUPPI, preventivoDaForm, unisciEstrazione, type DefCampo, type StatoForm } from '~/lib/client/campi';
 import type { RispostaEstrazione } from '~/lib/extract/schema';
 import { inviaEvento } from '~/lib/client/evento';
-import { ESEMPIO_208, ETICHETTA_ESEMPIO } from '~/lib/esempio';
+import { ESEMPIO_208, etichettaEsempio } from '~/lib/esempio';
 import { salvaPreventivo } from '~/lib/client/sessione';
 import { ascoltaEsempio } from '~/lib/client/esempio';
-import { menoMovimento } from '~/lib/motion';
+import { scorriVerso } from '~/lib/motion';
 import CreaScheda from './CreaScheda';
 import { MESSAGGIO_TOTALE_INCOERENTE } from '~/lib/calc/totale';
 import FieldGroup from './FieldGroup';
@@ -15,11 +15,23 @@ import ScenaPigra from '../scene/ScenaPigra';
 import UploadDropzone from './UploadDropzone';
 
 const ETICHETTE_TIPO: Record<TipoContratto, string> = { finanziamento: 'Finanziamento', leasing: 'Leasing', noleggio: 'Noleggio' };
+const TIPI: readonly TipoContratto[] = ['finanziamento', 'leasing', 'noleggio'];
+
+/**
+ * Il motore di calcolo con la validazione (zod, circa 30 kB gzip) non serve per mostrare il modulo: si scarica al primo
+ * gesto sul modulo o alla richiesta dell'esempio, e il calcolo resta nel browser come prima.
+ */
+let motore: Promise<typeof import('~/lib/calc')> | null = null;
+function caricaMotore(): Promise<typeof import('~/lib/calc')> {
+  motore ??= import('~/lib/calc').catch((e: unknown) => { motore = null; throw e; });
+  return motore;
+}
 
 type Modo = 'foto' | 'manuale';
 type Calcolo = { readonly analisi: Analisi | null; readonly errori: ReadonlyMap<string, string> };
 
-function calcola(stato: StatoForm): Calcolo {
+async function calcola(stato: StatoForm): Promise<Calcolo> {
+  const { analizza } = await caricaMotore();
   const esito = analizza(preventivoDaForm(stato));
   if (esito.ok) return { analisi: esito.analisi, errori: new Map() };
   return { analisi: null, errori: new Map(esito.errori.map((e) => [e.campo, e.messaggio])) };
@@ -33,29 +45,48 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
   const [schedaAperta, setSchedaAperta] = useState(false);
   const [letto, setLetto] = useState(false);
   const [esempio, setEsempio] = useState(false);
+  /** Campi appena letti dalla foto, con l'ordine in cui si accendono (F5): il lampo vale solo la prima volta. */
+  const [letti, setLetti] = useState<ReadonlyMap<string, number>>(new Map());
+  const [erroreMotore, setErroreMotore] = useState(false);
   const preventivo = useMemo(() => preventivoDaForm(stato), [stato]);
   const caricaEsempio = useRef<() => void>(() => undefined);
 
   function vaiAlRisultato() {
-    requestAnimationFrame(() => document.getElementById('risultato')?.scrollIntoView({ behavior: menoMovimento() ? 'auto' : 'smooth', block: 'start' }));
+    requestAnimationFrame(() => scorriVerso(document.getElementById('risultato')));
   }
 
   function cambia(chiave: DefCampo['chiave'] | 'tipo', valore: string) {
     setEsempio(false);
+    setLetti((l) => (l.has(chiave) ? new Map([...l].filter(([k]) => k !== chiave)) : l));
     setStato((s) => ({ ...s, [chiave]: valore }));
     setDaConfermare((d) => new Set([...d].filter((k) => k !== chiave)));
   }
 
   /** Carica il preventivo d'esempio e mostra subito il risultato, con l'etichetta che dice cos'è. */
-  function provaEsempio() {
+  async function provaEsempio() {
     setStato(ESEMPIO_208);
     setDaConfermare(new Set());
+    setLetti(new Map());
     setLetto(false);
     setModo('manuale');
-    setCalcolo(calcola(ESEMPIO_208));
     setSchedaAperta(false);
     setEsempio(true);
+    const risultato = await calcolaSicuro(ESEMPIO_208);
+    if (!risultato) return;
+    setCalcolo(risultato);
     vaiAlRisultato();
+  }
+
+  /** Calcola; se il motore non si scarica (rete), lo dice invece di restare fermo. */
+  async function calcolaSicuro(s: StatoForm): Promise<Calcolo | null> {
+    try {
+      const risultato = await calcola(s);
+      setErroreMotore(false);
+      return risultato;
+    } catch {
+      setErroreMotore(true);
+      return null;
+    }
   }
 
   caricaEsempio.current = provaEsempio;
@@ -64,6 +95,9 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
 
   function estratto(r: RispostaEstrazione) {
     setEsempio(false);
+    // Si accendono solo i campi che arrivano dalla foto, non quelli già scritti a mano (unisciEstrazione li tiene).
+    const giaScritti = new Set(Object.entries(stato).filter(([, v]) => v && v.trim() !== '').map(([k]) => k));
+    setLetti(new Map(Object.keys(r.campi).filter((k) => !giaScritti.has(k)).map((k, i) => [k, i])));
     setStato((s) => unisciEstrazione(s, r.campi));
     setDaConfermare(new Set(r.daConfermare));
     setLetto(true);
@@ -71,9 +105,10 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
     setCalcolo(null);
   }
 
-  function invia(e: Event) {
+  async function invia(e: Event) {
     e.preventDefault();
-    const risultato = calcola(stato);
+    const risultato = await calcolaSicuro(stato);
+    if (!risultato) return;
     setCalcolo(risultato);
     setSchedaAperta(false);
     if (risultato.analisi) {
@@ -87,7 +122,7 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
 
   const errori = calcolo?.errori ?? new Map<string, string>();
   return (
-    <div class="grid gap-10">
+    <div class="grid gap-10" onPointerDown={() => void caricaMotore().catch(() => undefined)} onFocusIn={() => void caricaMotore().catch(() => undefined)}>
       <div class="grid gap-6">
         <div class="flex flex-wrap items-center gap-3">
           <div role="group" aria-label="Come vuoi inserire il preventivo" class="inline-flex w-fit border-2 border-inchiostro rounded overflow-hidden">
@@ -105,13 +140,13 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
         {modo === 'manuale' && (
           <form onSubmit={invia} noValidate class="grid gap-2" aria-label="Numeri del preventivo">
             {daConfermare.size > 0 && (
-              <p class="text-sm bg-[#FFF8E1] border-l-4 border-attenzione px-3 py-2" role="status">
+              <p class="text-sm bg-[#FFF8E1] border-t-2 border-attenzione px-3 py-2" role="status">
                 Abbiamo letto i numeri. Quelli evidenziati in giallo vanno confermati: controllali sul preventivo prima di calcolare.
               </p>
             )}
             <fieldset class="flex flex-wrap gap-2 py-2">
               <legend class="text-sm font-medium mb-2">Tipo di contratto</legend>
-              {TIPI_CONTRATTO.map((t) => (
+              {TIPI.map((t) => (
                 <label key={t} class={`cursor-pointer rounded border-2 px-3 py-2.5 text-sm transition-colors ${(stato.tipo || 'finanziamento') === t ? 'border-inchiostro bg-inchiostro text-carta' : 'border-riga hover:border-inchiostro'}`}>
                   <input type="radio" name="tipo" value={t} class="sr-only" checked={(stato.tipo || 'finanziamento') === t} onChange={() => cambia('tipo', t)} />
                   {ETICHETTE_TIPO[t]}
@@ -119,11 +154,12 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
               ))}
             </fieldset>
             {GRUPPI.map((g) => (
-              <FieldGroup key={g.titolo} gruppo={g} stato={stato} daConfermare={daConfermare} errori={errori} onCambia={cambia} />
+              <FieldGroup key={g.titolo} gruppo={g} stato={stato} daConfermare={daConfermare} errori={errori} letti={letti} onCambia={cambia} />
             ))}
             <div class="grid gap-2 pt-4">
               <p id="errori-form" class="text-sm text-segnale-scuro" role="alert">
-                {errori.size > 0 ? `Controlla ${errori.size === 1 ? 'il campo segnalato' : `i ${errori.size} campi segnalati`}: servono almeno anticipo, numero di rate e rata.` : ''}
+                {erroreMotore ? 'Il calcolo non si è caricato: controlla la connessione e riprova.'
+                  : errori.size > 0 ? `Controlla ${errori.size === 1 ? 'il campo segnalato' : `i ${errori.size} campi segnalati`}: servono almeno anticipo, numero di rate e rata.` : ''}
               </p>
               <button type="submit" class="btn btn-primario w-full sm:w-auto" aria-describedby={errori.size > 0 ? 'errori-form' : undefined}>Calcola quanto paghi davvero</button>
             </div>
@@ -132,11 +168,11 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
       </div>
 
       <div id="risultato" class="scroll-mt-6 grid gap-10" aria-live="polite">
-        {calcolo?.analisi && <ScenaPigra preventivo={calcolo.analisi.preventivo} etichetta={esempio ? ETICHETTA_ESEMPIO : undefined} />}
+        {calcolo?.analisi && <ScenaPigra preventivo={calcolo.analisi.preventivo} etichetta={esempio ? etichettaEsempio() : undefined} />}
         {calcolo?.analisi && (
           <ResultCard
             analisi={calcolo.analisi}
-            etichetta={esempio ? ETICHETTA_ESEMPIO : undefined}
+            etichetta={esempio ? etichettaEsempio() : undefined}
             azioni={
               <>
                 <div class="flex flex-wrap gap-3">

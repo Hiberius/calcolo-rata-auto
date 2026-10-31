@@ -1,4 +1,4 @@
-import { TOKEN_CANCELLAZIONE_RE } from '../cancellazione';
+import { TOKEN_CANCELLAZIONE_RE } from '../tokenCancellazione';
 
 /** Il codice per eliminare una scheda resta nel browser di chi l'ha creata (sessionStorage), mai in un cookie. */
 const chiave = (id: string) => `ratavera:cancella:${id}`;

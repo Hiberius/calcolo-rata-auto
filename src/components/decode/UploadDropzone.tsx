@@ -84,7 +84,11 @@ export default function UploadDropzone({ siteKey, onEstratto }: Props) {
   if (fase.tipo === 'anteprima' || fase.tipo === 'invio') {
     return (
       <div class="grid gap-4 md:grid-cols-[minmax(0,18rem)_1fr] items-start entra">
-        <img src={fase.url} alt="Anteprima del preventivo" class="w-full max-h-96 object-contain bg-white border border-riga rounded" />
+        {/* Anteprima locale (blob:, mai caricata altrove). Durante la lettura una linea vermiglia scende sul foglio (F5). */}
+        <figure class="scansione" data-scansione={fase.tipo === 'invio' ? 'attiva' : undefined}>
+          <img src={fase.url} alt="Anteprima del preventivo" />
+          {fase.tipo === 'invio' && <span class="scansione-linea" aria-hidden="true" />}
+        </figure>
         <div class="grid gap-4">
           <p class="font-medium">Copri o ritaglia nome e targa se vuoi: a noi servono solo i numeri.</p>
           <p class="text-sm text-tenue">L’immagine serve solo a leggere i numeri e non viene salvata da nessuna parte.</p>
@@ -97,8 +101,8 @@ export default function UploadDropzone({ siteKey, onEstratto }: Props) {
               ? <button type="button" class="btn btn-secondario" onClick={() => controllo.current?.abort('annullato')}>Annulla</button>
               : <button type="button" class="btn btn-secondario" onClick={() => setFase({ tipo: 'vuoto' })}>Scegli un altro file</button>}
           </div>
-          <p class="text-sm text-tenue" role="status">
-            {fase.tipo === 'invio' && lento ? 'Sto ancora leggendo: di solito servono dai 5 agli 8 secondi.' : ''}
+          <p class="numeri text-sm" role="status">
+            {fase.tipo === 'invio' ? (lento ? 'Sto ancora leggendo: di solito servono dai 5 agli 8 secondi.' : 'Leggo il preventivo') : ''}
           </p>
         </div>
       </div>
@@ -108,7 +112,7 @@ export default function UploadDropzone({ siteKey, onEstratto }: Props) {
   return (
     <div class="grid gap-3">
       <label
-        class={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded px-6 py-10 text-center cursor-pointer transition-colors ${trascino ? 'border-segnale bg-[#FDEEE9]' : 'border-inchiostro/40 hover:border-inchiostro bg-white/40'}`}
+        class={`dropzone ${trascino ? 'dropzone-sopra' : ''}`}
         onDragOver={(e) => { e.preventDefault(); setTrascino(true); }}
         onDragLeave={() => setTrascino(false)}
         onDrop={(e) => { e.preventDefault(); setTrascino(false); void scegli(e.dataTransfer?.files[0]); }}
@@ -134,6 +138,7 @@ export default function UploadDropzone({ siteKey, onEstratto }: Props) {
           onChange={(e) => void scegli((e.currentTarget as HTMLInputElement).files?.[0])}
         />
       </label>
+      <p class="numeri text-sm" role="status">{fase.tipo === 'preparo' ? 'Preparo la foto' : ''}</p>
       <p class="text-sm text-segnale-scuro" role="alert">{fase.tipo === 'errore' ? fase.messaggio : ''}</p>
     </div>
   );

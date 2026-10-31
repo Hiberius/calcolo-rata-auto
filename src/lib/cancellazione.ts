@@ -1,8 +1,10 @@
 import { ID_SCHEDA_RE } from './ids';
 import { chiaviCacheScheda } from './scheda';
 
-/** Codice di cancellazione: 32 byte casuali in base64url, 43 caratteri. Lo vede solo chi crea la scheda. */
-export const TOKEN_CANCELLAZIONE_RE = /^[A-Za-z0-9_-]{43}$/;
+import { TOKEN_CANCELLAZIONE_RE } from './tokenCancellazione';
+
+/** Codice di cancellazione: lo vede solo chi crea la scheda. */
+export { TOKEN_CANCELLAZIONE_RE };
 
 export function generaTokenCancellazione(): string {
   const byte = crypto.getRandomValues(new Uint8Array(32));
