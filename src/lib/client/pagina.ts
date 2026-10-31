@@ -1,4 +1,5 @@
 import { avviaGlossario } from './glossario';
+import { stampaScontrini } from './stampa';
 
 const CHIAVE_BANNER = 'ratavera:banner-cookie';
 
@@ -26,4 +27,20 @@ function rigaCookie(doc: Document): void {
 export function avviaPagina(doc: Document): void {
   avviaGlossario(doc);
   rigaCookie(doc);
+  menuCompatto(doc);
+  stampaScontrini(doc);
+}
+
+/** Il pannello del menu si chiude con Esc (il fuoco torna su «Menu»), toccando fuori o scegliendo una voce. */
+function menuCompatto(doc: Document): void {
+  const menu = doc.querySelector<HTMLDetailsElement>('[data-menu]');
+  if (!menu) return;
+  const chiudi = (fuoco: boolean) => {
+    if (!menu.open) return;
+    menu.open = false;
+    if (fuoco) menu.querySelector('summary')?.focus();
+  };
+  doc.addEventListener('keydown', (e) => { if (e.key === 'Escape') chiudi(true); });
+  doc.addEventListener('click', (e) => { if (e.target instanceof Node && !menu.contains(e.target)) chiudi(false); });
+  menu.querySelector('nav')?.addEventListener('click', (e) => { if (e.target instanceof Element && e.target.closest('a')) chiudi(false); });
 }

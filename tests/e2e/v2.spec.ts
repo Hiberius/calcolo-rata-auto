@@ -14,34 +14,37 @@ async function chiudiBanner(page: Page) {
   if (await chiudi.isVisible()) await chiudi.click();
 }
 
-test('home a due documenti: domanda e due scelte sopra la piega, esempio, fiducia, anteprima, menu', async ({ page }) => {
+test('home (v2 §1): la promessa, due azioni sopra la piega, chi c’è dietro, anteprima, menu', async ({ page }) => {
   const errori: string[] = [];
   page.on('pageerror', (e) => errori.push(e.message));
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1, name: 'Che documento hai in mano?' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Quanto paghi davvero per l’auto a rate?' })).toBeVisible();
   const altezza = page.viewportSize()?.height ?? 0;
-  for (const scelta of ['finanziamento', 'officina']) {
-    const box = await page.locator(`[data-scelta="${scelta}"]`).boundingBox();
+  for (const azione of ['[data-fotografa]', '[data-prova-esempio]']) {
+    const box = await page.locator(azione).boundingBox();
     expect(box && box.y + box.height <= altezza).toBe(true);
   }
-  await expect(page.locator('[data-scelta="finanziamento"]')).toContainText('Preventivo di finanziamento');
-  await expect(page.locator('[data-scelta="officina"]')).toHaveAttribute('href', '/officina');
-  await expect(page.getByRole('button', { name: "Prova con un preventivo d'esempio" })).toBeVisible();
-  await expect(page.locator('[data-fiducia]')).toContainText('progetto indipendente');
+  await expect(page.locator('[data-fotografa]')).toHaveText('Fotografa il preventivo');
+  await expect(page.locator('[data-prova-esempio]')).toContainText('Guarda l’esempio: Peugeot 208 a 99');
+  await expect(page.locator('[data-fiducia]')).toContainText('Chi ci paga: nessuna banca o finanziaria');
+  await expect(page.locator('a[href="/officina"]').first()).toBeAttached();
+  const primoSchermo = (await page.locator('main section').first().innerText()).toLowerCase();
+  expect(primoSchermo).not.toMatch(/maxi rata|debito residuo|taeg|anteprima della scena/);
   await expect(page.locator('[data-anteprima] canvas')).toHaveCount(1);
   await expect(page.locator('[data-anteprima]')).toHaveAttribute('data-livello', /pieno|ridotto/);
-  const menu = page.getByRole('navigation', { name: 'Navigazione principale' }).getByRole('link');
+  await page.locator('[data-menu] summary').click();
+  const menu = page.locator('[data-menu]').getByRole('navigation', { name: 'Navigazione principale' }).getByRole('link');
   await expect(menu).toHaveText(['Leggi il preventivo', 'Promozioni', 'Indice', 'Confronta', 'Guide', 'Metodologia']);
   expect((await page.locator('main').innerText()).toLowerCase()).not.toMatch(VIETATE);
   await senzaOverflow(page);
   expect(errori).toEqual([]);
 });
 
-test('home: con prefers-reduced-motion l’anteprima è ferma; la scelta del finanziamento porta al modulo', async ({ page }) => {
+test('home: con prefers-reduced-motion l’anteprima è ferma; «Fotografa il preventivo» porta al modulo', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   await expect(page.locator('[data-anteprima]')).toHaveAttribute('data-livello', 'ridotto');
-  await page.locator('[data-scelta="finanziamento"]').click();
+  await page.locator('[data-fotografa]').click();
   await expect(page).toHaveURL(/#decodifica$/);
   await expect(page.getByRole('button', { name: 'Carica una foto' })).toBeInViewport();
 });

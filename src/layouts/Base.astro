@@ -1,6 +1,7 @@
 ---
 import '~/styles/global.css';
 import { AVVERTENZA } from '~/lib/calc';
+import { URL_SITO } from '~/lib/sito';
 
 interface Props {
   title: string;
@@ -14,14 +15,21 @@ interface Props {
   lettura?: boolean;
 }
 const { title, description, ogImage, canonical, noindex = false, ogAlt, lettura = false } = Astro.props;
-const sito = Astro.site?.toString().replace(/\/$/, '') ?? 'https://ratavera.it';
-const url = canonical ?? `${sito}${Astro.url.pathname}`;
+const sito = (Astro.site?.toString() ?? URL_SITO).replace(/\/$/, '');
+// Canonical senza .html (build.format 'file') e senza /index: lo stesso indirizzo della sitemap e del menu.
+const percorso = Astro.url.pathname.replace(/\.html$/, '').replace(/\/index$/, '/') || '/';
+const url = canonical ?? `${sito}${percorso}`;
 const immagine = ogImage ?? `${sito}/og-default.png`;
 const immagineAlt = ogAlt ?? (ogImage ? title : 'Uno scontrino bianco su carta, attraversato da una barra vermiglia: Rata Vera, quanto paghi davvero.');
 const tokenAnalytics = import.meta.env.PUBLIC_CF_ANALYTICS_TOKEN;
 const NAV = [
   ['/#decodifica', 'Leggi il preventivo'], ['/promozioni', 'Promozioni'], ['/indice', 'Indice'], ['/noleggio', 'Confronta'], ['/guide', 'Guide'], ['/metodologia', 'Metodologia'],
 ] as const;
+/** Voce corrente del menu: la pagina stessa o una sua sottopagina (non per l'ancora della home). */
+function corrente(href: string): boolean {
+  const percorso = Astro.url.pathname.replace(/\.html$/, '');
+  return percorso === href || (href !== '/#decodifica' && percorso.startsWith(`${href}/`));
+}
 const PIEDE = [
   ['/metodologia', 'Metodologia'], ['/criteri', 'Criteri delle promozioni'], ['/chi-siamo', 'Chi siamo'], ['/privacy', 'Privacy'],
   ['/cookie', 'Cookie'], ['/officina', 'Officina'], ['/indice/metodologia', 'Metodologia dell’Indice'],
@@ -70,14 +78,23 @@ const PIEDE = [
         <button type="button" class="tocco shrink-0 justify-center px-2 font-semibold underline decoration-1 underline-offset-4 hover:decoration-segnale" data-chiudi-banner>Chiudi</button>
       </div>
     </div>
-    <header class="testata contenitore flex flex-wrap items-center justify-between gap-x-8 gap-y-1 py-3 sm:py-4">
-      <a href="/" class="tocco group flex items-baseline gap-2 no-underline" aria-label="Rata Vera, pagina iniziale">
-        <span class="font-semibold tracking-tight text-lg">Rata Vera</span>
-        <span class="numeri text-xs text-tenue hidden sm:inline transition-colors group-hover:text-segnale">quanto paghi davvero</span>
+    <!-- Testata: una riga sola (≤ 64 px). Sotto i 1024 px il menu sta in un pannello che si apre con «Menu» (details, senza JS). -->
+    <header class="testata contenitore relative flex items-center justify-between gap-x-8 py-2 sm:py-3">
+      <a href="/" class="tocco group no-underline" aria-label="Rata Vera, quanto paghi davvero">
+        <span class="flex items-baseline gap-2">
+          <span class="font-semibold tracking-tight text-lg">Rata Vera</span>
+          <span class="numeri text-xs text-tenue hidden sm:inline transition-colors group-hover:text-segnale">quanto paghi davvero</span>
+        </span>
       </a>
-      <nav aria-label="Navigazione principale" class="flex w-full flex-wrap gap-x-4 text-sm lg:w-auto lg:justify-end">
-        {NAV.map(([href, testo]) => <a class="link tocco" href={href} aria-current={Astro.url.pathname === href || (href !== '/#decodifica' && Astro.url.pathname.startsWith(`${href}/`)) ? 'page' : undefined}>{testo}</a>)}
+      <nav aria-label="Navigazione principale" class="hidden lg:flex lg:items-center lg:gap-x-1 text-sm">
+        {NAV.map(([href, testo]) => <a class="voce-menu" href={href} aria-current={corrente(href) ? 'page' : undefined}>{testo}</a>)}
       </nav>
+      <details class="menu-compatto lg:hidden" data-menu>
+        <summary class="voce-menu menu-apri font-semibold" aria-label="Menu di navigazione"><span aria-hidden="true" class="menu-segno"></span>Menu</summary>
+        <nav aria-label="Navigazione principale" class="menu-pannello">
+          {NAV.map(([href, testo]) => <a class="voce-menu" href={href} aria-current={corrente(href) ? 'page' : undefined}>{testo}</a>)}
+        </nav>
+      </details>
     </header>
     <main id="contenuto" class="flex-1">
       <slot />

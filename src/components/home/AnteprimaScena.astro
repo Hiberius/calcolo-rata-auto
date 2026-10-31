@@ -1,54 +1,67 @@
 ---
 import { analizza } from '~/lib/calc';
-import { BASE_ANTEPRIMA, fraseAnteprima, serieAnteprima } from '~/lib/calc/anteprima';
+import { BASE_ANTEPRIMA, serieAnteprima } from '~/lib/calc/anteprima';
 import { importo, quota } from '~/lib/formato';
 import { ripartizioneTotale } from '~/lib/calc/ripartizione';
 import { ETICHETTA_STIMA } from '~/lib/calc/valore';
 import { preventivoDaForm } from '~/lib/client/campi';
 import { ESEMPIO_208 } from '~/lib/esempio';
-import { COLORE_CONTENITORE } from '~/components/scene/disegno/colori';
+import { COLORE_CONTENITORE, SCENA } from '~/components/scene/disegno/colori';
+import { fraseIncrocioHome, MINIMO_ANTEPRIMA, tracciatiSvg } from './anteprimaDisegno';
 
 // Atto 1 in miniatura, calcolato qui sul server: nessun peso in più nel JavaScript della home.
 const esito = analizza(preventivoDaForm(ESEMPIO_208));
 const ripartizione = esito.ok ? ripartizioneTotale(esito.analisi) : null;
 const voci = ripartizione?.contenitori.filter((c) => c.importo > 0) ?? [];
-// La frase dell'incrocio nasce dalla stessa serie che disegna il canvas, mai scritta a mano.
-const fraseIniziale = fraseAnteprima(serieAnteprima(BASE_ANTEPRIMA.anticipo));
+// Etichette corte: le tre quote stanno su una riga anche nella colonna da 390 px.
+const CORTA: Readonly<Record<string, string>> = { capitale: 'auto', interessi: 'interessi', spese: 'spese', polizze: 'polizze', resto: 'rate e anticipo' };
+// La frase dell'incrocio nasce dalla stessa serie che disegna il canvas, mai scritta a mano, e resta ferma durante il giro.
+const serie = serieAnteprima(BASE_ANTEPRIMA.anticipo);
+const frase = fraseIncrocioHome(serie);
+const svg = tracciatiSvg(serie, 400, 180);
+const totale = ripartizione ? importo(ripartizione.totale, 'anteprima') : '';
 ---
-<figure class="anteprima" data-anteprima aria-labelledby="anteprima-didascalia">
-  <div class="flex items-baseline justify-between gap-3">
-    <p class="atto-numero">Anteprima della scena</p>
-    <p class="etichetta-stima">{ETICHETTA_STIMA}</p>
+<figure class="anteprima" data-anteprima data-a-riposo aria-labelledby="anteprima-didascalia">
+  <div class="grid gap-1" aria-hidden="true">
+    <p class="text-[1.0625rem] font-semibold leading-snug tracking-[-0.01em]">Esempio: Peugeot 208 Style, 99&nbsp;€ al mese</p>
+    {ripartizione && (
+      <p class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+        <span class="text-sm text-[var(--scena-tenue)]">Totale che paghi</span>
+        <span class="numeri text-[clamp(1.75rem,1.3rem+1.6vw,2.375rem)] font-medium leading-none tracking-[-0.03em]">{totale}</span>
+      </p>
+    )}
   </div>
   {ripartizione && (
     <div class="grid gap-2" aria-hidden="true">
-      <p class="numeri flex items-baseline justify-between gap-3 text-xs text-[var(--scena-tenue)]"><span>01 · dove vanno i tuoi euro</span><span class="text-sm text-[var(--scena-carta)]">{importo(ripartizione.totale, 'anteprima')}</span></p>
       <div class="flex h-2.5 w-full gap-[2px]">
         {voci.map((c) => <span class="block h-full" style={`flex: ${c.importo} 1 0; background: ${COLORE_CONTENITORE[c.chiave]};`} />)}
       </div>
-      <ul class="numeri flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--scena-tenue)]">
-        {voci.map((c) => <li><span style={`color: ${COLORE_CONTENITORE[c.chiave]};`}>■</span> {c.etichetta.toLowerCase()} {quota(c.importo, ripartizione.totale)}</li>)}
+      <ul class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-[var(--scena-tenue)]">
+        {voci.map((c) => <li class="whitespace-nowrap"><span class="mr-1.5 inline-block h-2 w-2" style={`background: ${COLORE_CONTENITORE[c.chiave]};`} />{CORTA[c.chiave] ?? c.etichetta.toLowerCase()} <span class="numeri text-[var(--scena-carta)]">{quota(c.importo, ripartizione.totale)}</span></li>)}
       </ul>
     </div>
   )}
-  <p class="numeri mt-2 text-xs text-[var(--scena-tenue)]" aria-hidden="true">02 · valore contro debito</p>
-  <div class="relative h-[170px] w-full sm:h-[210px] lg:h-[230px]">
+  <p class="mt-2 border-t border-[var(--scena-riga)] pt-3 text-sm text-[var(--scena-tenue)]" aria-hidden="true">Quanto vale l’auto e quanto devi ancora</p>
+  <div class="relative h-[160px] w-full sm:h-[190px]">
     <canvas class="block h-full w-full" data-tela-anteprima aria-hidden="true"></canvas>
     <noscript>
-      <picture>
-        <source type="image/avif" srcset="/img/scena-poster-800.avif 800w, /img/scena-poster-1200.avif 1200w" sizes="(min-width: 1024px) 28rem, 100vw" />
-        <img class="anteprima-poster" src="/img/scena-poster-800.webp" srcset="/img/scena-poster-800.webp 800w, /img/scena-poster-1200.webp 1200w" sizes="(min-width: 1024px) 28rem, 100vw" width="1200" height="751" alt="" decoding="async" />
-      </picture>
+      <!-- Senza JavaScript: lo stesso grafico disegnato dal server, con le stesse serie del canvas. -->
+      <svg class="absolute inset-0 h-full w-full" viewBox="0 0 400 180" preserveAspectRatio="none" aria-hidden="true">
+        {svg.zona && <path d={svg.zona} fill="rgba(242,130,95,0.5)" />}
+        {svg.incrocio != null && <line x1={svg.incrocio} x2={svg.incrocio} y1="8" y2="172" stroke={SCENA.segnale} stroke-dasharray="3 4" vector-effect="non-scaling-stroke" />}
+        <path d={svg.valore} fill="none" stroke={SCENA.carta} stroke-width="2" vector-effect="non-scaling-stroke" />
+        <path d={svg.debito} fill="none" stroke={SCENA.segnale} stroke-width="2.5" vector-effect="non-scaling-stroke" />
+      </svg>
     </noscript>
   </div>
-  <div class="numeri flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs text-[var(--scena-tenue)]" aria-hidden="true">
+  <div class="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-[var(--scena-tenue)]" aria-hidden="true">
     <span class="flex items-center gap-2"><span class="h-0.5 w-5 bg-[var(--scena-carta)]"></span>valore stimato</span>
-    <span class="flex items-center gap-2"><span class="h-[3px] w-5 bg-[var(--scena-segnale)]"></span>debito</span>
-    <span>anticipo <span class="text-[var(--scena-carta)]" data-anteprima-anticipo>{importo(BASE_ANTEPRIMA.anticipo, 'anteprima')}</span></span>
+    <span class="flex items-center gap-2"><span class="h-[3px] w-5 bg-[var(--scena-segnale)]"></span>quanto devi ancora</span>
   </div>
-  <p class="numeri text-xs text-[var(--scena-segnale)]" aria-hidden="true" data-anteprima-incrocio>{fraseIniziale}</p>
-  <figcaption id="anteprima-didascalia" class="text-sm text-[var(--scena-tenue)]">
-    La Peugeot 208 dell’esempio: dove vanno i {ripartizione ? importo(ripartizione.totale, 'anteprima') : 'soldi'} che paghi, e il valore stimato dell’auto contro il debito residuo mentre l’anticipo scende a zero. Meno anticipo, prima devi all’auto più di quanto vale.
+  <p class="anteprima-frase text-[0.9375rem] font-medium text-[var(--scena-segnale)]" aria-hidden="true" data-anteprima-incrocio>{frase}</p>
+  <p class="etichetta text-[var(--scena-tenue)]" aria-hidden="true">{ETICHETTA_STIMA} · asse da {importo(MINIMO_ANTEPRIMA, 'anteprima')}</p>
+  <figcaption id="anteprima-didascalia" class="sr-only">
+    Esempio: Peugeot 208 Style a 99 € al mese. Totale che paghi {totale}. Quanto vale l’auto e quanto devi ancora, mese per mese: {frase}. Stima, non quotazione.
   </figcaption>
 </figure>
 <script>

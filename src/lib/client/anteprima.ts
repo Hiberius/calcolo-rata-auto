@@ -1,8 +1,8 @@
-import { importo } from '../formato';
-import { fotogramma, fraseAnteprima, MASSIMO_ANTEPRIMA, serieAnteprima, TEMPI } from '../calc/anteprima';
+import { BASE_ANTEPRIMA, fotogramma, MASSIMO_ANTEPRIMA, serieAnteprima, TEMPI } from '../calc/anteprima';
 import { livelloMovimento } from '../motion';
 import { disegnaCurve } from '../../components/scene/disegno/curve';
 import { prepara } from '../../components/scene/disegno/tela';
+import { MINIMO_ANTEPRIMA } from '../../components/home/anteprimaDisegno';
 
 /**
  * Loop dell'anteprima in home: rAF a 60 fps finché è in vista e la scheda è visibile.
@@ -17,24 +17,20 @@ function mediana(v: readonly number[]): number {
   return s[Math.floor(s.length / 2)] ?? 0;
 }
 
-function scrivi(el: HTMLElement | null, testo: string): void {
-  if (el && el.textContent !== testo) el.textContent = testo;
-}
 
 export function avviaAnteprima(doc: Document): void {
   const radice = doc.querySelector<HTMLElement>('[data-anteprima]');
   const tela = radice?.querySelector<HTMLCanvasElement>('[data-tela-anteprima]');
   if (!radice || !tela) return;
-  const lettura = radice.querySelector<HTMLElement>('[data-anteprima-anticipo]');
-  const incrocio = radice.querySelector<HTMLElement>('[data-anteprima-incrocio]');
 
   const disegna = (ms: number) => {
     const f = fotogramma(ms);
     const serie = serieAnteprima(f.anticipo);
     const pronto = prepara(tela);
-    if (pronto) disegnaCurve(pronto.ctx, pronto.area, { serie, massimo: MASSIMO_ANTEPRIMA, avanzamento: f.avanzamento, senzaAssi: true });
-    scrivi(lettura, importo(Math.round(f.anticipo), 'anteprima'));
-    scrivi(incrocio, fraseAnteprima(serie));
+    if (pronto) disegnaCurve(pronto.ctx, pronto.area, { serie, massimo: MASSIMO_ANTEPRIMA, minimo: MINIMO_ANTEPRIMA, avanzamento: f.avanzamento, senzaAssi: true });
+    // Il testo resta quello del preventivo (anticipo 4.326 €, mese 25): mentre le curve provano anticipi più bassi si attenua.
+    const aRiposo = f.anticipo === BASE_ANTEPRIMA.anticipo ? '' : undefined;
+    if (aRiposo === undefined) delete radice.dataset.aRiposo; else radice.dataset.aRiposo = aRiposo;
   };
 
   // Livello ridotto: un fotogramma statico con le curve complete e l'anticipo del preventivo, nessun loop.

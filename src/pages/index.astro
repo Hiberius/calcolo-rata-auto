@@ -1,30 +1,34 @@
 ---
 import Base from '~/layouts/Base.astro';
 import DecodeForm from '~/components/decode/DecodeForm';
-import Fiducia from '~/components/ui/Fiducia.astro';
+import { datiTitolare, rigaFiducia } from '~/lib/fiducia';
 import TitoloRighe from '~/components/ui/TitoloRighe.astro';
-import SceltaDocumento from '~/components/home/SceltaDocumento.astro';
 import AnteprimaScena from '~/components/home/AnteprimaScena.astro';
-import { TURNSTILE_SITE_KEY_TEST } from '~/lib/turnstile';
-import { etichettaEsempio } from '~/lib/esempio';
+import { chiaveAntiRobot } from '~/lib/turnstile';
 
 export const prerender = false;
-const siteKey = Astro.locals.runtime?.env?.PUBLIC_TURNSTILE_SITE_KEY || TURNSTILE_SITE_KEY_TEST;
+const env = Astro.locals.runtime?.env;
+const siteKey = chiaveAntiRobot(env, Astro.url.href);
+const fiducia = rigaFiducia(datiTitolare(env, import.meta.env));
 ---
 <Base
-  title="Rata Vera: quanto paghi davvero, prima di firmare"
-  description="Hai in mano un preventivo di finanziamento auto? Fotografalo o scrivi i numeri: in trenta secondi vedi il totale che paghi, il costo del credito e cosa succede con la maxi rata finale."
+  title="Rata Vera: quanto paghi davvero per l’auto a rate"
+  description="Fai una foto al preventivo di finanziamento del concessionario: vedi il totale che esce dalla tua tasca, quanto ti costa il credito e cosa succede alla fine del contratto. Gratis, senza registrazione, i conti girano nel tuo browser."
 >
-  <section class="contenitore grid gap-10 pt-4 pb-12 sm:pt-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-14" aria-labelledby="home-titolo">
-    <div class="grid content-start gap-7">
-      <p class="etichetta">Quanto paghi davvero, prima di firmare</p>
-      <TitoloRighe id="home-titolo" righe={['Che documento', 'hai in mano?']} accento={1} classe="titolo-display titolo-home" />
-      <SceltaDocumento />
-      <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
-        <a href="/?esempio=1#risultato" role="button" class="btn btn-secondario" data-prova-esempio>Prova con un preventivo d'esempio</a>
-        <span class="nota text-tenue">Peugeot 208 Style · {etichettaEsempio()}</span>
+  <!-- Primo schermo (specifica v2, §1): la promessa prima del documento, due azioni, chi c'è dietro subito sotto. -->
+  <section class="contenitore grid gap-10 pt-3 pb-14 sm:pt-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-14" aria-labelledby="home-titolo">
+    <div class="hero-colonna grid grid-cols-[minmax(0,1fr)] content-start gap-5 sm:gap-6">
+      <p class="etichetta">Gratis · senza registrazione · la foto non viene salvata</p>
+      <TitoloRighe id="home-titolo" righe={['Quanto paghi davvero', 'per l’auto a rate?']} parola="davvero" classe="titolo-display titolo-home" />
+      <p class="max-w-[30em] text-[1.0625rem] leading-relaxed sm:text-lg">Fai una foto al preventivo del concessionario. Ti diciamo il totale che esce dalla tua tasca, quanto ti costa il credito e cosa succede alla fine del contratto. I conti girano nel tuo browser.</p>
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-2 pt-1">
+        <a href="#decodifica" class="btn btn-primario" data-fotografa>Fotografa il preventivo</a>
+        <a href="/?esempio=1#risultato" class="link-azione" data-prova-esempio>Guarda l’esempio: Peugeot 208 a 99&nbsp;€ al mese <span aria-hidden="true">→</span></a>
       </div>
-      <Fiducia variante="riquadro" />
+      <div class="riga-fiducia grid gap-1 border-t border-riga pt-4 text-sm leading-relaxed text-tenue max-w-[36em]" data-fiducia>
+        <p><span class="text-inchiostro">{fiducia.dietro}</span> {fiducia.paga}</p>
+        <p class="flex flex-wrap gap-x-5"><a class="link tocco" href="/chi-siamo">Chi siamo</a><a class="link tocco" href="/metodologia">Come facciamo i conti</a></p>
+      </div>
     </div>
     <div class="lg:sticky lg:top-6 lg:self-start">
       <AnteprimaScena />
@@ -35,34 +39,36 @@ const siteKey = Astro.locals.runtime?.env?.PUBLIC_TURNSTILE_SITE_KEY || TURNSTIL
     <div class="grid gap-2 border-t-2 border-inchiostro pt-6">
       <p class="numeri text-sm">01</p>
       <h2 id="decodifica-titolo" class="titolo-sezione">Leggi il preventivo di finanziamento</h2>
-      <p class="max-w-[58ch] text-tenue">Fotografa il foglio della concessionaria o scrivi i numeri. Vedi il totale, il costo del credito e cosa succede alla fine con la maxi rata.</p>
+      <p class="max-w-[31em] text-tenue">Fotografa il foglio della concessionaria o scrivi i numeri. Vedi il totale, il costo del credito e cosa succede alla fine con la maxi rata.</p>
     </div>
     <DecodeForm client:load siteKey={siteKey} />
+  </section>
+
+  <!-- L'officina è una porta d'ingresso, non ancora attiva: una riga sotto la piega (specifica v2, §1). -->
+  <section class="contenitore pt-14" aria-label="Officina">
+    <p class="grid gap-1 border-t border-riga pt-5 sm:flex sm:flex-wrap sm:items-baseline sm:gap-x-2">
+      <span>Hai in mano un preventivo o una fattura dell’officina? A dicembre leggiamo anche quelli.</span>
+      <a class="link tocco font-semibold" href="/officina">Lasciacelo e ti avvisiamo</a>
+    </p>
   </section>
 
   <section class="contenitore sezione grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16" aria-labelledby="come-titolo">
     <div class="grid content-start gap-6">
       <h2 id="come-titolo" class="titolo-sezione">Come facciamo i conti</h2>
-      <!-- Le quattro barre: dove vanno gli euro del totale. Immagine ferma, decorativa: i numeri veri stanno nella scena. -->
-      <picture class="block overflow-hidden rounded-[var(--raggio-pannello)] border border-inchiostro bg-inchiostro">
-        <source type="image/avif" srcset="/img/scena-poster-800.avif 800w, /img/scena-poster-1200.avif 1200w" sizes="(min-width: 1024px) 30rem, 100vw" />
-        <img src="/img/scena-poster-800.webp" srcset="/img/scena-poster-800.webp 800w, /img/scena-poster-1200.webp 1200w" sizes="(min-width: 1024px) 30rem, 100vw"
-          width="1200" height="751" alt="" loading="lazy" decoding="async" class="block aspect-[10/3] h-auto w-full object-cover object-top" />
-      </picture>
-      <p class="nota max-w-[40ch] text-tenue">I calcoli girano nel tuo browser. Le formule, una per una, sono nella <a class="link" href="/metodologia">metodologia</a>.</p>
+      <p class="nota max-w-[24em] text-tenue">I calcoli girano nel tuo browser. Le formule, una per una, sono nella <a class="link" href="/metodologia">metodologia</a>.</p>
     </div>
     <ol class="grid content-start gap-10 lg:pt-2">
       <li class="si-accende grid grid-cols-[3.5rem_1fr] gap-4 border-t border-inchiostro pt-5 sm:grid-cols-[5rem_1fr]">
         <span class="numero-scena text-segnale-scuro">01</span>
-        <div class="grid gap-2"><h3 class="titolo-scheda">Sommiamo tutto quello che esce dal tuo conto</h3><p class="max-w-[52ch] text-tenue">Anticipo, rate, maxi rata, spese. Il totale è il numero che il cartello con la rata non dice.</p></div>
+        <div class="grid gap-2"><h3 class="titolo-scheda">Sommiamo tutto quello che esce dal tuo conto</h3><p class="max-w-[28em] text-tenue">Anticipo, rate, maxi rata, spese. Il totale è il numero che il cartello con la rata non dice.</p></div>
       </li>
       <li class="si-accende grid grid-cols-[3.5rem_1fr] gap-4 border-t border-inchiostro pt-5 sm:grid-cols-[5rem_1fr]">
         <span class="numero-scena text-segnale-scuro">02</span>
-        <div class="grid gap-2"><h3 class="titolo-scheda">Lo confrontiamo con il prezzo</h3><p class="max-w-[52ch] text-tenue">La differenza è il costo del credito. Ricostruiamo anche il TAEG dai numeri visibili e ti diciamo se torna.</p></div>
+        <div class="grid gap-2"><h3 class="titolo-scheda">Lo confrontiamo con il prezzo</h3><p class="max-w-[28em] text-tenue">La differenza è il costo del credito. Ricostruiamo anche il tasso annuo (TAEG) dai numeri visibili e ti diciamo se torna.</p></div>
       </li>
       <li class="si-accende grid grid-cols-[3.5rem_1fr] gap-4 border-t border-inchiostro pt-5 sm:grid-cols-[5rem_1fr]">
         <span class="numero-scena text-segnale-scuro">03</span>
-        <div class="grid gap-2"><h3 class="titolo-scheda">Ti mostriamo la fine del contratto</h3><p class="max-w-[52ch] text-tenue">Tenere l’auto pagando la maxi rata, restituirla o cambiarla, e il valore stimato dell’auto contro il debito, mese per mese.</p></div>
+        <div class="grid gap-2"><h3 class="titolo-scheda">Ti mostriamo la fine del contratto</h3><p class="max-w-[28em] text-tenue">Tenere l’auto pagando la maxi rata, restituirla o cambiarla, e il valore stimato dell’auto contro il debito, mese per mese.</p></div>
       </li>
     </ol>
   </section>

@@ -29,7 +29,7 @@ test('scheda creata via API, aperta, con immagine OG png', async ({ page, reques
   const { id, tokenCancellazione } = (await r.json()) as { id: string; tokenCancellazione: string };
   await page.goto(`/s/${id}`);
   await expect(page.locator('h1')).toContainText('Peugeot 208');
-  await expect(page.locator('.totale-grande').first()).toHaveText('18.253,25 €');
+  await expect(page.locator('.numero-scontrino').first()).toHaveText('18.253,25 €');
   await expect(page.locator('[data-avvertenza]').first()).toBeVisible();
   const og = await request.get(`/s/${id}/og.png`);
   expect(og.status()).toBe(200);
@@ -43,8 +43,8 @@ test('scheda creata via API, aperta, con immagine OG png', async ({ page, reques
 
 test('preventivo d’esempio in home e blocco fiducia', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('[data-fiducia]')).toContainText('progetto indipendente');
-  await page.getByRole('button', { name: "Prova con un preventivo d'esempio" }).click();
+  await expect(page.locator('[data-fiducia]')).toContainText('Chi c’è dietro: Christian Calabrò');
+  await page.getByRole('link', { name: /Guarda l’esempio/ }).click();
   await expect(page.locator('[data-totale]')).toHaveText('18.253,25 €');
   await expect(page.locator('[data-etichetta-esempio]')).toHaveText(/^esempio reale, offerta ufficiale (valida fino al|scaduta il) 31\/10\/2026$/);
 });
@@ -74,7 +74,7 @@ test('promozioni e guida con calcolo vivo', async ({ page }) => {
   await page.goto('/promozioni');
   await expect(page.locator('h1')).toBeVisible();
   await page.goto('/promozioni/seat/arona-black-edition-2026-11');
-  await expect(page.locator('[data-totale]').first()).toHaveText(/^\d{1,3}(\.\d{3})*,\d{2} €$/);
+  await expect(page.locator('[data-totale]').first()).toHaveText(/^\d{1,3}(\.\d{3})*,\d{2}\s€$/);
   await page.goto('/guide/maxi-rata-finale-come-funziona');
   await expect(page.locator('[data-totale-vivo]')).toHaveText('18.225,00 €');
   const testo = (await page.locator('main').innerText()).toLowerCase();

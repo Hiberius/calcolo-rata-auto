@@ -2,12 +2,12 @@ import { expect, test, type Page } from '@playwright/test';
 import { fileURLToPath } from 'node:url';
 
 const CARTELLA_SCREENSHOT = fileURLToPath(new URL('../../../06_Lancio/qa-screenshots/v2/', import.meta.url));
-const ESEMPIO = "Prova con un preventivo d'esempio";
+const ESEMPIO = /Guarda l’esempio/;
 const VIETATE = /truff|fregatur|trappol/;
 
 async function apriEsempio(page: Page) {
   await page.goto('/');
-  await page.getByRole('button', { name: ESEMPIO }).click();
+  await page.getByRole('link', { name: ESEMPIO }).click();
   await expect(page.locator('[data-scena]')).toBeVisible();
 }
 
@@ -50,10 +50,10 @@ test('i cursori di anticipo, durata e km cambiano i numeri dal vivo', async ({ p
   await page.locator('[data-atto="2"]').scrollIntoViewIfNeeded();
   const valore = page.locator('[data-valore-finale]');
   const rata = page.locator('[data-rata-scena]');
-  await expect(valore).toHaveText('9.261,82 €');
+  await expect(valore).toHaveText('9.262 €');
   await expect(rata).toHaveText('99,00 €');
   await page.locator('#scena-km').fill('35000');
-  await expect(valore).not.toHaveText('9.261,82 €');
+  await expect(valore).not.toHaveText('9.262 €');
   await expect(page.locator('[data-lettura="scena-km"]')).toHaveText('35.000 km');
   await expect(page.locator('#scena-anticipo')).toHaveAttribute('max', '4605');
   await page.locator('#scena-anticipo').fill('4600');
