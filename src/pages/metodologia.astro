@@ -3,6 +3,8 @@ import Testo from '~/layouts/Testo.astro';
 import Fiducia from '~/components/ui/Fiducia.astro';
 import { AVVERTENZA } from '~/lib/calc/config';
 import { SPIEGAZIONE_TAEG_COSTO } from '~/lib/calc/composizione';
+import { MODELLO_VALORE as M } from '~/lib/calc/valore';
+import { numero } from '~/lib/calc/format';
 // Resa a richiesta: il blocco «Chi c'è dietro» legge P.IVA e sede dalle variabili pubbliche del Worker.
 export const prerender = false;
 ---
@@ -38,6 +40,13 @@ export const prerender = false;
 
   <h2>Tre strade</h2>
   <p>Per la stessa auto mettiamo affiancate tre colonne, senza classifica: contanti o prestito personale (ipotesi TAN 7,5%, TAEG 8,5%, stessa durata, modificabili), il tuo preventivo, il noleggio a lungo termine con il canone che inserisci. Per ognuna: quanto esce dal tuo conto e cosa possiedi alla fine. Il valore dell'auto a fine contratto è un'ipotesi: la maxi rata se c'è, altrimenti il 45% del prezzo.</p>
+
+  <h2 id="dove-vanno">Dove vanno i tuoi euro</h2>
+  <p>Nella scena del risultato il totale tenendo l'auto si divide in quattro parti, al centesimo: il <strong>prezzo dell'auto</strong> (il prezzo di riferimento), le <strong>spese</strong> (istruttoria e bollo anche quando sono dentro il credito, spese di incasso, spese non dettagliate, immatricolazione e messa su strada), le <strong>polizze e servizi</strong> abbinati, e gli <strong>interessi</strong>, cioè quello che resta. Senza prezzo di riferimento, o nel noleggio, prezzo e interessi non si possono separare: mostriamo solo il totale e le spese.</p>
+
+  <h2 id="valore">Il valore stimato dell'auto contro il debito</h2>
+  <p>Il valore dell'auto nel tempo è una stima, non una quotazione, con un modello dichiarato: il primo anno l'auto perde il {M.perditaPrimoAnno * 100}% del prezzo, dal secondo anno il {M.perditaAnniSuccessivi * 100}% all'anno. Ogni {numero(M.passoKm, 0)} km all'anno sopra i {numero(M.kmRiferimento, 0)} la perdita annua cresce di {M.correzionePerPasso * 100} punti, ogni {numero(M.passoKm, 0)} km sotto cala di {M.correzionePerPasso * 100} punti. Il valore non scende mai sotto il {M.quotaMinima * 100}% del prezzo. Quando l'archivio avrà abbastanza valori reali di rivendita useremo quelli, e lo scriveremo qui.</p>
+  <p>Il <strong>debito residuo</strong> è il capitale che resta da rimborsare dopo ogni rata, secondo il piano di ammortamento al TAN del preventivo (se il TAN manca usiamo il TAEG, e lo diciamo); all'ultimo mese è la maxi rata. Il primo mese in cui il debito supera il valore stimato è il punto da cui «devi all'auto più di quanto vale». Se la promozione dichiara un valore futuro garantito, lo segniamo e lo confrontiamo con la stima. Con i cursori cambi anticipo, durata e km: il capitale cambia euro per euro con l'anticipo, la maxi rata resta la stessa e la rata si ricalcola al TAN.</p>
 
   <h2>L'etichetta sul costo del credito</h2>
   <p>Il risultato riporta il costo del credito in percentuale del prezzo e lo colloca rispetto a due soglie fisse, scelte da noi e non calcolate su una media: sotto il 5%, tra il 5% e il 12%, oltre il 12%. Non è un confronto con le altre offerte del mercato. Le spese fuori prezzo (immatricolazione, messa su strada, polizze e servizi abbinati) entrano nel totale ma non nel costo del credito, perché sono costi dell'auto. Se il totale risulta più basso del prezzo non mostriamo il costo del credito: vuol dire che manca un numero.</p>
