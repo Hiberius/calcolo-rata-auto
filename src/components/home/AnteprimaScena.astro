@@ -59,7 +59,7 @@ const totale = ripartizione ? importo(ripartizione.totale, 'anteprima') : '';
     <span class="flex items-center gap-2"><span class="h-[3px] w-5 bg-[var(--scena-segnale)]"></span>quanto devi ancora</span>
   </div>
   <p class="anteprima-frase text-[0.9375rem] font-medium text-[var(--scena-segnale)]" aria-hidden="true" data-anteprima-incrocio>{frase}</p>
-  <p class="etichetta text-[var(--scena-tenue)]" aria-hidden="true">{ETICHETTA_STIMA} · asse da {importo(MINIMO_ANTEPRIMA, 'anteprima')}</p>
+  <p class="etichetta text-[var(--scena-tenue)]" aria-hidden="true">{ETICHETTA_STIMA} · il grafico parte da {importo(MINIMO_ANTEPRIMA, 'anteprima')}</p>
   <figcaption id="anteprima-didascalia" class="sr-only">
     Esempio: Peugeot 208 Style a 99 € al mese. Totale che paghi {totale}. Quanto vale l’auto e quanto devi ancora, mese per mese: {frase}. Stima, non quotazione.
   </figcaption>

@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { AVVERTENZA } from '~/lib/calc/config';
-import { datiTitolare, testoFiducia } from '~/lib/fiducia';
+import { datiTitolare, rigaFiducia, testoFiducia } from '~/lib/fiducia';
 
 const TESTO_ATTESO =
   'Rata Vera è un progetto indipendente di Christian Calabrò (P.IVA 01234567890, Via Roma 1, Milano). È gratuito. Non prendiamo compensi da banche o finanziarie e non consigliamo finanziamenti. Se chiedi un preventivo di noleggio a lungo termine e lo firmi, il noleggiatore può riconoscerci un compenso: lo diciamo prima, qui.';
@@ -23,6 +23,15 @@ describe('chi c’è dietro e come guadagniamo', () => {
     const testo = testoFiducia(datiTitolare({ PUBLIC_PIVA: '', PUBLIC_SEDE: undefined }, {}));
     expect(testo).toContain('(P.IVA in aggiornamento, sede in aggiornamento)');
     expect(testo).not.toMatch(/\{\{|\}\}/);
+  });
+
+  it('riga della home: senza P.IVA e sede non scrive «in pubblicazione» né «noleggiatore»; con i dati li mostra (test del 31/10 notte)', () => {
+    const senza = rigaFiducia(datiTitolare({}, {}));
+    expect(senza.dietro).toBe('Chi c’è dietro: Christian Calabrò, una persona, non un concessionario né una banca.');
+    expect(`${senza.dietro} ${senza.paga}`).not.toMatch(/in pubblicazione|in aggiornamento|noleggiatore/);
+    expect(senza.paga).toContain('Per te è gratis e non ti proponiamo offerte');
+    const con = rigaFiducia(datiTitolare({ PUBLIC_PIVA: '01234567890', PUBLIC_SEDE: 'Via Roma 1, Milano' }));
+    expect(con.dietro).toBe('Chi c’è dietro: Christian Calabrò (P.IVA 01234567890, Via Roma 1, Milano), una persona, non un concessionario né una banca.');
   });
 
   it('le variabili del Worker vincono su quelle di build', () => {

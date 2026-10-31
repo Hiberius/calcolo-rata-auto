@@ -26,7 +26,7 @@ test('home (v2 §1): la promessa, due azioni sopra la piega, chi c’è dietro, 
   }
   await expect(page.locator('[data-fotografa]')).toHaveText('Fotografa il preventivo');
   await expect(page.locator('[data-prova-esempio]')).toContainText('Guarda l’esempio: Peugeot 208 a 99');
-  await expect(page.locator('[data-fiducia]')).toContainText('Chi ci paga: nessuna banca o finanziaria');
+  await expect(page.locator('[data-fiducia]')).toContainText('Per te è gratis e non ti proponiamo offerte');
   await expect(page.locator('a[href="/officina"]').first()).toBeAttached();
   const primoSchermo = (await page.locator('main section').first().innerText()).toLowerCase();
   expect(primoSchermo).not.toMatch(/maxi rata|debito residuo|taeg|anteprima della scena/);

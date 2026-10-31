@@ -35,14 +35,17 @@ export function testoFiducia(d: DatiTitolare): string {
 }
 
 /**
- * Riga di fiducia del primo schermo della home (specifica v2, §1): due frasi, chi c'è dietro e chi ci paga.
- * Finché P.IVA e sede non sono nelle variabili pubbliche la frase lo dice: «P.IVA e sede in pubblicazione».
+ * Riga di fiducia del primo schermo della home (specifica v2, §1). Formulazione scelta col test del 31/10 notte su 6 sconosciuti
+ * per versione: «chi ci paga» capito da 4 su 6, contro 2 su 6 della versione «paga il noleggiatore, non tu» e 0 su 6 di quella
+ * che rimandava il modello a un link «Come guadagniamo». Ordine: cosa siamo e cosa no, gratis e nessuna offerta proposta,
+ * l'unico caso in cui guadagniamo. P.IVA e sede compaiono appena sono nelle variabili pubbliche; finché mancano la frase
+ * non lo dice («P.IVA e sede in pubblicazione» confondeva). Mai «noleggiatore» qui.
  */
 export function rigaFiducia(d: DatiTitolare): { readonly dietro: string; readonly paga: string } {
   const mancano = d.piva === IN_AGGIORNAMENTO || d.sede === `sede ${IN_AGGIORNAMENTO}`;
-  const dati = mancano ? 'P.IVA e sede in pubblicazione' : `P.IVA ${d.piva}, ${d.sede}`;
+  const dati = mancano ? '' : ` (P.IVA ${d.piva}, ${d.sede})`;
   return {
-    dietro: `Chi c’è dietro: ${TITOLARE}, ${dati}.`,
-    paga: 'Chi ci paga: nessuna banca o finanziaria. Guadagniamo solo se chiedi un’offerta di noleggio e la firmi: paga il noleggiatore, non tu.',
+    dietro: `Chi c’è dietro: ${TITOLARE}${dati}, una persona, non un concessionario né una banca.`,
+    paga: 'Per te è gratis e non ti proponiamo offerte: vedi solo i tuoi numeri. Guadagniamo in un caso solo: se sei tu a chiedere un’offerta di noleggio, la commissione la paga la società di noleggio, non tu.',
   };
 }
