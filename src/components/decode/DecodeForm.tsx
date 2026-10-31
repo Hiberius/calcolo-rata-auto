@@ -6,6 +6,7 @@ import { inviaEvento } from '~/lib/client/evento';
 import { ESEMPIO_208, ETICHETTA_ESEMPIO } from '~/lib/esempio';
 import { salvaPreventivo } from '~/lib/client/sessione';
 import { ascoltaEsempio } from '~/lib/client/esempio';
+import { menoMovimento } from '~/lib/motion';
 import CreaScheda from './CreaScheda';
 import { MESSAGGIO_TOTALE_INCOERENTE } from '~/lib/calc/totale';
 import FieldGroup from './FieldGroup';
@@ -36,7 +37,7 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
   const caricaEsempio = useRef<() => void>(() => undefined);
 
   function vaiAlRisultato() {
-    requestAnimationFrame(() => document.getElementById('risultato')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    requestAnimationFrame(() => document.getElementById('risultato')?.scrollIntoView({ behavior: menoMovimento() ? 'auto' : 'smooth', block: 'start' }));
   }
 
   function cambia(chiave: DefCampo['chiave'] | 'tipo', valore: string) {

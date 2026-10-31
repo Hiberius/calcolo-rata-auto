@@ -85,6 +85,25 @@ describe('Indice Rata Vera con 25 promo (specifica v2, §3)', () => {
     expect(promoValida(promoFinta(32, { prezzoContanti: undefined }))).toBe(false);
   });
 
+  it('una promo che parte dopo oggi non è valida e non conta per la soglia (revisione del 31/10)', () => {
+    const futura = promoFinta(33, { validoDal: '2026-12-01', validoAl: '2026-12-31' });
+    expect(promoValida(futura, '2026-11-12')).toBe(false);
+    expect(promoValida(futura, '2026-12-01')).toBe(true);
+    const diciannove = [...VENTICINQUE.slice(0, SOGLIA_PUBBLICAZIONE - 1), futura];
+    const e = edizioneIndice(diciannove, OGGI);
+    expect(e.nValide).toBe(SOGLIA_PUBBLICAZIONE - 1);
+    expect(e.pubblicabile).toBe(false);
+  });
+
+  it('mai pubblicata prima della data annunciata, anche con 25 promo valide', () => {
+    const e = edizioneIndice(VENTICINQUE, new Date('2026-11-05T10:00:00Z'));
+    expect(e.nValide).toBe(25);
+    expect(e.pubblicabile).toBe(false);
+    expect(e.righe).toEqual([]);
+    expect(e.attesa).toContain('Prima edizione il');
+    expect(edizioneIndice(VENTICINQUE, new Date(`${PRIMA_EDIZIONE}T08:00:00Z`)).pubblicabile).toBe(true);
+  });
+
   it('CSV: licenza CC BY 4.0, citazione, intestazione e una riga per promo, decimali con la virgola', () => {
     const csv = csvEdizione(e)!;
     const righe = csv.replace(/^﻿/, '').trim().split('\r\n');

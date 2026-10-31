@@ -23,6 +23,7 @@
   --color-inchiostro: #15171A;
   --color-tenue: #5C5A55;
   --color-riga: #D9D3C7;
+  --color-bordo-campo: #8F897D;
   --color-segnale: #E4572E;
   --color-segnale-scuro: #B8401D;
   --color-ok: #2E8B57;
@@ -83,7 +84,8 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 /* Campi */
 .campo {
   width: 100%; min-height: 2.875rem; padding: 0.5rem 0.75rem; border-radius: 0.25rem;
-  background: #FFFDF9; border: 1.5px solid var(--color-riga); color: var(--color-inchiostro);
+  /* Bordo a 3,3:1 sulla carta (WCAG 1.4.11): --color-riga resta per le righe decorative. */
+  background: #FFFDF9; border: 1.5px solid var(--color-bordo-campo); color: var(--color-inchiostro);
   font-family: var(--font-mono); font-variant-numeric: tabular-nums;
   transition: border-color var(--durata-breve), box-shadow var(--durata-breve);
 }
@@ -195,9 +197,9 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 .cursore { -webkit-appearance: none; appearance: none; width: 100%; height: 2.75rem; background: transparent; cursor: pointer; touch-action: pan-y; }
 .cursore::-webkit-slider-runnable-track {
   height: 3px; border-radius: 2px;
-  background: linear-gradient(to right, var(--scena-segnale) var(--pieno, 0%), rgb(246 243 238 / 0.22) var(--pieno, 0%));
+  background: linear-gradient(to right, var(--scena-segnale) var(--pieno, 0%), rgb(246 243 238 / 0.45) var(--pieno, 0%));
 }
-.cursore::-moz-range-track { height: 3px; border-radius: 2px; background: rgb(246 243 238 / 0.22); }
+.cursore::-moz-range-track { height: 3px; border-radius: 2px; background: rgb(246 243 238 / 0.45); }
 .cursore::-moz-range-progress { height: 3px; border-radius: 2px; background: var(--scena-segnale); }
 .cursore::-webkit-slider-thumb {
   -webkit-appearance: none; appearance: none; width: 1.375rem; height: 1.375rem; margin-top: -0.6rem; border-radius: 999px;

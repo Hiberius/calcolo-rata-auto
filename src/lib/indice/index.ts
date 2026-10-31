@@ -47,10 +47,14 @@ export interface EdizioneIndice {
   readonly attesa: string | null;
 }
 
-/** Valida per l'Indice: in vigore, non noleggio, con un prezzo e un costo del credito calcolabile. */
-export function promoValida(d: PromoDecodificata): boolean {
+/**
+ * Valida per l'Indice: in vigore (non scaduta e già partita: una promo che parte a dicembre non entra a novembre),
+ * non noleggio, con un prezzo e un costo del credito calcolabile.
+ */
+export function promoValida(d: PromoDecodificata, oggi: string = oggiItalia()): boolean {
   const t = d.analisi.totali;
-  return !d.scaduta && d.promo.tipo !== 'noleggio' && t.prezzoRiferimento != null && t.prezzoRiferimento > 0 && t.costoCreditoPct != null;
+  const partita = d.promo.validoDal == null || d.promo.validoDal <= oggi;
+  return !d.scaduta && partita && d.promo.tipo !== 'noleggio' && t.prezzoRiferimento != null && t.prezzoRiferimento > 0 && t.costoCreditoPct != null;
 }
 
 function riga(d: PromoDecodificata, posizione: number): RigaIndice {
@@ -93,8 +97,9 @@ export function edizioneIndice(promo: readonly PromoDecodificata[], adesso: Date
   const oggi = oggiItalia(adesso);
   const [anno = '', meseNumero = ''] = oggi.split('-');
   const mese = `${MESI[Number(meseNumero) - 1] ?? ''} ${anno}`;
-  const valide = ordinaIndice(promo.filter(promoValida));
-  const pubblicabile = valide.length >= SOGLIA_PUBBLICAZIONE;
+  const valide = ordinaIndice(promo.filter((d) => promoValida(d, oggi)));
+  // Mai prima della data annunciata, anche con 20 promo valide.
+  const pubblicabile = valide.length >= SOGLIA_PUBBLICAZIONE && oggi >= PRIMA_EDIZIONE;
   return {
     chiave: `${anno}-${meseNumero}`,
     titolo: mese.charAt(0).toUpperCase() + mese.slice(1),
