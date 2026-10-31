@@ -1,6 +1,6 @@
 /**
  * Movimento minimo della scena (specifica v2, §2), senza librerie: curve, tween su requestAnimationFrame,
- * contatore numerico, IntersectionObserver e prefers-reduced-motion. Solo valori: chi disegna decide cosa muovere
+ * contatore numerico, IntersectionObserver e una sola funzione per prefers-reduced-motion (movimentoPermesso). Solo valori: chi disegna decide cosa muovere
  * (canvas, transform, opacity), mai proprietà di layout.
  */
 export type Curva = (t: number) => number;
@@ -52,19 +52,43 @@ export function contatore(da: number, a: number, avanzamento: number): number {
   return da + (a - da) * limita(avanzamento);
 }
 
-/** true se chi guarda ha chiesto meno movimento (o se non c'è una finestra, come nel rendering lato server). */
-export function menoMovimento(): boolean {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return true;
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const QUERY_RIDOTTO = '(prefers-reduced-motion: reduce)';
+
+/**
+ * L'unica domanda sul movimento di tutto il sito (specifica di movimento, a6): si può animare?
+ * No se chi guarda ha chiesto meno movimento, e no senza finestra (rendering lato server): lì si mostra lo stato finale.
+ * Ogni animazione in JavaScript passa da qui; in CSS la stessa regola è `@media (prefers-reduced-motion: no-preference)`.
+ */
+export function movimentoPermesso(): boolean {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+  return !window.matchMedia(QUERY_RIDOTTO).matches;
 }
 
-/** Ascolta i cambi di preferenza sul movimento. Restituisce la funzione per smettere. */
-export function seguiMenoMovimento(alCambio: (ridotto: boolean) => void): () => void {
+/** Ascolta i cambi di preferenza: `alCambio(true)` quando il movimento torna permesso. Restituisce la funzione per smettere. */
+export function seguiMovimento(alCambio: (permesso: boolean) => void): () => void {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return () => undefined;
-  const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const ascolta = (e: MediaQueryListEvent) => alCambio(e.matches);
+  const mq = window.matchMedia(QUERY_RIDOTTO);
+  const ascolta = (e: MediaQueryListEvent) => alCambio(!e.matches);
   mq.addEventListener('change', ascolta);
   return () => mq.removeEventListener('change', ascolta);
+}
+
+/** Porta un elemento in vista: scorrendo solo se il movimento è permesso, altrimenti con un salto. */
+export function scorriVerso(el: Element | null, blocco: ScrollLogicalPosition = 'start'): void {
+  el?.scrollIntoView({ behavior: movimentoPermesso() ? 'smooth' : 'auto', block: blocco });
+}
+
+interface NavigatorRidotto { readonly connection?: { readonly saveData?: boolean }; readonly deviceMemory?: number }
+
+/**
+ * Livello del movimento d'ambiente (a8): PIENO o RIDOTTO. Ridotto se il movimento non è permesso, con Save-Data,
+ * con 2 GB di memoria o meno, o con meno di 4 core. Il quinto criterio (fotogrammi lenti) lo misura chi anima.
+ */
+export function livelloMovimento(): 'pieno' | 'ridotto' {
+  if (!movimentoPermesso() || typeof navigator === 'undefined') return 'ridotto';
+  const n = navigator as Navigator & NavigatorRidotto;
+  const povero = n.connection?.saveData === true || (n.deviceMemory ?? 8) <= 2 || (navigator.hardwareConcurrency || 8) < 4;
+  return povero ? 'ridotto' : 'pieno';
 }
 
 /**

@@ -1,5 +1,5 @@
 import { numero } from '../calc/format';
-import { menoMovimento } from '../motion';
+import { movimentoPermesso } from '../motion';
 
 /**
  * Grafico dell'Indice: riordina le righe per la misura scelta (dalla più bassa) con FLIP su Web Animations,
@@ -38,7 +38,7 @@ function riordina(lista: HTMLElement, metrica: string): void {
     aggiornaRiga(r, metrica, massimo);
   }
   lista.dataset.metrica = metrica;
-  if (menoMovimento() || typeof Element.prototype.animate !== 'function') return;
+  if (!movimentoPermesso() || typeof Element.prototype.animate !== 'function') return;
   for (const r of nuove) {
     const delta = (prima.get(r) ?? 0) - r.getBoundingClientRect().top;
     if (Math.abs(delta) < 1) continue;
@@ -47,7 +47,7 @@ function riordina(lista: HTMLElement, metrica: string): void {
 }
 
 function entraInVista(lista: HTMLElement): void {
-  if (menoMovimento() || typeof IntersectionObserver !== 'function') return;
+  if (!movimentoPermesso() || typeof IntersectionObserver !== 'function') return;
   const osservatore = new IntersectionObserver((voci) => {
     if (!voci.some((v) => v.isIntersecting)) return;
     osservatore.disconnect();
