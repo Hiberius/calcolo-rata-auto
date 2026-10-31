@@ -31,7 +31,7 @@ const { fonte: _fonte, ...base } = a.preventivo;
 
   <section class="contenitore sezione grid gap-12 lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start">
     <div class="grid gap-6 lg:sticky lg:top-6">
-      <PromoBox decodificata={d} />
+      <PromoBox decodificata={d} composizione={false} />
       <p><a class="btn btn-primario w-full" href="/#decodifica">Decodifica il tuo preventivo</a></p>
     </div>
     <ResultCard analisi={a} azioni={null} />

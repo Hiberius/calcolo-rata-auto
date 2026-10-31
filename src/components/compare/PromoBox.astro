@@ -2,12 +2,16 @@
 import { euro, percentuale, punti } from '~/lib/calc/format';
 import { dataBreve } from '~/lib/date';
 import type { PromoDecodificata } from '~/lib/promo';
+import ComposizioneTotale from '~/components/ui/ComposizioneTotale';
+import { SPIEGAZIONE_TAEG_COSTO } from '~/lib/calc/composizione';
 
 interface Props {
   decodificata: PromoDecodificata;
   link?: boolean;
+  /** false dove la composizione del totale è già accanto (pagina della promo, con il risultato completo). */
+  composizione?: boolean;
 }
-const { decodificata: d, link = false } = Astro.props;
+const { decodificata: d, link = false, composizione = true } = Astro.props;
 const p = d.promo;
 const t = d.analisi.totali;
 const titolo = [p.marca, p.modello, p.versione].filter(Boolean).join(' ');
@@ -53,13 +57,18 @@ const righe: readonly (readonly [string, string])[] = [
       </div>
     ))}
   </dl>
-  <p class="grid gap-0.5">
-    <span class="text-sm">Paghi in tutto, tenendo l'auto</span>
-    <span class="numeri text-2xl font-semibold">{euro(t.totalePagatoTenendo)}</span>
-    {t.costoCredito != null && (
-      <span class="numeri text-segnale-scuro font-semibold">Costo del credito {euro(t.costoCredito)} · {percentuale(t.costoCreditoPct)}</span>
-    )}
-  </p>
+  <div class="grid gap-2">
+    <p class="grid gap-0.5">
+      <span class="text-sm">Paghi in tutto, tenendo l'auto</span>
+      <span class="numeri text-2xl font-semibold">{euro(t.totalePagatoTenendo)}</span>
+      {t.costoCredito != null && (
+        <span class="numeri text-segnale-scuro font-semibold">Costo del credito {euro(t.costoCredito)} · {percentuale(t.costoCreditoPct)} del prezzo</span>
+      )}
+    </p>
+    {t.costoCredito != null && <p class="text-xs text-tenue">{SPIEGAZIONE_TAEG_COSTO}</p>}
+    {composizione && <p class="text-sm font-medium pt-1">Da dove viene il totale</p>}
+    {composizione && <ComposizioneTotale analisi={d.analisi} compatta />}
+  </div>
   {p.requisiti.length > 0 && <p class="text-sm"><span class="font-medium">Condizioni: </span>{p.requisiti.join(', ')}</p>}
   <p class="text-xs text-tenue">
     Fonte: <a class="link" href={p.urlFonte} rel="nofollow noopener" target="_blank">{new URL(p.urlFonte).hostname}</a>, verificata il {dataBreve(p.dataVerifica)}.

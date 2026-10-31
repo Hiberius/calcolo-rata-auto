@@ -36,8 +36,11 @@ export function nodoScheda(d: DatiScheda, formato: FormatoOg): Nodo {
   const righe = [
     ...(d.prezzo ? [riga('Prezzo', d.prezzo, quadrato)] : []),
     ...(d.costoCredito ? [riga('Costo del credito', `${d.costoCredito} (${d.costoCreditoPct})`, quadrato, COLORI.segnale, true)] : []),
-    riga('Composizione', d.composizione.replace('Anticipo ', ''), quadrato),
   ];
+  const composizione = h('div', { flexDirection: 'column', width: '100%', paddingTop: quadrato ? 16 : 10 }, [
+    h('div', { fontFamily: SANS, fontSize: quadrato ? 24 : 19, color: COLORI.tenue }, 'Da dove viene il totale'),
+    h('div', { fontFamily: MONO, fontSize: quadrato ? 28 : 22, flexWrap: 'wrap', lineHeight: 1.3 }, d.composizione),
+  ]);
   return h('div', { width: '100%', height: '100%', background: COLORI.carta, color: COLORI.inchiostro, padding: quadrato ? 80 : 48, flexDirection: 'column', justifyContent: 'space-between' }, [
     h('div', { flexDirection: 'column' }, [
       h('div', { justifyContent: 'space-between', fontFamily: SANS, fontSize: 26, color: COLORI.tenue }, [h('div', {}, 'RATA VERA'), h('div', {}, d.taeg)]),
@@ -48,8 +51,9 @@ export function nodoScheda(d: DatiScheda, formato: FormatoOg): Nodo {
       h('div', { fontFamily: SANS, fontSize: quadrato ? 30 : 26 }, 'Paghi davvero'),
       h('div', { fontFamily: MONO, fontSize: quadrato ? 150 : 100, lineHeight: 1, letterSpacing: -4 }, d.totale),
     ]),
-    h('div', { flexDirection: 'column', width: '100%' }, righe),
-    h('div', { justifyContent: 'space-between', fontFamily: SANS, fontSize: quadrato ? 22 : 18, color: COLORI.tenue, marginTop: 8 }, [
+    h('div', { flexDirection: 'column', width: '100%' }, [...righe, composizione]),
+    // Nel quadrato indirizzo e avvertenza vanno su due righe: affiancati si sovrapponevano.
+    h('div', { flexDirection: quadrato ? 'column' : 'row', justifyContent: 'space-between', gap: quadrato ? 6 : 16, fontFamily: SANS, fontSize: quadrato ? 22 : 18, color: COLORI.tenue, marginTop: 8 }, [
       h('div', { fontFamily: MONO }, d.urlBreve),
       h('div', {}, AVVERTENZA_BREVE),
     ]),
@@ -58,5 +62,6 @@ export function nodoScheda(d: DatiScheda, formato: FormatoOg): Nodo {
 
 /** Tutto il testo della scheda: serve a scaricare solo i glifi necessari dei font. */
 export function testoUsato(d: DatiScheda): string {
-  return ['RATA VERA', 'Paghi davvero', 'Prezzo', 'Costo del credito', 'Composizione', 'a ', '()+×/%€.,', ...Object.values(d).filter((v): v is string => typeof v === 'string')].join(' ');
+  // Anche l'avvertenza: senza le sue lettere nel sottoinsieme del font, N, u, I e f sparivano dall'immagine.
+  return ['RATA VERA', 'Paghi davvero', 'Prezzo', 'Costo del credito', 'Da dove viene il totale', AVVERTENZA_BREVE, 'a ', '()+×/%€.,=', ...Object.values(d).filter((v): v is string => typeof v === 'string')].join(' ');
 }

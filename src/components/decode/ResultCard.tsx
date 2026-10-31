@@ -3,26 +3,11 @@ import type { Analisi } from '~/lib/calc';
 import { euro, percentuale } from '~/lib/calc/format';
 import Callout from '../ui/Callout';
 import Disclaimer from '../ui/Disclaimer';
-import NumberRow from '../ui/NumberRow';
+import ComposizioneTotale from '../ui/ComposizioneTotale';
+import { SPIEGAZIONE_TAEG_COSTO } from '~/lib/calc/composizione';
 import ScenariFine from './ScenariFine';
 
 const TIPO_PREZZO = { contanti: 'in contanti', promo: 'promozionale', listino: 'di listino', assente: '' } as const;
-
-function Composizione({ a }: { a: Analisi }) {
-  const p = a.preventivo;
-  const t = a.totali;
-  return (
-    <div class="grid">
-      <NumberRow etichetta="Anticipo" valore={euro(p.anticipo)} />
-      <NumberRow etichetta={`${p.nRate} rate da ${euro(p.rata)}`} valore={euro(t.sommaRate)} nota={p.primaRataDiversa != null ? `Prima rata ${euro(p.primaRataDiversa)}` : undefined} />
-      {p.maxiRata ? <NumberRow etichetta="Maxi rata finale" valore={euro(p.maxiRata)} tono="forte" /> : null}
-      {t.speseUnaTantum > 0 && <NumberRow etichetta="Spese una tantum" valore={euro(t.speseUnaTantum)} nota={a.ricostruzione.istruttoriaFinanziata ? 'L’istruttoria è dentro il credito: è già nelle rate' : undefined} />}
-      {t.speseRicorrenti > 0 && <NumberRow etichetta="Spese di incasso delle rate" valore={euro(t.speseRicorrenti)} />}
-      {t.speseImplicite > 0 && <NumberRow etichetta="Spese non dettagliate" valore={euro(t.speseImplicite)} nota="Differenza tra totale dovuto dichiarato e rate" />}
-      <NumberRow etichetta="Totale" valore={euro(t.totalePagatoTenendo)} tono="forte" />
-    </div>
-  );
-}
 
 function Taeg({ a }: { a: Analisi }) {
   const { stato, nota } = a.taeg;
@@ -67,6 +52,7 @@ export default function ResultCard({ analisi: a, azioni }: Props) {
           </p>
           <p class="font-medium">{a.verdetto.etichetta}</p>
           {a.verdetto.fraseQuotaRata && <p class="text-tenue">{a.verdetto.fraseQuotaRata}</p>}
+          <p class="text-sm text-tenue" data-spiegazione-taeg>{SPIEGAZIONE_TAEG_COSTO}</p>
         </section>
       )}
       {t.costoCredito == null && <p class="font-medium">{a.verdetto.etichetta}</p>}
@@ -75,7 +61,7 @@ export default function ResultCard({ analisi: a, azioni }: Props) {
 
       <section class="grid gap-3" aria-labelledby="composizione-titolo">
         <h3 id="composizione-titolo" class="font-semibold text-lg">Da dove viene il totale</h3>
-        <Composizione a={a} />
+        <ComposizioneTotale analisi={a} />
       </section>
 
       <section class="grid gap-3">

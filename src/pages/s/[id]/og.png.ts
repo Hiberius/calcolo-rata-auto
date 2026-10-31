@@ -5,7 +5,7 @@ import { caricaScheda, TTL_CACHE_SCHEDA } from '~/lib/scheda';
 
 export const prerender = false;
 
-const VERSIONE_OG = 'v5';
+const VERSIONE_OG = 'v7';
 
 async function generaPng(id: string, formato: FormatoOg, env: Env): Promise<ArrayBuffer | null> {
   const scheda = await caricaScheda(env, id);

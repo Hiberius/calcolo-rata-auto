@@ -3,6 +3,8 @@ import Base from '~/layouts/Base.astro';
 import ShareButtons from '~/components/ui/ShareButtons.astro';
 import Disclaimer from '~/components/ui/Disclaimer';
 import NumberRow from '~/components/ui/NumberRow';
+import ComposizioneTotale from '~/components/ui/ComposizioneTotale';
+import { SPIEGAZIONE_TAEG_COSTO } from '~/lib/calc/composizione';
 import { euro, percentuale, punti } from '~/lib/calc/format';
 import { datiScheda, testoCondivisione } from '~/lib/og/template';
 import { caricaScheda } from '~/lib/scheda';
@@ -51,10 +53,12 @@ const promo = a ? promoDelloStessoModello(a.preventivo.marca, a.preventivo.model
           {a.totali.costoCredito != null && (
             <NumberRow etichetta="Costo del credito" valore={`${euro(a.totali.costoCredito)} · ${percentuale(a.totali.costoCreditoPct)}`} tono="segnale" />
           )}
-          <NumberRow etichetta="Anticipo" valore={euro(a.preventivo.anticipo)} />
-          <NumberRow etichetta={`${a.preventivo.nRate} rate da ${euro(a.preventivo.rata)}`} valore={euro(a.totali.sommaRate)} />
-          {a.preventivo.maxiRata ? <NumberRow etichetta="Maxi rata finale" valore={euro(a.preventivo.maxiRata)} tono="forte" /> : null}
           {a.taeg.taegRicostruito != null && <NumberRow etichetta="TAEG ricostruito dai numeri" valore={punti(a.taeg.taegRicostruito)} tono="tenue" />}
+        </div>
+        {a.totali.costoCredito != null && <p class="text-sm text-tenue">{SPIEGAZIONE_TAEG_COSTO}</p>}
+        <div class="grid gap-2">
+          <h2 class="font-semibold">Da dove viene il totale</h2>
+          <ComposizioneTotale analisi={a} />
         </div>
         <p class="font-medium">{a.verdetto.etichetta}</p>
         {a.totali.messaggi[0] && <p class="text-sm border-l-4 border-attenzione pl-3">{a.totali.messaggi[0]}</p>}

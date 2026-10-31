@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { analizza, type Analisi } from '~/lib/calc';
 import { euro, percentuale } from '~/lib/calc/format';
+import { composizioneTotale, formulaTotale, sommaVoci, SPIEGAZIONE_TAEG_COSTO } from '~/lib/calc/composizione';
+import { datiScheda, testoCondivisione } from '~/lib/og/template';
 
 function ok(input: unknown, ipotesi = {}): Analisi {
   const esito = analizza(input, ipotesi);
@@ -172,5 +174,56 @@ describe('Formato italiano', () => {
     expect(euro(1234567)).toBe('1.234.567,00 €');
     expect(euro(99)).toBe('99,00 €');
     expect(percentuale(0.1103)).toBe('11,03%');
+  });
+});
+
+describe('composizione del totale a vista (test del 31/10: 166,90 € non spiegati)', () => {
+  const casi: Record<string, Record<string, unknown>> = {
+    arona: { prezzoPromo: 22183.6, anticipo: 3400, nRate: 35, rata: 169, maxiRata: 14750.6, tan: 2.95, taegDichiarato: 4.17, importoCreditoDichiarato: 19163.6, importoTotaleDovutoDichiarato: 20838.9, speseIstruttoria: 380, speseIncassoRata: 3.4, impostaBollo: 47.9 },
+    p208: { prezzoPromo: 14950, anticipo: 4326, nRate: 35, rata: 99, maxiRata: 10434, tan: 7.49, taegDichiarato: 11.03, importoTotaleDovutoDichiarato: 13927.25 },
+    panda: { prezzoPromo: 14950, anticipo: 2747, nRate: 35, rata: 128.99, maxiRata: 10638.4, tan: 5.99, taegDichiarato: 9.08, importoCreditoDichiarato: 12474, importoTotaleDovutoDichiarato: 15185.38, speseIstruttoria: 420, speseIncassoRata: 4, impostaBollo: 32.24 },
+    accessori: { prezzoContanti: 15000, anticipo: 2000, nRate: 36, rata: 350, ipt: 500, messaSuStrada: 400, polizzeAbbinate: 900, serviziAbbinati: 300 },
+    leasing: { tipo: 'leasing', prezzoListino: 30000, anticipo: 3000, nRate: 47, rata: 390, primaRataDiversa: 3000, maxiRata: 9000 },
+    noleggio: { tipo: 'noleggio', anticipo: 3000, nRate: 36, rata: 399, kmInclusi: 30000, costoKmEccedente: 0.2 },
+  };
+
+  it('in ogni caso la somma delle voci è il totale, al centesimo', () => {
+    for (const [nome, input] of Object.entries(casi)) {
+      const esito = analizza(input);
+      if (!esito.ok) throw new Error(nome);
+      const c = composizioneTotale(esito.analisi);
+      expect(sommaVoci(c), nome).toBe(esito.analisi.totali.totalePagatoTenendo);
+    }
+  });
+
+  it('Arona: anticipo + rate + maxi rata + incasso 35 × 3,40 + bollo = 24.232,50 €, istruttoria detta a parte', () => {
+    const esito = analizza(casi.arona);
+    if (!esito.ok) throw new Error('arona');
+    const c = composizioneTotale(esito.analisi);
+    expect(c.voci.map((v) => [v.chiave, v.importo])).toEqual([
+      ['anticipo', 3400], ['rate', 5915], ['maxiRata', 14750.6], ['incasso', 119], ['bollo', 47.9],
+    ]);
+    expect(c.voci.find((v) => v.chiave === 'incasso')?.dettaglio).toBe('35 × 3,40 €');
+    expect(formulaTotale(c)).toBe('3.400,00 + 5.915,00 + 14.750,60 + 119,00 + 47,90 = 24.232,50 €');
+    expect(c.note.join(' ')).toContain("L'istruttoria di 380,00 € è già dentro l'importo del credito");
+  });
+
+  it('208: le spese non dettagliate del totale dovuto sono una voce con il loro nome', () => {
+    const esito = analizza(casi.p208);
+    if (!esito.ok) throw new Error('208');
+    const altre = composizioneTotale(esito.analisi).voci.find((v) => v.chiave === 'altre');
+    expect(altre?.importo).toBe(28.25);
+  });
+
+  it('la spiegazione fissa distingue TAEG e costo del credito', () => {
+    expect(SPIEGAZIONE_TAEG_COSTO).toBe('Il TAEG è un tasso annuo; il costo del credito è quanto paghi in più sul prezzo in tutta la durata.');
+  });
+
+  it('il testo da condividere elenca anche spese di incasso e bollo', () => {
+    const esito = analizza(casi.arona);
+    if (!esito.ok) throw new Error('arona');
+    const testo = testoCondivisione(datiScheda(esito.analisi, 'abcDEF12', 'https://ratavera.it'));
+    expect(testo).toContain('Anticipo 3.400 + 35×169 + maxi rata 14.750,60 + incasso 35×3,40 + bollo 47,90 = 24.232,50 €');
+    expect(testo).toContain('Paghi davvero 24.232,50 €');
   });
 });
