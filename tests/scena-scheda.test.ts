@@ -45,6 +45,6 @@ describe('scheda: immagine dell’atto 2 e riga dell’incrocio', () => {
   });
 
   it('la cancellazione toglie anche l’immagine della scena dalla cache', () => {
-    expect(chiaviCacheScheda('abcDEF12')).toContain('og:v7:abcDEF12:scena');
+    expect(chiaviCacheScheda('abcDEF12')).toContain('og:v8:abcDEF12:scena');
   });
 });

@@ -4,7 +4,7 @@ import { ID_SCHEDA_RE } from './ids';
 
 export const TTL_CACHE_SCHEDA = 60 * 60 * 24 * 30;
 /** Versione dell'immagine OG: cambiarla rigenera tutte le immagini (le vecchie scadono da sole in KV). */
-export const VERSIONE_OG = 'v7';
+export const VERSIONE_OG = 'v8';
 
 /** Tutte le chiavi KV di una scheda: dati in cache, le due immagini dello scontrino e quella della scena. Servono anche alla cancellazione. */
 export function chiaviCacheScheda(id: string): readonly string[] {
