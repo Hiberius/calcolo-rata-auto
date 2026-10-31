@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { analizza, type Analisi } from '~/lib/calc';
 import { rataCostante } from '~/lib/calc/rata';
-import { anticipoMassimo, baseScena, combinazioneImpossibile, cursoriIniziali, fraseIncrocio, limitiCursori, pianoConCursori, rigaIncrocio, serieScena } from '~/lib/calc/scena';
+import { anticipoMassimo, baseScena, capitaleMinimo, combinazioneImpossibile, cursoriIniziali, fraseIncrocio, limitiCursori, pianoConCursori, rigaIncrocio, serieScena } from '~/lib/calc/scena';
 import { debitoResiduo, durataPiano, MODELLO_VALORE, rataDelPiano, serieValoreDebito, tassoImplicito, valoreStimato, type PianoDebito } from '~/lib/calc/valore';
 
 function ok(input: unknown): Analisi {
@@ -190,10 +190,19 @@ describe('cursore dell’anticipo: mai un capitale sotto la maxi rata', () => {
     const max = anticipoMassimo(b);
     expect(limitiCursori(b).anticipo.max).toBe(max);
     expect(max).toBeLessThan(13_000);
-    expect(b.anticipo + (b.piano?.capitale ?? 0) - max).toBeGreaterThanOrEqual(14_750.6);
+    expect(b.anticipo + (b.piano?.capitale ?? 0) - max).toBeGreaterThanOrEqual(14_750.6 / (1 + 2.95 / 1200));
+    expect(capitaleMinimo(b.piano!)).toBeCloseTo(14_714.4, 0);
     const piano = pianoConCursori(b, { ...cursoriIniziali(b), anticipo: max });
     expect(piano?.rata).toBeGreaterThan(0);
     expect(piano?.capitale).toBe(Math.round((piano?.capitale ?? 0) * 100) / 100);
+  });
+
+  it('208: con la maxi rata al 70% del prezzo l’anticipo sale al massimo fino a 4.605 €', () => {
+    const b = baseScena(ok(P208));
+    expect(anticipoMassimo(b)).toBe(4_605);
+    const piano = pianoConCursori(b, { ...cursoriIniziali(b), anticipo: 4_605 });
+    expect(piano?.rata).toBeGreaterThan(80);
+    expect(piano?.rata).toBeLessThan(99);
   });
 
   it('oltre il massimo la combinazione non è possibile, invece di una rata a 0 €', () => {

@@ -93,13 +93,18 @@ export function cursoriIniziali(b: BaseScena): Cursori {
   return { anticipo: b.anticipo, durata: b.durata, kmAnnui: b.kmAnnui };
 }
 
+/** Capitale più basso che i cursori permettono: la maxi rata scontata di un mese, così la rata copre almeno gli interessi. */
+export function capitaleMinimo(p: PianoDebito): number {
+  return p.maxiRata > 0 ? p.maxiRata / (1 + p.tanAnnuo / 1200) : 1;
+}
+
 /**
- * Anticipo più alto che il cursore permette: il 60% del prezzo, ma mai tanto da lasciare un capitale sotto la maxi rata,
- * che resta fissa (altrimenti la rata diventerebbe negativa). Mai sotto l'anticipo del preventivo.
+ * Anticipo più alto che il cursore permette: il 60% del prezzo, ma mai tanto da lasciare un capitale sotto la maxi rata
+ * (scontata di un mese), che resta fissa: oltre, il debito crescerebbe e la rata andrebbe sotto zero. Mai sotto l'anticipo del preventivo.
  */
 export function anticipoMassimo(b: BaseScena): number {
   const sessanta = Math.round((b.prezzo ?? b.anticipo) * 0.6);
-  const conMaxi = b.piano ? Math.floor(b.anticipo + b.piano.capitale - Math.max(b.piano.maxiRata, 1)) : sessanta;
+  const conMaxi = b.piano ? Math.floor(b.anticipo + b.piano.capitale - capitaleMinimo(b.piano)) : sessanta;
   return Math.max(b.anticipo, Math.min(sessanta, conMaxi));
 }
 

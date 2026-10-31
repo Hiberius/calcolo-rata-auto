@@ -55,7 +55,8 @@ test('i cursori di anticipo, durata e km cambiano i numeri dal vivo', async ({ p
   await page.locator('#scena-km').fill('35000');
   await expect(valore).not.toHaveText('9.261,82 €');
   await expect(page.locator('[data-lettura="scena-km"]')).toHaveText('35.000 km');
-  await page.locator('#scena-anticipo').fill('6326');
+  await expect(page.locator('#scena-anticipo')).toHaveAttribute('max', '4605');
+  await page.locator('#scena-anticipo').fill('4600');
   await expect(rata).not.toHaveText('99,00 €');
   await page.locator('#scena-durata').fill('48');
   await expect(page.locator('#atto2-titolo')).toHaveText('I quattro anni');

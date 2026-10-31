@@ -72,7 +72,7 @@ export const TESTI_IT = {
   'atto2.tassoImplicitoSenzaTan': 'Il {nominale} non c’è: il debito scende al tasso che fa tornare rata e {maxiRata}, {valore} (stima).',
   'atto2.tassoTaeg': 'Rata e {maxiRata} non bastano a ricavare un tasso: il debito scende al tasso nominale equivalente al {tasso}, {valore} (stima).',
   'atto2.tassoNessuno': 'Rata e {maxiRata} non coprono il capitale: ricontrolla i numeri. La curva del debito è solo indicativa.',
-  'atto2.ricalcolo': 'Cambiando anticipo o durata la {maxiRata} resta la stessa e la rata si ricalcola.',
+  'atto2.ricalcolo': 'Cambiando anticipo o durata la {maxiRata} resta la stessa e la rata si ricalcola; per questo l’anticipo si ferma dove il capitale da finanziare scende alla {maxiRata}.',
   'atto2.impossibile': 'Con questo anticipo la {maxiRata} supera il capitale da finanziare: combinazione non possibile. Abbassa l’anticipo o allunga la durata.',
   'atto3.titolo': 'Le tre strade',
   'atto3.sotto': 'Stessa auto, stessa scala. Non è una classifica: ogni strada ha le sue ipotesi, scritte sotto il numero.',
