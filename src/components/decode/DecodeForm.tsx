@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { analizza, TIPI_CONTRATTO, type Analisi, type TipoContratto } from '~/lib/calc';
 import { GRUPPI, preventivoDaForm, unisciEstrazione, type DefCampo, type StatoForm } from '~/lib/client/campi';
 import type { RispostaEstrazione } from '~/lib/extract/schema';
 import { inviaEvento } from '~/lib/client/evento';
 import { ESEMPIO_208, ETICHETTA_ESEMPIO } from '~/lib/esempio';
 import { salvaPreventivo } from '~/lib/client/sessione';
+import { ascoltaEsempio } from '~/lib/client/esempio';
 import CreaScheda from './CreaScheda';
 import { MESSAGGIO_TOTALE_INCOERENTE } from '~/lib/calc/totale';
 import FieldGroup from './FieldGroup';
@@ -32,6 +33,7 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
   const [letto, setLetto] = useState(false);
   const [esempio, setEsempio] = useState(false);
   const preventivo = useMemo(() => preventivoDaForm(stato), [stato]);
+  const caricaEsempio = useRef<() => void>(() => undefined);
 
   function vaiAlRisultato() {
     requestAnimationFrame(() => document.getElementById('risultato')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
@@ -54,6 +56,10 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
     setEsempio(true);
     vaiAlRisultato();
   }
+
+  caricaEsempio.current = provaEsempio;
+  // Il pulsante dell'esempio sta nell'hero: arriva con un evento, o con /?esempio=1 se il JavaScript non c'era ancora.
+  useEffect(() => ascoltaEsempio(document, window, () => caricaEsempio.current()), []);
 
   function estratto(r: RispostaEstrazione) {
     setEsempio(false);
@@ -91,7 +97,6 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
               </button>
             ))}
           </div>
-          <button type="button" class="btn btn-secondario" onClick={provaEsempio} data-prova-esempio>Prova con un preventivo d'esempio</button>
         </div>
 
         {modo === 'foto' && <UploadDropzone siteKey={siteKey} onEstratto={estratto} />}

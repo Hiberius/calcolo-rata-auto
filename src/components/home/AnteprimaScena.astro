@@ -1,0 +1,46 @@
+---
+import { analizza } from '~/lib/calc';
+import { euroIntero, percentuale } from '~/lib/calc/format';
+import { ripartizioneTotale } from '~/lib/calc/ripartizione';
+import { ETICHETTA_STIMA } from '~/lib/calc/valore';
+import { preventivoDaForm } from '~/lib/client/campi';
+import { ESEMPIO_208 } from '~/lib/esempio';
+import { COLORE_CONTENITORE } from '~/components/scene/disegno/colori';
+
+// Atto 1 in miniatura, calcolato qui sul server: nessun peso in più nel JavaScript della home.
+const esito = analizza(preventivoDaForm(ESEMPIO_208));
+const ripartizione = esito.ok ? ripartizioneTotale(esito.analisi) : null;
+const voci = ripartizione?.contenitori.filter((c) => c.importo > 0) ?? [];
+---
+<figure class="anteprima" data-anteprima aria-labelledby="anteprima-didascalia">
+  <div class="flex items-baseline justify-between gap-3">
+    <p class="atto-numero">Anteprima della scena</p>
+    <p class="etichetta-stima">{ETICHETTA_STIMA}</p>
+  </div>
+  {ripartizione && (
+    <div class="grid gap-2" aria-hidden="true">
+      <p class="numeri flex items-baseline justify-between gap-3 text-xs text-[var(--scena-tenue)]"><span>01 · dove vanno i tuoi euro</span><span class="text-sm text-[var(--scena-carta)]">{euroIntero(ripartizione.totale)}</span></p>
+      <div class="flex h-2.5 w-full gap-[2px]">
+        {voci.map((c) => <span class="block h-full" style={`flex: ${c.importo} 1 0; background: ${COLORE_CONTENITORE[c.chiave]};`} />)}
+      </div>
+      <ul class="numeri flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--scena-tenue)]">
+        {voci.map((c) => <li><span style={`color: ${COLORE_CONTENITORE[c.chiave]};`}>■</span> {c.etichetta.toLowerCase()} {percentuale(c.importo / ripartizione.totale, c.importo / ripartizione.totale < 0.01 ? 1 : 0)}</li>)}
+      </ul>
+    </div>
+  )}
+  <p class="numeri mt-2 text-xs text-[var(--scena-tenue)]" aria-hidden="true">02 · valore contro debito</p>
+  <canvas class="block h-[170px] w-full sm:h-[210px] lg:h-[230px]" data-tela-anteprima aria-hidden="true"></canvas>
+  <div class="numeri flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs text-[var(--scena-tenue)]" aria-hidden="true">
+    <span class="flex items-center gap-2"><span class="h-0.5 w-5 bg-[var(--scena-carta)]"></span>valore stimato</span>
+    <span class="flex items-center gap-2"><span class="h-[3px] w-5 bg-[var(--scena-segnale)]"></span>debito</span>
+    <span>anticipo <span class="text-[var(--scena-carta)]" data-anteprima-anticipo>4.326 €</span></span>
+  </div>
+  <p class="numeri text-xs text-[var(--scena-segnale)]" aria-hidden="true" data-anteprima-incrocio>dal mese 36 il debito supera il valore</p>
+  <figcaption id="anteprima-didascalia" class="text-sm text-[var(--scena-tenue)]">
+    La Peugeot 208 dell’esempio: dove vanno i {ripartizione ? euroIntero(ripartizione.totale) : 'soldi'} che paghi, e il valore stimato dell’auto contro il debito residuo mentre l’anticipo scende a zero. Meno anticipo, prima devi all’auto più di quanto vale.
+  </figcaption>
+</figure>
+<script>
+  import { avviaAnteprima } from '~/lib/client/anteprima';
+  avviaAnteprima(document);
+</script>

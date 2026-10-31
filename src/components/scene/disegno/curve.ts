@@ -1,5 +1,5 @@
 import type { SerieValoreDebito } from '~/lib/calc/valore';
-import type { Area } from '../useTela';
+import type { Area } from './tela';
 import { MONO, SANS, SCENA } from './colori';
 
 /** Testi disegnati sul canvas, nella lingua del mercato. */

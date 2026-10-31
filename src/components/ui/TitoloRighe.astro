@@ -1,0 +1,17 @@
+---
+/** Titolo a righe (specifica di movimento, F2): le righe le decide chi scrive, ogni riga sale da una maschera. */
+interface Props {
+  righe: readonly string[];
+  /** Indice della riga in vermiglio (solo a misura display: il contrasto regge). */
+  accento?: number;
+  id?: string;
+  /** Classe della misura, se diversa da quella display di default. */
+  classe?: string;
+}
+const { righe, accento = -1, id, classe = 'titolo-display' } = Astro.props;
+---
+<h1 id={id} class={classe} aria-label={righe.join(' ')}>
+  {righe.map((riga, i) => (
+    <span class="riga-maschera" aria-hidden="true"><span class:list={['riga-sale', { 'text-segnale': i === accento }]} style={`--i:${i}`}>{riga}</span></span>
+  ))}
+</h1>
