@@ -3,6 +3,8 @@ import Base from '~/layouts/Base.astro';
 import GraficoIndice from '~/components/indice/GraficoIndice.astro';
 import TabellaIndice from '~/components/indice/TabellaIndice.astro';
 import ModuloStampa from '~/components/form/ModuloStampa.astro';
+import AnteprimaIndice from '~/components/indice/AnteprimaIndice.astro';
+import TitoloRighe from '~/components/ui/TitoloRighe.astro';
 import { CRITERIO, edizioneIndice, LICENZA, SOGLIA_PUBBLICAZIONE } from '~/lib/indice';
 import { DEFINIZIONI } from '~/lib/indice/metriche';
 import { tutteLePromo } from '~/lib/promo';
@@ -15,7 +17,7 @@ const modulo = Astro.url.searchParams.has('inviato') || Astro.url.searchParams.h
 Astro.response.headers.set('cache-control', modulo ? 'no-store' : 'public, max-age=900');
 const adesso = new Date();
 const e = edizioneIndice(tutteLePromo(adesso), adesso);
-const quota = Math.min(1, e.nValide / SOGLIA_PUBBLICAZIONE);
+const segmenti = Array.from({ length: SOGLIA_PUBBLICAZIONE }, (_, i) => i < e.nValide);
 ---
 <Base
   title={e.pubblicabile ? `Indice Rata Vera, ${e.mese}: il costo del credito delle promozioni auto` : 'Indice Rata Vera: il costo del credito delle promozioni auto, ogni mese'}
@@ -23,20 +25,30 @@ const quota = Math.min(1, e.nValide / SOGLIA_PUBBLICAZIONE);
 >
   <section class="contenitore grid gap-6 pt-8 pb-10 sm:pt-14" aria-labelledby="indice-titolo">
     <p class="etichetta">Indice Rata Vera{e.pubblicabile ? ` · ${e.titolo}` : ''}</p>
-    <h1 id="indice-titolo" class="titolo-display max-w-[14ch]">Quanto costa il credito delle promozioni auto.</h1>
+    <TitoloRighe id="indice-titolo" righe={['Quanto costa il credito', 'delle promozioni auto.']} classe="titolo-pagina max-w-[16ch]" />
     <p class="max-w-[58ch] text-lg text-tenue">Ogni mese mettiamo in fila le promozioni ufficiali delle case con lo stesso metro: quanto paghi in più del prezzo, in percentuale. Fonte e scadenza per ognuna, dati scaricabili.</p>
   </section>
 
   {!e.pubblicabile && (
-    <section class="contenitore grid gap-10 pb-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end" aria-labelledby="attesa-titolo" data-indice-attesa>
+    <section class="contenitore grid gap-10 pb-12 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end" aria-labelledby="attesa-titolo" data-indice-attesa>
       <div class="grid gap-4">
         <h2 id="attesa-titolo" class="titolo-sezione" data-prima-edizione>{e.attesa}</h2>
-        <p class="max-w-[52ch]">L’Indice esce solo quando le promozioni valide sono almeno {SOGLIA_PUBBLICAZIONE}: con meno, una classifica direbbe più di quello che i dati sanno. Fino ad allora qui trovi come lo costruiamo.</p>
+        <p class="max-w-[52ch]">L’Indice esce solo quando le promozioni valide sono almeno {SOGLIA_PUBBLICAZIONE}: con meno, una classifica direbbe più di quello che i dati sanno. Intanto ecco com’è fatto e come lo costruiamo.</p>
       </div>
-      <div class="grid gap-2" aria-label="Promozioni valide raccolte">
-        <p class="flex items-baseline justify-between gap-3"><span class="etichetta">Promozioni valide oggi</span><span class="numeri text-2xl" data-promo-valide>{e.nValide} su {SOGLIA_PUBBLICAZIONE}</span></p>
-        <span class="block h-1.5 bg-carta-scura" aria-hidden="true"><span class="block h-full origin-left bg-inchiostro" style={`transform: scaleX(${quota.toFixed(3)});`} /></span>
+      <div class="grid gap-3" role="group" aria-labelledby="promo-valide-titolo">
+        <p class="flex items-baseline justify-between gap-3">
+          <span id="promo-valide-titolo" class="etichetta">Promozioni verificate</span>
+          <span class="numero-scena" data-promo-valide>{e.nValide} su {SOGLIA_PUBBLICAZIONE}</span>
+        </p>
+        <!-- Avanzamento vero: un segmento per promozione verificata e in vigore oggi, su {SOGLIA_PUBBLICAZIONE}. -->
+        <span class="segmenti" role="img" aria-label={`${e.nValide} promozioni verificate su ${SOGLIA_PUBBLICAZIONE} necessarie`}>
+          {segmenti.map((pieno) => <span data-pieno={pieno ? '' : undefined} />)}
+        </span>
+        <p class="nota text-tenue">Ogni promozione entra dopo il controllo della fonte ufficiale, con fonte e scadenza.</p>
       </div>
+    </section>
+    <section class="contenitore pb-4" aria-label="Anteprima dell’Indice">
+      <AnteprimaIndice />
     </section>
   )}
 
@@ -55,10 +67,22 @@ const quota = Math.min(1, e.nValide / SOGLIA_PUBBLICAZIONE);
     </section>
   )}
 
-  <section class="contenitore sezione grid gap-8 md:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]" aria-labelledby="misure-titolo">
+  <!-- Richiesta stampa in evidenza: è il motivo per cui l'Indice esiste. -->
+  <section class="contenitore sezione" aria-labelledby="stampa-titolo">
+    <div class="scontrino grid gap-8 px-5 py-8 sm:px-10 sm:py-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14">
+      <div class="grid content-start gap-3">
+        <p class="etichetta">Per giornalisti e redazioni</p>
+        <h2 id="stampa-titolo" class="titolo-sezione">Ricevi l’Indice all’uscita</h2>
+        <p class="max-w-[40ch] text-tenue">Lascia email e testata: ti avvisiamo all’uscita di ogni edizione, con il CSV e la frase di citazione. Dati con licenza {LICENZA.nome}.</p>
+      </div>
+      <ModuloStampa siteKey={siteKey} />
+    </div>
+  </section>
+
+  <section class="contenitore pb-4 grid gap-8 md:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]" aria-labelledby="misure-titolo">
     <div class="grid content-start gap-3">
       <h2 id="misure-titolo" class="titolo-sezione">Cosa misuriamo</h2>
-      <p class="text-sm"><a class="link" href="/indice/metodologia">Metodologia completa dell’Indice</a></p>
+      <p class="text-sm"><a class="link tocco" href="/indice/metodologia">Metodologia completa dell’Indice</a></p>
     </div>
     <dl class="grid gap-x-10 gap-y-6 sm:grid-cols-2" data-metodologia-indice>
       {DEFINIZIONI.map((d) => (
@@ -70,11 +94,4 @@ const quota = Math.min(1, e.nValide / SOGLIA_PUBBLICAZIONE);
     </dl>
   </section>
 
-  <section class="contenitore grid gap-8 pb-4 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]" aria-labelledby="stampa-titolo">
-    <div class="grid content-start gap-3">
-      <h2 id="stampa-titolo" class="titolo-sezione">Per la stampa</h2>
-      <p class="max-w-[40ch] text-tenue">Lascia email e testata: ti avvisiamo all’uscita di ogni edizione, con il CSV e la frase di citazione.</p>
-    </div>
-    <ModuloStampa siteKey={siteKey} />
-  </section>
 </Base>
