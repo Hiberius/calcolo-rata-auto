@@ -11,9 +11,9 @@ const inviato = Astro.url.searchParams.get('inviato') === '1';
 const errore = messaggioErrore(Astro.url.searchParams.get('errore'));
 const campi = (Astro.url.searchParams.get('campi') ?? '').split(',').filter((c) => /^[a-zA-Z]{2,30}$/.test(c));
 ---
-{inviato && <p class="border-l-4 border-ok bg-[#EEF6F0] px-4 py-3" role="status" data-esito-ok>{successo}</p>}
+{inviato && <p class="border-t-2 border-ok bg-[#EEF6F0] px-4 py-3" role="status" data-esito-ok>{successo}</p>}
 {errore && (
-  <p class="border-l-4 border-segnale bg-[#FDEEE9] px-4 py-3" role="alert" data-esito-errore>
+  <p class="border-t-2 border-segnale bg-[#FDEEE9] px-4 py-3" role="alert" data-esito-errore>
     {errore}{campi.length > 0 && <span class="block text-sm text-tenue">Campi da controllare: {campi.map((c) => etichette[c] ?? c).join(', ')}</span>}
   </p>
 )}

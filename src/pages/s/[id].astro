@@ -42,34 +42,36 @@ const scena = a && dati ? datiScena(a, dati.urlBreve) : null;
     ogImage={og}
     canonical={dati.url}
     noindex
+    ogAlt={`Scontrino di Rata Vera: ${dati.titolo}, paghi davvero ${dati.totale}.`}
   >
     <section class="contenitore sezione grid gap-12 lg:grid-cols-[minmax(0,34rem)_1fr] lg:items-start">
-      <article class="scontrino rounded-t px-6 py-10 sm:px-10 grid gap-6" aria-labelledby="scheda-titolo">
-        <p class="numeri text-sm text-tenue flex justify-between gap-4"><span>RATA VERA</span><span>{dati.taeg}</span></p>
-        <div class="grid gap-1">
-          <h1 id="scheda-titolo" class="text-2xl font-semibold tracking-tight">{dati.titolo}</h1>
-          <p class="numeri text-tenue"><s>a {dati.rataPubblicizzata}</s></p>
+      <!-- F1: lo scontrino si stampa all'apertura del link (solo CSS; con meno movimento è subito intero). -->
+      <article class="scontrino px-6 py-10 sm:px-10 grid gap-6" aria-labelledby="scheda-titolo" data-stampa>
+        <p class="riga-scontrino numeri text-xs text-tenue flex justify-between gap-4 uppercase tracking-[0.08em]" style="--i:0"><span>Rata Vera</span><span>{dati.taeg}</span></p>
+        <div class="riga-scontrino grid gap-1" style="--i:1">
+          <h1 id="scheda-titolo" class="titolo-scheda text-[clamp(1.375rem,1.1rem+1.2vw,1.875rem)]">{dati.titolo}</h1>
+          <p class="text-tenue"><s class="rata-barrata">a {dati.rataPubblicizzata}</s></p>
         </div>
-        <p class="grid gap-1">
+        <p class="riga-scontrino grid gap-1" style="--i:2">
           <span class="text-lg font-medium">Paghi davvero</span>
-          <span class="numeri totale-grande">{euro(a.totali.totalePagatoTenendo)}</span>
+          <span class="numero-eroe totale-grande">{euro(a.totali.totalePagatoTenendo)}</span>
         </p>
         <div class="grid">
-          {a.totali.prezzoRiferimento != null && <NumberRow etichetta={TIPO_PREZZO[a.totali.prezzoRiferimentoTipo]} valore={euro(a.totali.prezzoRiferimento)} />}
+          {a.totali.prezzoRiferimento != null && <NumberRow etichetta={TIPO_PREZZO[a.totali.prezzoRiferimentoTipo]} valore={euro(a.totali.prezzoRiferimento)} indice={3} />}
           {a.totali.costoCredito != null && (
-            <NumberRow etichetta="Costo del credito" valore={`${euro(a.totali.costoCredito)} · ${percentuale(a.totali.costoCreditoPct)}`} tono="segnale" />
+            <NumberRow etichetta="Costo del credito" valore={`${euro(a.totali.costoCredito)} · ${percentuale(a.totali.costoCreditoPct)}`} tono="segnale" indice={4} />
           )}
-          {a.taeg.taegRicostruito != null && <NumberRow etichetta="TAEG ricostruito dai numeri" valore={punti(a.taeg.taegRicostruito)} tono="tenue" />}
+          {a.taeg.taegRicostruito != null && <NumberRow etichetta="TAEG ricostruito dai numeri" valore={punti(a.taeg.taegRicostruito)} tono="tenue" termine="taeg" ambito="scheda-taeg" indice={5} />}
         </div>
         {a.totali.costoCredito != null && <SpiegazioneTaeg ambito="scheda-costo" />}
         <div class="grid gap-2">
-          <h2 class="font-semibold">Da dove viene il totale</h2>
-          <ComposizioneTotale analisi={a} ambito="scheda-voci" />
+          <h2 class="titolo-scheda">Da dove viene il totale</h2>
+          <ComposizioneTotale analisi={a} ambito="scheda-voci" primaRiga={6} />
         </div>
         <p class="font-medium">{a.verdetto.etichetta}</p>
-        {a.totali.messaggi[0] && <p class="text-sm border-l-4 border-attenzione pl-3">{a.totali.messaggi[0]}</p>}
-        {a.taeg.stato === 'da_verificare' && <p class="text-sm border-l-4 border-attenzione pl-3">TAEG da verificare: {a.taeg.nota}</p>}
-        {a.ricostruzione.discrepanze.map((d) => <p class="text-sm border-l-4 border-attenzione pl-3">{d.messaggio}</p>)}
+        {a.totali.messaggi[0] && <p class="text-sm border-t-2 border-attenzione pt-2">{a.totali.messaggi[0]}</p>}
+        {a.taeg.stato === 'da_verificare' && <p class="text-sm border-t-2 border-attenzione pt-2">TAEG da verificare: {a.taeg.nota}</p>}
+        {a.ricostruzione.discrepanze.map((d) => <p class="text-sm border-t-2 border-attenzione pt-2">{d.messaggio}</p>)}
         <Disclaimer ambito="scheda-avvertenza" />
       </article>
 

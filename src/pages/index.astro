@@ -6,6 +6,7 @@ import TitoloRighe from '~/components/ui/TitoloRighe.astro';
 import SceltaDocumento from '~/components/home/SceltaDocumento.astro';
 import AnteprimaScena from '~/components/home/AnteprimaScena.astro';
 import { TURNSTILE_SITE_KEY_TEST } from '~/lib/turnstile';
+import { etichettaEsempio } from '~/lib/esempio';
 
 export const prerender = false;
 const siteKey = Astro.locals.runtime?.env?.PUBLIC_TURNSTILE_SITE_KEY || TURNSTILE_SITE_KEY_TEST;
@@ -21,7 +22,7 @@ const siteKey = Astro.locals.runtime?.env?.PUBLIC_TURNSTILE_SITE_KEY || TURNSTIL
       <SceltaDocumento />
       <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
         <a href="/?esempio=1#risultato" role="button" class="btn btn-secondario" data-prova-esempio>Prova con un preventivo d'esempio</a>
-        <span class="text-sm text-tenue">Peugeot 208 Style, offerta ufficiale di ottobre 2026</span>
+        <span class="nota text-tenue">Peugeot 208 Style · {etichettaEsempio()}</span>
       </div>
       <Fiducia variante="riquadro" />
     </div>
@@ -39,20 +40,29 @@ const siteKey = Astro.locals.runtime?.env?.PUBLIC_TURNSTILE_SITE_KEY || TURNSTIL
     <DecodeForm client:load siteKey={siteKey} />
   </section>
 
-  <section class="contenitore sezione grid gap-8 md:grid-cols-[1fr_2fr]" aria-labelledby="come-titolo">
-    <h2 id="come-titolo" class="text-2xl font-semibold tracking-tight">Come facciamo i conti</h2>
-    <ol class="grid gap-6">
-      <li class="grid grid-cols-[3rem_1fr] gap-4">
-        <span class="numeri text-3xl text-segnale">01</span>
-        <p><strong>Sommiamo tutto quello che esce dal tuo conto</strong>: anticipo, rate, maxi rata, spese. Il totale è il numero che il cartello con la rata non dice.</p>
+  <section class="contenitore sezione grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16" aria-labelledby="come-titolo">
+    <div class="grid content-start gap-6">
+      <h2 id="come-titolo" class="titolo-sezione">Come facciamo i conti</h2>
+      <!-- Le quattro barre: dove vanno gli euro del totale. Immagine ferma, decorativa: i numeri veri stanno nella scena. -->
+      <picture class="block overflow-hidden rounded-[var(--raggio-pannello)] border border-inchiostro bg-inchiostro">
+        <source type="image/avif" srcset="/img/scena-poster-800.avif 800w, /img/scena-poster-1200.avif 1200w" sizes="(min-width: 1024px) 30rem, 100vw" />
+        <img src="/img/scena-poster-800.webp" srcset="/img/scena-poster-800.webp 800w, /img/scena-poster-1200.webp 1200w" sizes="(min-width: 1024px) 30rem, 100vw"
+          width="1200" height="751" alt="" loading="lazy" decoding="async" class="block aspect-[10/3] h-auto w-full object-cover object-top" />
+      </picture>
+      <p class="nota max-w-[40ch] text-tenue">I calcoli girano nel tuo browser. Le formule, una per una, sono nella <a class="link" href="/metodologia">metodologia</a>.</p>
+    </div>
+    <ol class="grid content-start gap-10 lg:pt-2">
+      <li class="si-accende grid grid-cols-[3.5rem_1fr] gap-4 border-t border-inchiostro pt-5 sm:grid-cols-[5rem_1fr]">
+        <span class="numero-scena text-segnale-scuro">01</span>
+        <div class="grid gap-2"><h3 class="titolo-scheda">Sommiamo tutto quello che esce dal tuo conto</h3><p class="max-w-[52ch] text-tenue">Anticipo, rate, maxi rata, spese. Il totale è il numero che il cartello con la rata non dice.</p></div>
       </li>
-      <li class="grid grid-cols-[3rem_1fr] gap-4">
-        <span class="numeri text-3xl text-segnale">02</span>
-        <p><strong>Lo confrontiamo con il prezzo</strong>: la differenza è il costo del credito. Ricostruiamo anche il TAEG dai numeri visibili e ti diciamo se torna.</p>
+      <li class="si-accende grid grid-cols-[3.5rem_1fr] gap-4 border-t border-inchiostro pt-5 sm:grid-cols-[5rem_1fr]">
+        <span class="numero-scena text-segnale-scuro">02</span>
+        <div class="grid gap-2"><h3 class="titolo-scheda">Lo confrontiamo con il prezzo</h3><p class="max-w-[52ch] text-tenue">La differenza è il costo del credito. Ricostruiamo anche il TAEG dai numeri visibili e ti diciamo se torna.</p></div>
       </li>
-      <li class="grid grid-cols-[3rem_1fr] gap-4">
-        <span class="numeri text-3xl text-segnale">03</span>
-        <p><strong>Ti mostriamo la fine del contratto</strong>: tenere l’auto pagando la maxi rata, restituirla o cambiarla. I calcoli girano nel tuo browser.</p>
+      <li class="si-accende grid grid-cols-[3.5rem_1fr] gap-4 border-t border-inchiostro pt-5 sm:grid-cols-[5rem_1fr]">
+        <span class="numero-scena text-segnale-scuro">03</span>
+        <div class="grid gap-2"><h3 class="titolo-scheda">Ti mostriamo la fine del contratto</h3><p class="max-w-[52ch] text-tenue">Tenere l’auto pagando la maxi rata, restituirla o cambiarla, e il valore stimato dell’auto contro il debito, mese per mese.</p></div>
       </li>
     </ol>
   </section>

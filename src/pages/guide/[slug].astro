@@ -23,13 +23,13 @@ const schema = {
   author: { '@type': 'Organization', name: 'Rata Vera' },
 };
 ---
-<Base title={g.titoloPagina} description={g.descrizione}>
+<Base title={g.titoloPagina} description={g.descrizione} lettura>
   <script type="application/ld+json" set:html={JSON.stringify(schema)} />
   <article class="contenitore pt-8 pb-12 sm:pt-14 grid gap-10">
     <header class="grid gap-4">
       <p class="text-sm"><a class="link" href="/guide">Guide</a> · aggiornata il {dataLunga(g.aggiornato)}</p>
-      <h1 class="font-semibold tracking-tight leading-[1.05] text-[length:var(--testo-titolo)] max-w-[24ch]">{g.titolo}</h1>
-      <p class="text-lg max-w-[62ch] text-tenue">{g.lede}</p>
+      <h1 class="titolo-pagina max-w-[22ch]">{g.titolo}</h1>
+      <p class="frase-grande max-w-[40ch] text-tenue">{g.lede}</p>
     </header>
 
     <div id="calcolo" class="scroll-mt-6">

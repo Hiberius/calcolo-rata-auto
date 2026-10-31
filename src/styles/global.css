@@ -39,6 +39,12 @@
   --durata-breve: 160ms;
   --durata-media: 280ms;
   --curva: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Passaggi di stato e riordini (specifica di movimento, a4). */
+  --curva-stato: cubic-bezier(0.65, 0, 0.35, 1);
+  /* Angoli (d): 2 px su controlli e riquadri, 0 sullo scontrino, 6 px solo sul pannello della scena. */
+  --raggio: 2px;
+  --raggio-pannello: 6px;
+  --grana: url("/img/grana.webp");
   --ombra-scontrino: 0 1px 0 rgb(21 23 26 / 0.06), 0 18px 40px -24px rgb(21 23 26 / 0.35);
   color-scheme: light;
 }
@@ -66,7 +72,7 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 /* Pulsanti */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
-  min-height: 3rem; padding: 0.75rem 1.25rem; border-radius: 0.25rem;
+  min-height: 3rem; padding: 0.75rem 1.25rem; border-radius: var(--raggio);
   font-weight: 600; letter-spacing: 0.005em; text-decoration: none; cursor: pointer;
   transition: transform var(--durata-breve) var(--curva), background-color var(--durata-breve), color var(--durata-breve), box-shadow var(--durata-breve);
 }
@@ -76,14 +82,14 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 .btn-primario:hover:not([disabled]) { transform: translate(-1px, -1px); box-shadow: 6px 6px 0 var(--color-segnale); }
 .btn-secondario { background: transparent; color: var(--color-inchiostro); border: 2px solid var(--color-inchiostro); }
 .btn-secondario:hover:not([disabled]) { background: var(--color-inchiostro); color: var(--color-carta); }
-.tocco { display: inline-flex; align-items: center; min-height: 2.75rem; }
+.tocco { display: inline-flex; align-items: center; min-height: 2.75rem; min-width: 2.75rem; }
 .link { text-decoration: underline; text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
 .link:hover { text-decoration-color: var(--color-segnale); text-decoration-thickness: 2px; }
 .link[aria-current="page"] { text-decoration-thickness: 2px; text-decoration-color: var(--color-inchiostro); }
 
 /* Campi */
 .campo {
-  width: 100%; min-height: 2.875rem; padding: 0.5rem 0.75rem; border-radius: 0.25rem;
+  width: 100%; min-height: 2.875rem; padding: 0.5rem 0.75rem; border-radius: var(--raggio);
   /* Bordo a 3,3:1 sulla carta (WCAG 1.4.11): --color-riga resta per le righe decorative. */
   background: #FFFDF9; border: 1.5px solid var(--color-bordo-campo); color: var(--color-inchiostro);
   font-family: var(--font-mono); font-variant-numeric: tabular-nums;
@@ -94,10 +100,10 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 .campo[aria-invalid="true"] { border-color: var(--color-segnale); }
 .campo-da-confermare { border-color: var(--color-attenzione); background: #FFF8E1; }
 
-/* Scontrino: l'elemento firma. Texture carta leggera, bordo seghettato in basso. */
+/* Scontrino: l'elemento firma. Carta alzata (L1) con la grana in tile (un'immagine sola, già sfumata), angoli vivi,
+   bordo seghettato in basso. */
 .scontrino {
-  position: relative; background-color: #FBF9F5;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.08 0 0 0 0 0.07 0 0 0 0 0.05 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  position: relative; background-color: #FBF9F5; background-image: var(--grana); border-radius: 0;
   box-shadow: var(--ombra-scontrino);
 }
 .scontrino::after {
@@ -108,18 +114,41 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 .riga-tratteggiata { border-bottom: 1.5px dashed var(--color-riga); }
 .totale-grande { font-size: var(--testo-totale); line-height: 0.95; letter-spacing: -0.03em; }
 
-.entra { animation: entra var(--durata-media) var(--curva) both; }
-@keyframes entra { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+/* F1. Lo scontrino si stampa: maschera dall'alto in basso, righe una dopo l'altra (max 14). Senza movimento è intero.
+   Margini di 40 px: la maschera non taglia ombra e bordo seghettato; con `backwards` a fine corsa non resta nessun clip. */
+@media (prefers-reduced-motion: no-preference) {
+  .scontrino[data-stampa] { animation: stampa 720ms var(--curva) backwards; }
+  .scontrino[data-stampa] .riga-scontrino { animation: riga 360ms var(--curva) backwards; animation-delay: calc(240ms + min(var(--i, 0), 14) * 45ms); }
+}
+@keyframes stampa { from { clip-path: inset(-40px -40px 100% -40px); } to { clip-path: inset(-40px -40px -40px -40px); } }
+@keyframes riga { from { opacity: 0; transform: translateY(6px); } }
+
+/* F3. Il costo del credito si sottolinea quando il totale ha finito di contare (NumeroCheConta mette data-contato). */
+.traccia-costo { position: relative; }
+.traccia-costo::after { content: ""; position: absolute; left: 0; right: 0; bottom: -0.15em; height: 2px; background: currentColor; transform-origin: left center; }
+@media (prefers-reduced-motion: no-preference) {
+  [data-risultato]:not(:has([data-contato])) .traccia-costo::after { transform: scaleX(0); }
+  [data-risultato]:has([data-contato]) .traccia-costo::after { animation: traccia 400ms var(--curva) backwards; }
+}
+@keyframes traccia { from { transform: scaleX(0); } }
+
+/* Entrata breve di un blocco che arriva dopo un'azione (anteprima della foto, modulo della scheda). Lo stato iniziale
+   sta nei keyframes: senza animazione il blocco è subito visibile. */
+@media (prefers-reduced-motion: no-preference) {
+  .entra { animation: entra var(--durata-media) var(--curva) backwards; }
+}
+@keyframes entra { from { opacity: 0; transform: translateY(8px); } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
 
 /* Testi lunghi: guide e pagine di trasparenza. Misura di lettura stretta, titoli con ritmo. */
-.prosa { max-width: 68ch; }
+.prosa { max-width: 68ch; text-wrap: pretty; }
+.prosa > p, .prosa li { max-width: 66ch; }
 .prosa > * + * { margin-top: 1.1em; }
-.prosa h2 { margin-top: 2.2em; font-size: 1.5rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; }
-.prosa h3 { margin-top: 1.6em; font-size: 1.15rem; font-weight: 600; }
+.prosa h2 { margin-top: 2.2em; font-size: clamp(1.375rem, 1.1rem + 1.2vw, 1.875rem); font-weight: 600; letter-spacing: -0.025em; line-height: 1.1; text-wrap: balance; }
+.prosa h3 { margin-top: 1.6em; font-size: clamp(1.125rem, 1rem + 0.6vw, 1.5rem); font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
 .prosa a { text-decoration: underline; text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
 .prosa a:hover { text-decoration-color: var(--color-segnale); text-decoration-thickness: 2px; }
 .prosa ul, .prosa ol { padding-left: 1.25rem; }
@@ -130,7 +159,7 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 .prosa table { width: 100%; border-collapse: collapse; font-size: 0.95rem; display: block; overflow-x: auto; }
 .prosa th, .prosa td { text-align: left; padding: 0.5rem 0.75rem 0.5rem 0; border-bottom: 1.5px dashed var(--color-riga); vertical-align: top; }
 .prosa td:last-child, .prosa th:last-child { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.prosa blockquote { border-left: 4px solid var(--color-segnale); padding-left: 1rem; color: var(--color-tenue); }
+.prosa blockquote { border-top: 1.5px dashed var(--color-riga); border-bottom: 1.5px dashed var(--color-riga); padding-block: 0.875rem; font-size: 0.875rem; color: var(--color-tenue); }
 
 /* Glossario in linea (components/ui/Termine.tsx): la parola è un pulsante, la definizione compare sotto. */
 .termine { position: relative; display: inline; }
@@ -148,7 +177,7 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 .termine-def {
   display: none; position: absolute; left: 0; top: calc(100% + 0.4rem); z-index: 40;
   width: max-content; max-width: min(20rem, calc(100vw - 1.5rem)); transform: translateX(var(--sposta, 0px));
-  padding: 0.55rem 0.75rem; border-radius: 0.25rem; background: var(--color-inchiostro); color: var(--color-carta);
+  padding: 0.55rem 0.75rem; border-radius: var(--raggio); background: var(--color-inchiostro); color: var(--color-carta);
   font-family: var(--font-sans); font-size: 0.875rem; font-weight: 400; line-height: 1.4; letter-spacing: 0; text-align: left; white-space: normal;
   box-shadow: 0 10px 24px -12px rgb(21 23 26 / 0.5);
 }
@@ -156,6 +185,15 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 @media (hover: hover) and (pointer: fine) {
   .termine:hover:not([data-chiuso]) > .termine-def { display: block; }
 }
+/* Interazione 14: la definizione arriva con una dissolvenza di 120 ms e 4 px, senza molla né tilt. */
+@media (prefers-reduced-motion: no-preference) {
+  .termine-def { transition: opacity 120ms var(--curva), translate 120ms var(--curva), display 120ms allow-discrete; }
+  @starting-style { .termine[data-aperto] > .termine-def, .termine:hover > .termine-def { opacity: 0; translate: 0 4px; } }
+}
+/* Sul pannello inchiostro la definizione è di carta: stessa resa, colori invertiti. */
+.pannello-scena .termine-def, .vista-venditore .termine-def { background: var(--scena-carta); color: var(--scena-fondo); box-shadow: none; }
+.pannello-scena .termine-voce:hover, .pannello-scena .termine[data-aperto] > .termine-voce,
+.vista-venditore .termine-voce:hover, .vista-venditore .termine[data-aperto] > .termine-voce { text-decoration-color: var(--scena-segnale); }
 
 /* Scena del risultato (v2, §2): pannello inchiostro dentro la pagina chiara, grana leggera, tipografia grande. */
 :root {
@@ -165,28 +203,23 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
   --scena-riga: rgb(246 243 238 / 0.14);
   --scena-segnale: #F2825F;
   --scena-attenzione: #E2B93B;
-  --grana-scena: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.96 0 0 0 0 0.95 0 0 0 0 0.93 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 .pannello-scena {
   position: relative; isolation: isolate; display: grid; gap: clamp(3rem, 2rem + 5vw, 6.5rem);
-  padding: clamp(1.25rem, 0.6rem + 3vw, 3.5rem); border-radius: 0.375rem;
-  background: var(--scena-fondo); color: var(--scena-carta);
-  box-shadow: 0 2px 0 rgb(21 23 26 / 0.08), 0 40px 80px -48px rgb(21 23 26 / 0.7);
-}
-/* Grana statica: un'immagine sola, nessuna animazione, nessun ridisegno allo scorrimento. */
-.pannello-scena::before, .anteprima::before {
-  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; opacity: 0.5;
-  background-image: var(--grana-scena);
+  padding: clamp(1.25rem, 0.6rem + 3vw, 3.5rem); border-radius: var(--raggio-pannello);
+  /* Stacco netto dalla carta con un bordo e un filo di luce interno, non con un'ombra (d). */
+  background: var(--scena-fondo) var(--grana); color: var(--scena-carta);
+  border: 1px solid var(--color-inchiostro); box-shadow: inset 0 1px 0 rgb(246 243 238 / 0.07);
 }
 .pannello-scena .link:hover { text-decoration-color: var(--scena-segnale); }
 .pannello-scena :focus-visible { outline-color: var(--scena-segnale); }
 .atto + .atto { border-top: 1px solid var(--scena-riga); padding-top: clamp(2.5rem, 1.5rem + 4vw, 5rem); }
-.atto-numero { font-family: var(--font-mono); font-size: 0.8125rem; letter-spacing: 0.12em; color: var(--scena-segnale); }
+.atto-numero { font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--scena-segnale); }
 .atto-titolo { font-size: clamp(2rem, 1.1rem + 4.2vw, 4.25rem); font-weight: 600; line-height: 0.98; letter-spacing: -0.035em; max-width: 14ch; }
 .atto-frase { font-size: clamp(1.375rem, 1rem + 1.8vw, 2.25rem); font-weight: 500; line-height: 1.15; letter-spacing: -0.015em; max-width: 26ch; }
 .etichetta-stima {
-  font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase;
-  padding: 0.2rem 0.5rem; border: 1px solid var(--scena-attenzione); color: var(--scena-attenzione); background: var(--scena-fondo);
+  font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 0.2rem 0.5rem; border: 1px solid var(--scena-attenzione); border-radius: var(--raggio); color: var(--scena-attenzione); background: var(--scena-fondo);
 }
 .barra-strada { transform-origin: left center; transition: transform var(--durata-media) var(--curva); }
 .btn-scena { background: transparent; color: var(--scena-carta); border: 1.5px solid var(--scena-carta); }
@@ -275,8 +308,12 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 .anteprima {
   position: relative; isolation: isolate; display: grid; gap: 0.75rem; padding: 1rem 1rem 0.875rem; border-radius: 0.375rem;
   background: var(--scena-fondo); color: var(--scena-carta);
-  box-shadow: inset 0 1px 0 rgb(246 243 238 / 0.07), 0 40px 80px -48px rgb(21 23 26 / 0.7);
+  border: 1px solid var(--color-inchiostro); background-image: var(--grana);
+  box-shadow: inset 0 1px 0 rgb(246 243 238 / 0.07);
 }
+/* Senza JavaScript il canvas resta vuoto: al suo posto il poster della scena (immagine ferma, nel <noscript>). */
+@media (scripting: none) { .anteprima canvas { display: none; } }
+.anteprima-poster { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 78%; }
 
 /* Indice: barre in scala, riordino con FLIP (Web Animations); in vermiglio quando misurano il costo del credito. */
 .grafico-indice { display: grid; gap: 0.375rem; }
@@ -298,3 +335,111 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 .tabella-indice td { padding: 0.625rem 0.75rem 0.625rem 0; border-top: 1.5px dashed var(--color-riga); vertical-align: top; }
 .tabella-indice td.num, .tabella-indice th.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .tabella-indice tbody tr:hover { background: var(--color-carta-scura); }
+
+/* ── Elevazione del design (specifica di movimento, b-d) ───────────────────────────────────────────────────────── */
+
+/* Scala tipografica (c): la gerarchia nasce da misura e tracking, mai dal peso 700. */
+.titolo-pagina { font-size: clamp(2.25rem, 1.15rem + 4.4vw, 4.5rem); font-weight: 600; line-height: 0.98; letter-spacing: -0.04em; text-wrap: balance; }
+.titolo-scheda { font-size: clamp(1.125rem, 1rem + 0.6vw, 1.5rem); font-weight: 600; line-height: 1.25; letter-spacing: -0.01em; }
+.nota { font-size: 0.875rem; line-height: 1.45; letter-spacing: 0.005em; }
+/* Numero eroe: il totale pagato. Mono 500, cifre allineate, nessun salto mentre conta (larghezza in ch). */
+.numero-eroe { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 500; font-size: clamp(2.75rem, 1rem + 8vw, 6rem); line-height: 0.92; letter-spacing: -0.05em; }
+.numero-scena { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 500; font-size: clamp(1.375rem, 1.05rem + 1.2vw, 2rem); line-height: 1; letter-spacing: -0.02em; }
+.rata-barrata { font-family: var(--font-mono); font-weight: 400; text-decoration: line-through; text-decoration-thickness: 2px; }
+
+/* F5. Lettura del preventivo: l'anteprima locale in grigi, una linea vermiglia che scende finché la richiesta è aperta. */
+.dropzone {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; padding: 2.5rem 1.5rem;
+  border: 2px dashed var(--color-bordo-campo); border-radius: var(--raggio); background: #FBF9F5 var(--grana); text-align: center; cursor: pointer;
+  transition: border-color var(--durata-breve), background-color var(--durata-breve);
+}
+.dropzone:hover { border-color: var(--color-inchiostro); }
+.dropzone-sopra { border-color: var(--color-segnale); background-color: #FDEEE9; }
+.scansione { position: relative; overflow: hidden; aspect-ratio: 3 / 4; max-height: 22rem; margin: 0; border: 1px solid var(--color-riga); background: var(--color-carta-scura); }
+.scansione img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.scansione[data-scansione] img { filter: grayscale(1); opacity: 0.8; }
+.scansione-linea {
+  /* Alta quanto la figura, con la riga sul bordo basso: basta spostarla del 100%, nessuna misura in JS. */
+  position: absolute; inset: 0; transform: translateY(-100%); pointer-events: none;
+  background: linear-gradient(to bottom, transparent 55%, rgb(228 87 46 / 0.18) calc(100% - 2px), var(--color-segnale) calc(100% - 2px));
+}
+@media (prefers-reduced-motion: reduce) { .scansione-linea { display: none; } }
+@media (prefers-reduced-motion: no-preference) {
+  .scansione-linea { animation: scansiona 1.4s var(--curva-stato) infinite alternate; }
+  .campo-letto { animation: letto 360ms var(--curva) backwards; animation-delay: calc(var(--i, 0) * 60ms); }
+}
+@keyframes scansiona { to { transform: translateY(0); } }
+@keyframes letto { from { background-color: rgb(228 87 46 / 0.16); border-color: var(--color-segnale); } }
+
+/* Interazione 9: il numero che cambia con un cursore riceve un velo vermiglio che si spegne (key={valore} lo riavvia). */
+.velo { position: relative; }
+@media (prefers-reduced-motion: no-preference) {
+  .velo::after { content: ""; position: absolute; inset: -0.1em -0.2em; background: rgb(242 130 95 / 0.16); opacity: 0; pointer-events: none; animation: velo 700ms var(--curva); }
+}
+@keyframes velo { from { opacity: 1; } }
+
+/* Interazione 10: i passi «Come facciamo i conti» si accendono attraversando il centro della vista. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .si-accende { animation: accendi linear both; animation-timeline: view(); animation-range: entry 10% cover 40%; }
+  }
+}
+@keyframes accendi { from { opacity: 0.28; } }
+
+/* Interazione 11: barra di lettura di 2 px sotto la testata, guidata dallo scorrimento. Senza supporto non c'è. */
+.barra-lettura { display: none; }
+@supports (animation-timeline: scroll()) {
+  .barra-lettura {
+    display: block; position: fixed; inset: 0 0 auto 0; height: 2px; z-index: 60; pointer-events: none;
+    background: var(--color-segnale); transform: scaleX(0); transform-origin: 0 50%; animation: avanza linear both; animation-timeline: scroll(root);
+  }
+}
+@keyframes avanza { to { transform: scaleX(1); } }
+
+/* Interazione 12: cambio pagina con una dissolvenza di 180 ms, la testata resta ferma. Firefox e meno movimento: istantaneo. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+}
+.testata { view-transition-name: testata; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 180ms; animation-timing-function: var(--curva); }
+
+/* Riga sui cookie: in cima, nel flusso, mai sopra un controllo. Non traccia nulla, quindi non chiede nulla: informa. */
+.riga-cookie { border-bottom: 1px solid var(--color-riga); background: var(--color-carta-scura); }
+html[data-cookie-letto] .riga-cookie { display: none; }
+
+/* Callout: niente bordo laterale colorato (f). Un filo in alto del colore del significato, il resto è carta. */
+.callout { border-top: 2px solid var(--colore-callout, var(--color-riga)); background: var(--sfondo-callout, transparent); padding: 0.75rem 1rem 0.875rem; }
+
+/* Atto 3: la strada del preventivo è il blocco grande, le altre due stanno accanto, più piccole, sulla stessa scala. */
+.strade { display: grid; gap: 2rem; }
+@media (min-width: 768px) { .strade { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 1.5rem 3rem; align-items: start; } }
+.strada-principale { grid-row: span 2; }
+
+/* Indice in attesa: anteprima disegnata, tratteggiata e senza numeri, dichiarata come tale. */
+.anteprima-indice { position: relative; border: 1.5px dashed var(--color-bordo-campo); padding: clamp(1rem, 0.6rem + 2vw, 2rem); background: #FBF9F5 var(--grana); }
+.barra-finta { height: 0.625rem; background: repeating-linear-gradient(-45deg, var(--color-inchiostro) 0 2px, transparent 2px 6px); opacity: 0.55; transform-origin: left center; transform: scaleX(var(--quota, 1)); }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .barra-finta { animation: barra-finta linear both; animation-timeline: view(); animation-range: entry 0% cover 35%; }
+  }
+}
+@keyframes barra-finta { from { transform: scaleX(0); } }
+.cella-finta { display: block; height: 0.5rem; border-radius: var(--raggio); background: #DCD5C8; }
+.segmenti { display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); gap: 3px; }
+.segmenti > span { height: 0.875rem; border: 1px solid var(--color-inchiostro); }
+.segmenti > span[data-pieno] { background: var(--color-inchiostro); }
+
+/* Atto 1: contenitori pieni. Sul telefono una riga per voce (etichetta a sinistra, importo a destra); da 640 px una
+   colonna per voce, allineata ai contenitori disegnati sopra. */
+.contenitori { display: grid; gap: 0.875rem; }
+.contenitore-voce { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 0.25rem 1rem; border-top: 1px solid var(--scena-riga); padding-top: 0.625rem; }
+.contenitore-voce > :last-child { grid-column: 1 / -1; }
+.contenitore-etichetta { display: flex; align-items: center; gap: 0.625rem; }
+@media (min-width: 640px) {
+  .contenitori { grid-template-columns: repeat(var(--colonne, 3), minmax(0, 1fr)); gap: 0.5rem; }
+  .contenitore-voce { grid-template-columns: minmax(0, 1fr); align-content: start; gap: 0.375rem; }
+  .contenitore-etichetta { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+}
+
+/* Nella scena il totale sta a tutta larghezza: il minimo scende perché «18.253,25 €» resti su una riga a 375 px. */
+.numero-atto { font-size: clamp(2.25rem, 0.6rem + 8vw, 6rem); }

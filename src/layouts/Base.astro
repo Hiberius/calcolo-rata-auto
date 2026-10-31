@@ -8,11 +8,16 @@ interface Props {
   ogImage?: string;
   canonical?: string;
   noindex?: boolean;
+  /** Testo alternativo dell'immagine di condivisione, se la pagina ne ha una sua. */
+  ogAlt?: string;
+  /** Pagine da leggere (guide, metodologia, testi): barra di lettura sotto la testata (interazione 11). */
+  lettura?: boolean;
 }
-const { title, description, ogImage, canonical, noindex = false } = Astro.props;
+const { title, description, ogImage, canonical, noindex = false, ogAlt, lettura = false } = Astro.props;
 const sito = Astro.site?.toString().replace(/\/$/, '') ?? 'https://ratavera.it';
 const url = canonical ?? `${sito}${Astro.url.pathname}`;
 const immagine = ogImage ?? `${sito}/og-default.png`;
+const immagineAlt = ogAlt ?? (ogImage ? title : 'Uno scontrino bianco su carta, attraversato da una barra vermiglia: Rata Vera, quanto paghi davvero.');
 const tokenAnalytics = import.meta.env.PUBLIC_CF_ANALYTICS_TOKEN;
 const NAV = [
   ['/#decodifica', 'Leggi il preventivo'], ['/promozioni', 'Promozioni'], ['/indice', 'Indice'], ['/noleggio', 'Confronta'], ['/guide', 'Guide'], ['/metodologia', 'Metodologia'],
@@ -39,17 +44,34 @@ const PIEDE = [
     <meta property="og:image" content={immagine} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={immagineAlt} />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={immagine} />
+    <meta name="twitter:image:alt" content={immagineAlt} />
     <meta name="theme-color" content="#F6F3EE" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/icone/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/icone/favicon-16.png" type="image/png" sizes="16x16" />
+    <link rel="apple-touch-icon" href="/icone/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- La riga sui cookie già chiusa non deve comparire nemmeno per un fotogramma: si decide prima del disegno. -->
+    <script is:inline>try{if(localStorage.getItem('ratavera:banner-cookie')==='1')document.documentElement.dataset.cookieLetto=''}catch(e){}</script>
     <!-- Font serviti da noi (OFL): nessuna richiesta a server di terzi prima di qualsiasi scelta del visitatore. -->
     <link rel="preload" href="/fonts/instrument-sans-latin-wght.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/jetbrains-mono-latin-wght.woff2" as="font" type="font/woff2" crossorigin />
   </head>
   <body class="min-h-dvh flex flex-col">
     <a href="#contenuto" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 btn btn-primario">Vai al contenuto</a>
-    <header class="contenitore flex flex-wrap items-center justify-between gap-x-8 gap-y-1 py-4 sm:py-5">
-      <a href="/" class="group flex items-baseline gap-2 no-underline" aria-label="Rata Vera, pagina iniziale">
+    {lettura && <div class="barra-lettura" aria-hidden="true"></div>}
+    <!-- Riga informativa sui cookie: nel flusso, in cima, mai sopra i controlli della pagina; «Chiudi» la toglie per sempre. -->
+    <div class="riga-cookie" data-banner-cookie role="region" aria-label="Informativa sui cookie">
+      <div class="contenitore flex items-center justify-between gap-3 text-[0.8125rem] leading-tight">
+        <p class="flex items-center gap-x-2"><span>Solo cookie tecnici<span class="hidden sm:inline">, nessuna profilazione</span>.</span> <a class="link tocco" href="/cookie">Dettagli</a></p>
+        <button type="button" class="tocco shrink-0 justify-center px-2 font-semibold underline decoration-1 underline-offset-4 hover:decoration-segnale" data-chiudi-banner>Chiudi</button>
+      </div>
+    </div>
+    <header class="testata contenitore flex flex-wrap items-center justify-between gap-x-8 gap-y-1 py-3 sm:py-4">
+      <a href="/" class="tocco group flex items-baseline gap-2 no-underline" aria-label="Rata Vera, pagina iniziale">
         <span class="font-semibold tracking-tight text-lg">Rata Vera</span>
         <span class="numeri text-xs text-tenue hidden sm:inline transition-colors group-hover:text-segnale">quanto paghi davvero</span>
       </a>
@@ -64,22 +86,12 @@ const PIEDE = [
       <div class="contenitore py-8 text-sm text-tenue grid gap-3 md:grid-cols-[2fr_1fr]">
         <p class="max-w-prose">{AVVERTENZA}</p>
         <p class="md:text-right">Nessun nome di banca o finanziaria, solo aritmetica. Le immagini dei preventivi non vengono mai salvate.</p>
-        <p class="md:col-span-2" data-riga-cookie-piede>Solo cookie tecnici, nessuna profilazione. <a class="link" href="/cookie">Dettagli sui cookie</a></p>
+        <p class="md:col-span-2 flex flex-wrap items-center gap-x-2" data-riga-cookie-piede>Solo cookie tecnici, nessuna profilazione. <a class="link tocco" href="/cookie">Dettagli sui cookie</a></p>
         <nav aria-label="Informazioni" class="md:col-span-2 flex flex-wrap gap-x-5">
           {PIEDE.map(([href, testo]) => <a class="link tocco" href={href}>{testo}</a>)}
         </nav>
       </div>
     </footer>
-    <!-- Riga informativa in fondo alla pagina, aggiunta dallo script solo finché non la chiudi: dentro un template
-         non compare a chi legge la pagina senza stile, dove avrebbe ripetuto la riga del piè di pagina. -->
-    <template data-riga-cookie>
-      <div class="fixed inset-x-0 bottom-0 z-50 border-t border-inchiostro bg-carta text-sm" data-banner-cookie role="region" aria-label="Informativa sui cookie">
-        <div class="contenitore flex items-center justify-between gap-3">
-          <p class="py-1.5">Solo cookie tecnici, nessuna profilazione. <a class="link" href="/cookie">Dettagli</a></p>
-          <button type="button" class="tocco shrink-0 px-2 font-semibold underline decoration-1 underline-offset-4 hover:decoration-segnale" data-chiudi-banner>Chiudi</button>
-        </div>
-      </div>
-    </template>
     {tokenAnalytics && <script is:inline defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={JSON.stringify({ token: tokenAnalytics })}></script>}
     <script>
       import { avviaPagina } from '~/lib/client/pagina';

@@ -10,10 +10,10 @@ const { siteKey } = Astro.props;
 const consenso = CONSENSI.avviso_officina;
 const ETICHETTE = { modello: 'modello', intervento: 'intervento', importo: 'importo', provincia: 'provincia', email: 'email', consensoAvviso: 'consenso all’avviso' };
 ---
-<form id="modulo" method="post" action="/api/officina" class="scontrino grid gap-6 px-5 py-7 sm:px-8 sm:py-9 scroll-mt-6" data-modulo-officina novalidate>
+<form id="modulo" method="post" action="/api/officina" class="scontrino grid gap-6 px-5 py-7 sm:px-8 sm:py-9 scroll-mt-6" data-modulo-officina data-stampa novalidate>
   <EsitoModulo etichette={ETICHETTE} successo="Fatto: il tuo preventivo è nell’archivio, anonimo. Se hai lasciato l’email ti scriviamo una volta sola, quando il confronto è pronto." />
   <div class="grid gap-1">
-    <p class="numeri text-xs uppercase tracking-[0.08em] text-tenue">Preventivo o fattura dell’officina</p>
+    <p class="etichetta">Preventivo o fattura dell’officina</p>
     <p class="text-sm text-tenue">Quattro numeri, nessun nome. Non chiediamo targa, officina o dati di contatto obbligatori.</p>
   </div>
 

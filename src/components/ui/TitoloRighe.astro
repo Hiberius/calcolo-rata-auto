@@ -10,8 +10,12 @@ interface Props {
 }
 const { righe, accento = -1, id, classe = 'titolo-display' } = Astro.props;
 ---
-<h1 id={id} class={classe} aria-label={righe.join(' ')}>
+<h1 id={id} class={classe} aria-label={righe.map((r) => r.trim()).join(' ')}>
   {righe.map((riga, i) => (
-    <span class="riga-maschera" aria-hidden="true"><span class:list={['riga-sale', { 'text-segnale': i === accento }]} style={`--i:${i}`}>{riga}</span></span>
+    <>
+      <span class="riga-maschera" aria-hidden="true"><span class:list={['riga-sale', { 'text-segnale': i === accento }]} style={`--i:${i}`}>{riga.trim()}</span></span>
+      {/* Lo spazio tra le righe tiene giusto il testo copiato o letto senza stile («Il preventivo dell’officina»). */}
+      {i < righe.length - 1 && ' '}
+    </>
   ))}
 </h1>

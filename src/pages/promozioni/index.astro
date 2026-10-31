@@ -1,6 +1,7 @@
 ---
 import Base from '~/layouts/Base.astro';
 import PromoBox from '~/components/compare/PromoBox.astro';
+import TitoloRighe from '~/components/ui/TitoloRighe.astro';
 import { tutteLePromo } from '~/lib/promo';
 import { VUOTO_SENZA_PROMO } from '~/lib/client/filtriPromo';
 
@@ -16,7 +17,8 @@ const marche = [...new Set(inVigore.map((d) => d.promo.marca))].sort();
   description="Le offerte ufficiali delle case auto nel riquadro unico: rata, anticipo, maxi rata, TAN, TAEG, totale pagato e costo del credito, con fonte e scadenza."
 >
   <section class="contenitore pt-8 pb-10 sm:pt-14 grid gap-5">
-    <h1 class="font-semibold tracking-tight leading-[1.05] text-[length:var(--testo-titolo)] max-w-[20ch]">Promozioni ufficiali, con i conti fatti.</h1>
+    <p class="etichetta">Promozioni ufficiali in vigore · {inVigore.length === 1 ? '1 offerta' : `${inVigore.length} offerte`}</p>
+    <TitoloRighe righe={['Promozioni ufficiali,', 'con i conti fatti.']} accento={1} classe="titolo-pagina max-w-[18ch]" />
     <p class="text-lg max-w-prose text-tenue">
       Ogni offerta è nello stesso riquadro: rata, anticipo, maxi rata, TAN, TAEG, prezzo, validità e fonte. Accanto c'è quello che paghi in tutto e il costo del credito.
     </p>

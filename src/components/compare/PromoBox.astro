@@ -32,7 +32,8 @@ const righe: readonly (readonly [string, string, VoceGlossario?])[] = [
 ];
 ---
 <article
-  class="scontrino rounded-t grid gap-4 px-5 py-6"
+  class="scontrino grid gap-4 px-5 py-6"
+  data-stampa={link ? '' : undefined}
   data-promo
   data-marca={p.marca}
   data-anticipo={p.anticipo}
@@ -43,12 +44,12 @@ const righe: readonly (readonly [string, string, VoceGlossario?])[] = [
 >
   <header class="flex flex-wrap items-baseline justify-between gap-2">
     <h3 class="text-lg font-semibold tracking-tight">
-      {link ? <a class="link" href={href}>{titolo}</a> : titolo}
+      {link ? <a class="link tocco" href={href}>{titolo}</a> : titolo}
     </h3>
     <p class="numeri text-xs text-tenue">{p.tipo}</p>
   </header>
   {d.scaduta && (
-    <p class="text-sm bg-[#FDEEE9] border-l-4 border-segnale px-3 py-2" data-avviso-scaduta>
+    <p class="text-sm bg-[#FDEEE9] border-t-2 border-segnale px-3 py-2" data-avviso-scaduta>
       Promozione scaduta il {dataBreve(p.validoAl)}: i numeri restano per confronto.
     </p>
   )}
