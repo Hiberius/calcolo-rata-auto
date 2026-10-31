@@ -4,6 +4,7 @@ import { DURATE_NOLEGGIO } from '~/lib/moduli/schemi';
 import Campo from './Campo.astro';
 import EsitoModulo from './EsitoModulo.astro';
 import TurnstileImplicito from './TurnstileImplicito.astro';
+import Fiducia from '~/components/ui/Fiducia.astro';
 
 interface Props { siteKey: string }
 const { siteKey } = Astro.props;
@@ -34,6 +35,7 @@ const consenso = CONSENSI.contatto_noleggio;
   </label>
   <input type="hidden" name="versioneConsenso" value={consenso.versione} />
   <TurnstileImplicito siteKey={siteKey} />
+  <Fiducia variante="nota" />
   <p class="text-xs text-tenue max-w-prose">Solo noleggio senza obbligo né opzione di acquisto. Non chiediamo reddito, rata massima o anticipo disponibile. <a class="link" href="/privacy">Come trattiamo i dati</a>.</p>
   <div><button type="submit" class="btn btn-primario w-full sm:w-auto">Chiedi un preventivo di noleggio</button></div>
 </form>

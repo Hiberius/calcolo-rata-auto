@@ -1,0 +1,24 @@
+---
+import { datiTitolare, testoFiducia, TITOLO_FIDUCIA } from '~/lib/fiducia';
+
+interface Props {
+  /** riquadro: home, sopra la piega. testo: pagine di testo. nota: accanto al modulo noleggio. */
+  variante?: 'riquadro' | 'testo' | 'nota';
+}
+const { variante = 'testo' } = Astro.props;
+const testo = testoFiducia(datiTitolare(Astro.locals.runtime?.env, import.meta.env));
+---
+{variante === 'riquadro' && (
+  <section class="grid gap-1.5 border-l-4 border-inchiostro bg-white/60 px-4 py-3 max-w-[62ch]" aria-labelledby="fiducia-titolo" data-fiducia>
+    <h2 id="fiducia-titolo" class="text-sm font-semibold">{TITOLO_FIDUCIA}</h2>
+    <p class="text-sm leading-relaxed">{testo}</p>
+    <p class="text-xs text-tenue"><a class="link" href="/chi-siamo">Chi siamo</a> · <a class="link" href="/metodologia">Come facciamo i conti</a></p>
+  </section>
+)}
+{variante === 'testo' && (
+  <>
+    <h2>{TITOLO_FIDUCIA}</h2>
+    <p data-fiducia>{testo}</p>
+  </>
+)}
+{variante === 'nota' && <p class="text-sm max-w-prose" data-fiducia><strong class="font-semibold">{TITOLO_FIDUCIA}.</strong> {testo}</p>}

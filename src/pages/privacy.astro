@@ -1,11 +1,17 @@
 ---
 import Testo from '~/layouts/Testo.astro';
+import Fiducia from '~/components/ui/Fiducia.astro';
+import { datiTitolare } from '~/lib/fiducia';
 import { EMAIL_CONTATTO, TITOLARE } from '~/lib/sito';
-export const prerender = true;
+// Resa a richiesta: P.IVA e sede del titolare arrivano dalle variabili pubbliche del Worker.
+export const prerender = false;
+const titolare = datiTitolare(Astro.locals.runtime?.env, import.meta.env);
 ---
 <Testo title="Privacy: cosa salviamo e cosa no | Rata Vera" description="Rata Vera non salva le immagini dei preventivi né i dati di credito. Salva solo schede anonime con consenso e richieste di noleggio con consenso." titolo="Privacy" sopratitolo="Informativa">
   <h2>Titolare</h2>
-  <p>{TITOLARE}, contatto <a href={`mailto:${EMAIL_CONTATTO}`}>{EMAIL_CONTATTO}</a>.</p>
+  <p>{TITOLARE}, P.IVA {titolare.piva}, {titolare.sede}. Contatto <a href={`mailto:${EMAIL_CONTATTO}`}>{EMAIL_CONTATTO}</a>.</p>
+
+  <Fiducia />
 
   <h2>Cosa non salviamo</h2>
   <ul>
@@ -21,8 +27,6 @@ export const prerender = true;
       <tr><td>Scheda condivisibile: marca, modello, versione, provincia se la indichi, numeri del preventivo e risultati. Nessun nome, targa o concessionario.</td><td>La crei tu per condividerla; esecuzione della tua richiesta. La scheda è visibile a chiunque abbia il link, ma non è indicizzata dai motori di ricerca.</td><td>24 mesi</td></tr>
       <tr><td>Stessa scheda nell'archivio anonimo per i confronti</td><td>Solo con la casella apposita, non preselezionata (consenso). Il testo e la versione del consenso sono registrati.</td><td>24 mesi o fino alla revoca</td></tr>
       <tr><td>Richiesta di noleggio: nome, email, telefono, provincia, modello, durata, km, preferenza anticipo zero</td><td>Consenso a essere contattato da Rata Vera per offerte di noleggio a lungo termine. Nessun passaggio a terzi senza un nuovo consenso che nomini il partner.</td><td>12 mesi</td></tr>
-      <tr><td>Contatto delle concessionarie: nome, azienda, email, sito, messaggio</td><td>Consenso a essere ricontattati per la richiesta.</td><td>12 mesi</td></tr>
-      <tr><td>Richiesta di verdetto: codice scheda, email, riferimento del pagamento</td><td>Esecuzione del servizio acquistato.</td><td>12 mesi</td></tr>
       <tr><td>Eventi anonimi: nome dell'evento, codice scheda se c'è, impronta giornaliera dell'IP</td><td>Misurare come si usa il sito (legittimo interesse).</td><td>12 mesi</td></tr>
     </tbody>
   </table>
@@ -31,8 +35,7 @@ export const prerender = true;
   <ul>
     <li>Cloudflare, che ospita il sito, il database e la lettura delle immagini (Workers AI), e fornisce la verifica anti-robot Turnstile (che riceve il tuo IP quando invii un modulo), come responsabile del trattamento.</li>
     <li>Brevo, il servizio di email usato per le notifiche interne, come responsabile del trattamento.</li>
-    <li>Stripe, solo se paghi il verdetto: riceve i dati del pagamento direttamente, noi vediamo solo il riferimento.</li>
-    <li>Nessun partner di noleggio riceve oggi i tuoi dati. Se in futuro ti proponiamo un partner, lo nominiamo e ti chiediamo un nuovo consenso.</li>
+    <li>Nessun noleggiatore riceve oggi i tuoi dati. Se ti proponiamo un noleggiatore, lo nominiamo e ti chiediamo un nuovo consenso prima di passargli i dati. Se firmi il contratto può riconoscerci un compenso, come scritto qui sopra.</li>
   </ul>
   <p>Oggi la lettura delle immagini avviene solo con Workers AI di Cloudflare. Se attiveremo una lettura più precisa con Anthropic (Stati Uniti), lo scriveremo qui prima, con le garanzie per il trasferimento.</p>
 

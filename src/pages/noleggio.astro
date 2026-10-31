@@ -26,7 +26,7 @@ const siteKey = Astro.locals.runtime?.env?.PUBLIC_TURNSTILE_SITE_KEY || TURNSTIL
     <div class="grid content-start gap-4">
       <h2 id="richiesta-titolo" class="text-2xl font-semibold tracking-tight">Vuoi un preventivo di noleggio vero?</h2>
       <p class="max-w-prose">Indica modello, durata e chilometri: Rata Vera cerca le offerte di noleggio a lungo termine e ti scrive. Il noleggio non è un finanziamento: a fine contratto riconsegni l'auto.</p>
-      <p class="text-sm text-tenue max-w-prose">Se più avanti ti proponiamo un partner di noleggio, te lo nominiamo e ti chiediamo un nuovo consenso. Rata Vera può ricevere un compenso dal partner se firmi un contratto: il compenso non cambia i conti mostrati qui sopra.</p>
+      <p class="text-sm text-tenue max-w-prose">Se ti proponiamo un noleggiatore te lo nominiamo e ti chiediamo un nuovo consenso prima di passargli i tuoi dati. Il compenso, se firmi, non lo paghi tu e non cambia i conti mostrati qui sopra.</p>
     </div>
     <ModuloNoleggio siteKey={siteKey} />
   </section>

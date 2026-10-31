@@ -16,6 +16,9 @@ interface Env {
   readonly NOTIFY_EMAIL?: string;
   readonly EMAIL_MITTENTE?: string;
   readonly ADMIN_TOKEN?: string;
+  /** Dati del titolare nel blocco «Chi c'è dietro»: vuoti = "in aggiornamento". */
+  readonly PUBLIC_PIVA?: string;
+  readonly PUBLIC_SEDE?: string;
   readonly PUBLIC_STRIPE_LINK_VERDETTO?: string;
   readonly PUBLIC_STRIPE_LINK_B2B_149?: string;
   readonly PUBLIC_STRIPE_LINK_B2B_299?: string;
@@ -24,6 +27,9 @@ interface Env {
 interface ImportMetaEnv {
   /** Token di Cloudflare Web Analytics, letto a build time: se vuoto il beacon non viene caricato. */
   readonly PUBLIC_CF_ANALYTICS_TOKEN?: string;
+  /** Riserva di build per P.IVA e sede, se non sono tra le variabili del Worker. */
+  readonly PUBLIC_PIVA?: string;
+  readonly PUBLIC_SEDE?: string;
 }
 
 type Runtime = import('@astrojs/cloudflare').Runtime<Env>;

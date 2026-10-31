@@ -29,6 +29,9 @@
     "ESTRAZIONE_LIMITE_GIORNO": "20",
     "ESTRAZIONE_LIMITE_MINUTO": "3",
     "EMAIL_MITTENTE": "notifiche@ratavera.it",
+    // Dati del titolare nel blocco «Chi c'è dietro e come guadagniamo»: vuoti = "in aggiornamento".
+    "PUBLIC_PIVA": "",
+    "PUBLIC_SEDE": "",
     // Link di pagamento Stripe: vuoti = "Pagamento disponibile a breve" sulle pagine.
     "PUBLIC_STRIPE_LINK_VERDETTO": "",
     "PUBLIC_STRIPE_LINK_B2B_149": "",

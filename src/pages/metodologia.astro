@@ -1,7 +1,10 @@
 ---
 import Testo from '~/layouts/Testo.astro';
+import Fiducia from '~/components/ui/Fiducia.astro';
 import { AVVERTENZA } from '~/lib/calc/config';
-export const prerender = true;
+import { SPIEGAZIONE_TAEG_COSTO } from '~/lib/calc/composizione';
+// Resa a richiesta: il blocco «Chi c'è dietro» legge P.IVA e sede dalle variabili pubbliche del Worker.
+export const prerender = false;
 ---
 <Testo title="Metodologia: come Rata Vera fa i conti del preventivo auto" description="Le formule usate da Rata Vera: totale pagato, costo del credito, TAEG ricostruito, discrepanze, fine contratto e tre strade. Tutte le ipotesi sono dichiarate." titolo="Come facciamo i conti" sopratitolo="Metodologia">
   <p>Rata Vera fa aritmetica sui numeri che inserisci o che leggiamo dalla foto del preventivo. Non valuta la tua situazione, non suggerisce finanziatori, non dà consigli. Qui trovi ogni formula, con le ipotesi che usiamo quando un numero manca.</p>
@@ -17,7 +20,8 @@ export const prerender = true;
     <li><strong>Spese non dettagliate</strong>: se il totale dovuto dichiarato supera rate e maxi rata di una somma piccola (fino al 5%), la consideriamo spesa non dettagliata e la aggiungiamo.</li>
     <li><strong>Totale tenendo l'auto</strong> = anticipo + rate + maxi rata + spese. <strong>Totale restituendo l'auto</strong> = lo stesso senza la maxi rata, più gli eventuali chilometri in eccesso.</li>
   </ul>
-  <p>Il <strong>costo del credito</strong> è il totale tenendo l'auto meno il prezzo di riferimento, anche in percentuale del prezzo.</p>
+  <p>Il <strong>costo del credito</strong> è il totale tenendo l'auto meno il prezzo di riferimento, anche in percentuale del prezzo. {SPIEGAZIONE_TAEG_COSTO} Per questo un TAEG del 4% può stare accanto a un costo del credito del 9%: il primo è per anno, il secondo è su tutti gli anni del contratto.</p>
+  <p>Accanto a ogni totale mostriamo le voci che lo compongono e la somma scritta per esteso, così puoi rifarla a mano. Le spese già comprese nell'importo del credito (spesso l'istruttoria) non si sommano una seconda volta: lo scriviamo sotto la somma.</p>
 
   <h2>Credito, totale dovuto e discrepanze</h2>
   <p>Ricostruiamo l'importo del credito come prezzo meno anticipo, e come prezzo meno anticipo più istruttoria. Se uno dei due coincide con quello dichiarato (entro 2 €), sappiamo se l'istruttoria è finanziata. Ricostruiamo anche il totale dovuto da rate, maxi rata, spese di incasso e bollo. Quando i numeri non coincidono lo scriviamo così: «non torna di X €, chiedi al venditore». Non diciamo che un numero è sbagliato: spesso la differenza viene da una voce che il preventivo non mostra.</p>
@@ -40,5 +44,6 @@ export const prerender = true;
 
   <h2>Dove girano i calcoli</h2>
   <p>I calcoli girano nel tuo browser. Se carichi una foto, il server la legge in memoria per estrarre i numeri e la scarta subito: non viene mai scritta su disco né in archivio. Dettagli in <a href="/privacy">privacy</a>.</p>
+  <Fiducia />
   <blockquote>{AVVERTENZA}</blockquote>
 </Testo>
