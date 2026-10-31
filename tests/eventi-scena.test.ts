@@ -4,7 +4,8 @@ import { EVENTI_CLIENT } from '~/lib/client/evento';
 import { NOMI_EVENTO } from '~/lib/db/queries';
 import { EventoSchema } from '~/lib/moduli/schemi';
 
-const MIGRAZIONE = readFileSync(new URL('../src/lib/db/migrations/0004_eventi_scena.sql', import.meta.url), 'utf8');
+// L'ultima migrazione che ricrea la tabella eventi: il suo vincolo è quello in vigore.
+const MIGRAZIONE = readFileSync(new URL('../src/lib/db/migrations/0005_officina_indice.sql', import.meta.url), 'utf8');
 const SCHEMA = readFileSync(new URL('../src/lib/db/schema.sql', import.meta.url), 'utf8');
 
 describe('eventi della scena (v2)', () => {

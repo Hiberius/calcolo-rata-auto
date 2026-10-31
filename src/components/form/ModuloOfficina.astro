@@ -1,0 +1,74 @@
+---
+import { CONSENSI } from '~/lib/consent';
+import { ALTRO_MODELLO, ETICHETTE_INTERVENTO, INTERVENTI, MARCHE_OFFICINA } from '~/lib/officina';
+import { SIGLE_PROVINCE } from '~/lib/province';
+import EsitoModulo from './EsitoModulo.astro';
+import TurnstileImplicito from './TurnstileImplicito.astro';
+
+interface Props { siteKey: string }
+const { siteKey } = Astro.props;
+const consenso = CONSENSI.avviso_officina;
+const ETICHETTE = { modello: 'modello', intervento: 'intervento', importo: 'importo', provincia: 'provincia', email: 'email', consensoAvviso: 'consenso all’avviso' };
+---
+<form id="modulo" method="post" action="/api/officina" class="scontrino grid gap-6 px-5 py-7 sm:px-8 sm:py-9 scroll-mt-6" data-modulo-officina novalidate>
+  <EsitoModulo etichette={ETICHETTE} successo="Fatto: il tuo preventivo è nell’archivio, anonimo. Se hai lasciato l’email ti scriviamo una volta sola, quando il confronto è pronto." />
+  <div class="grid gap-1">
+    <p class="numeri text-xs uppercase tracking-[0.08em] text-tenue">Preventivo o fattura dell’officina</p>
+    <p class="text-sm text-tenue">Quattro numeri, nessun nome. Non chiediamo targa, officina o dati di contatto obbligatori.</p>
+  </div>
+
+  <label class="grid gap-1.5 text-sm"><span class="font-medium">Modello</span>
+    <select class="campo font-sans" name="modello" required>
+      <option value="" selected disabled>Scegli il modello</option>
+      {MARCHE_OFFICINA.map(([marca, modelli]) => (
+        <optgroup label={marca}>{modelli.map((m) => <option value={`${marca} ${m}`}>{marca} {m}</option>)}</optgroup>
+      ))}
+      <option value={ALTRO_MODELLO}>{ALTRO_MODELLO}</option>
+    </select>
+  </label>
+
+  <fieldset class="grid gap-2">
+    <legend class="mb-2 text-sm font-medium">Intervento</legend>
+    <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+      {INTERVENTI.map((i) => (
+        <label class="scelta-chip">
+          <input type="radio" name="intervento" value={i} class="sr-only" required />
+          <span>{ETICHETTE_INTERVENTO[i]}</span>
+        </label>
+      ))}
+    </div>
+  </fieldset>
+
+  <div class="grid gap-4 sm:grid-cols-[1.3fr_1fr]">
+    <label class="grid gap-1.5 text-sm"><span class="font-medium">Importo del preventivo</span>
+      <span class="relative block">
+        <input class="campo pr-10 text-lg" name="importo" inputmode="decimal" autocomplete="off" required maxlength="12" placeholder="0,00" />
+        <span class="numeri pointer-events-none absolute inset-y-0 right-3 grid place-items-center text-tenue" aria-hidden="true">€</span>
+      </span>
+      <span class="text-xs text-tenue">Il totale, IVA compresa, come sul foglio.</span>
+    </label>
+    <label class="grid gap-1.5 text-sm content-start"><span class="font-medium">Provincia</span>
+      <select class="campo" name="provincia" required>
+        <option value="" selected disabled>Sigla</option>
+        {SIGLE_PROVINCE.map((s) => <option value={s}>{s}</option>)}
+      </select>
+    </label>
+  </div>
+
+  <div class="grid gap-3 border-t-[1.5px] border-dashed border-riga pt-5">
+    <label class="grid gap-1.5 text-sm"><span class="font-medium">Email <span class="font-normal text-tenue">(facoltativa, solo per l’avviso)</span></span>
+      <input class="campo font-sans" type="email" name="email" autocomplete="email" maxlength="120" />
+    </label>
+    <label class="flex cursor-pointer items-start gap-3 text-sm">
+      <input type="checkbox" name="consensoAvviso" class="mt-1 size-5 shrink-0 accent-[#15171A]" />
+      <span>{consenso.testo}</span>
+    </label>
+    <input type="hidden" name="versioneConsenso" value={consenso.versione} />
+  </div>
+
+  <TurnstileImplicito siteKey={siteKey} />
+  <div class="grid gap-2">
+    <button type="submit" class="btn btn-primario w-full sm:w-auto sm:justify-self-start">Lascia il preventivo</button>
+    <p class="text-xs text-tenue max-w-prose">Il preventivo entra anonimo nell’archivio. Nessun giudizio sul prezzo in questa fase. <a class="link" href="/privacy">Come trattiamo i dati</a>.</p>
+  </div>
+</form>

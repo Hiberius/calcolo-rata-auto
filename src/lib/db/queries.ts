@@ -3,10 +3,10 @@ import type { Analisi } from '../calc';
 export const NOMI_EVENTO = [
   'decodifica_ok', 'decodifica_errore', 'decodifica_manuale', 'scheda_creata', 'scheda_condivisa',
   'archivio_consenso', 'tre_strade_usato', 'noleggio_inviato', 'verdetto_click', 'b2b_click',
-  'scena_vista', 'scena_atto2_interagito', 'mostra_venditore',
+  'scena_vista', 'scena_atto2_interagito', 'mostra_venditore', 'officina_attesa', 'indice_csv',
 ] as const;
 export type NomeEvento = (typeof NOMI_EVENTO)[number];
-export type Finalita = 'archivio' | 'contatto_noleggio' | 'newsletter' | 'contatto_b2b';
+export type Finalita = 'archivio' | 'contatto_noleggio' | 'newsletter' | 'contatto_b2b' | 'avviso_officina' | 'contatto_stampa';
 
 export interface RigaScheda {
   readonly id: string;
@@ -77,12 +77,14 @@ export interface NuovoConsenso {
   readonly accettato: boolean;
   readonly schedaId?: string;
   readonly richiestaId?: string;
+  readonly officinaId?: string;
+  readonly stampaId?: string;
 }
 
 export function istruzioneRegistraConsenso(db: D1Database, c: NuovoConsenso): D1PreparedStatement {
   return db
-    .prepare('INSERT INTO consensi (finalita, testo, versione, accettato, scheda_id, richiesta_id) VALUES (?1, ?2, ?3, ?4, ?5, ?6)')
-    .bind(c.finalita, c.testo, c.versione, c.accettato ? 1 : 0, c.schedaId ?? null, c.richiestaId ?? null);
+    .prepare('INSERT INTO consensi (finalita, testo, versione, accettato, scheda_id, richiesta_id, officina_id, stampa_id) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)')
+    .bind(c.finalita, c.testo, c.versione, c.accettato ? 1 : 0, c.schedaId ?? null, c.richiestaId ?? null, c.officinaId ?? null, c.stampaId ?? null);
 }
 
 export interface NuovoEvento {

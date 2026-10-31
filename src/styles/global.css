@@ -162,6 +162,7 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
   --scena-riga: rgb(246 243 238 / 0.14);
   --scena-segnale: #F2825F;
   --scena-attenzione: #E2B93B;
+  --grana-scena: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.96 0 0 0 0 0.95 0 0 0 0 0.93 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 .pannello-scena {
   position: relative; isolation: isolate; display: grid; gap: clamp(3rem, 2rem + 5vw, 6.5rem);
@@ -170,9 +171,9 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
   box-shadow: 0 2px 0 rgb(21 23 26 / 0.08), 0 40px 80px -48px rgb(21 23 26 / 0.7);
 }
 /* Grana statica: un'immagine sola, nessuna animazione, nessun ridisegno allo scorrimento. */
-.pannello-scena::before {
+.pannello-scena::before, .anteprima::before {
   content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; opacity: 0.5;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.96 0 0 0 0 0.95 0 0 0 0 0.93 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-image: var(--grana-scena);
 }
 .pannello-scena .link:hover { text-decoration-color: var(--scena-segnale); }
 .pannello-scena :focus-visible { outline-color: var(--scena-segnale); }
@@ -220,3 +221,73 @@ label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible)
 }
 .vista-venditore[open] { animation: entra var(--durata-media) var(--curva) both; }
 .vista-venditore::backdrop { background: var(--scena-fondo); }
+
+/* v2 (§1, §3, §4): titoli display, frasi grandi, scelte della home, chip, anteprima della scena, Indice. */
+.titolo-display { font-size: clamp(2.5rem, 1rem + 6.4vw, 5.75rem); font-weight: 600; line-height: 0.95; letter-spacing: -0.045em; text-wrap: balance; }
+.titolo-sezione { font-size: clamp(1.75rem, 1.1rem + 2.6vw, 3rem); font-weight: 600; line-height: 1.05; letter-spacing: -0.03em; text-wrap: balance; }
+.frase-grande { font-size: clamp(1.25rem, 1rem + 1.4vw, 2rem); font-weight: 500; line-height: 1.18; letter-spacing: -0.015em; text-wrap: balance; }
+.etichetta { font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-tenue); }
+.testo-segnale { color: var(--color-segnale-scuro); }
+
+/* Titolo a righe: ogni riga sale da una maschera. Senza movimento il testo è subito lì (lo stato iniziale sta nei keyframes). */
+.riga-maschera { display: block; overflow: clip; padding-block: 0.08em; margin-block: -0.08em; }
+.riga-sale { display: block; }
+@media (prefers-reduced-motion: no-preference) {
+  .riga-sale { animation: sale 820ms var(--curva) backwards; animation-delay: calc(80ms + var(--i, 0) * 80ms); }
+}
+@keyframes sale { from { transform: translateY(105%); } }
+
+/* «Che documento hai in mano?»: due scelte con la stessa forma. Quella attiva è un tasto fisico con l'ombra rigida vermiglia. */
+.scelta {
+  position: relative; display: grid; grid-template-rows: auto 1fr auto; gap: 0.875rem; min-height: 100%;
+  padding: 1.125rem 1.25rem 1.25rem; border: 2px solid var(--color-inchiostro); border-radius: 2px;
+  background: #FBF9F5; color: var(--color-inchiostro); text-decoration: none;
+  box-shadow: 4px 4px 0 var(--color-segnale);
+  transition: transform var(--durata-breve) var(--curva), box-shadow var(--durata-breve) var(--curva), background-color var(--durata-breve);
+}
+.scelta:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--color-segnale); }
+.scelta:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--color-segnale); }
+.scelta-titolo { font-size: clamp(1.375rem, 1.1rem + 1.1vw, 1.875rem); font-weight: 600; line-height: 1.08; letter-spacing: -0.025em; text-wrap: balance; }
+.scelta-freccia { font-family: var(--font-mono); font-size: 1.25rem; transition: transform var(--durata-breve) var(--curva); }
+.scelta:hover .scelta-freccia { transform: translateX(4px); }
+/* La porta d'ingresso (officina) ha la stessa forma, ma non è ancora attiva: l'ombra è d'inchiostro e il tasto non si muove. */
+.scelta-ingresso { box-shadow: 4px 4px 0 var(--color-inchiostro); }
+.scelta-ingresso:hover { transform: none; box-shadow: 4px 4px 0 var(--color-inchiostro); background: var(--color-carta-scura); }
+.scelta-ingresso:active { transform: none; box-shadow: 4px 4px 0 var(--color-inchiostro); }
+
+/* Scelte a pulsante dentro i moduli (intervento dell'officina). */
+.scelta-chip {
+  display: flex; align-items: center; min-height: 2.75rem; padding: 0.5rem 0.75rem; border: 1.5px solid var(--color-riga); border-radius: 2px;
+  background: #FFFDF9; font-size: 0.875rem; line-height: 1.2; cursor: pointer;
+  transition: border-color var(--durata-breve), background-color var(--durata-breve), color var(--durata-breve);
+}
+.scelta-chip:hover { border-color: var(--color-inchiostro); }
+.scelta-chip:has(input:checked) { background: var(--color-inchiostro); border-color: var(--color-inchiostro); color: var(--color-carta); }
+
+/* Anteprima della scena nell'hero: pannello inchiostro, canvas leggero, una sola etichetta. */
+.anteprima {
+  position: relative; isolation: isolate; display: grid; gap: 0.75rem; padding: 1rem 1rem 0.875rem; border-radius: 0.375rem;
+  background: var(--scena-fondo); color: var(--scena-carta);
+  box-shadow: inset 0 1px 0 rgb(246 243 238 / 0.07), 0 40px 80px -48px rgb(21 23 26 / 0.7);
+}
+
+/* Indice: barre in scala, riordino con FLIP (Web Animations); in vermiglio quando misurano il costo del credito. */
+.grafico-indice { display: grid; gap: 0.375rem; }
+.riga-grafico { display: grid; grid-template-columns: minmax(0, 9rem) minmax(0, 1fr) 4.5rem; align-items: center; gap: 0.75rem; min-height: 2rem; }
+@media (min-width: 768px) { .riga-grafico { grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) 5rem; } }
+.traccia-indice { height: 0.625rem; background: var(--color-carta-scura); }
+.barra-indice { height: 100%; background: var(--color-inchiostro); transform-origin: left center; transform: scaleX(var(--quota, 1)); transition: transform 320ms cubic-bezier(0.65, 0, 0.35, 1); }
+.grafico-indice[data-metrica="costo"] .barra-indice { background: var(--color-segnale); }
+@media (prefers-reduced-motion: no-preference) {
+  .grafico-indice[data-entra] .barra-indice { animation: barra 500ms var(--curva) backwards; animation-delay: calc(var(--i, 0) * 30ms); }
+}
+@keyframes barra { from { transform: scaleX(0); } }
+.ordina { display: inline-flex; flex-wrap: wrap; border: 2px solid var(--color-inchiostro); border-radius: 2px; }
+.ordina button { min-height: 2.75rem; padding: 0.5rem 0.875rem; font-size: 0.875rem; font-weight: 600; transition: background-color var(--durata-breve), color var(--durata-breve); }
+.ordina button:hover { background: var(--color-carta-scura); }
+.ordina button[aria-pressed="true"] { background: var(--color-inchiostro); color: var(--color-carta); }
+.tabella-indice { width: 100%; border-collapse: collapse; font-size: 0.9375rem; }
+.tabella-indice th { text-align: left; font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-tenue); padding: 0.5rem 0.75rem 0.5rem 0; vertical-align: bottom; }
+.tabella-indice td { padding: 0.625rem 0.75rem 0.625rem 0; border-top: 1.5px dashed var(--color-riga); vertical-align: top; }
+.tabella-indice td.num, .tabella-indice th.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tabella-indice tbody tr:hover { background: var(--color-carta-scura); }

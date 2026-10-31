@@ -20,4 +20,16 @@ export const CONSENSI = {
     testo:
       'Accetto di essere contattato da Rata Vera, via email o telefono, per ricevere offerte di noleggio a lungo termine sul modello che ho indicato. I miei dati non vengono passati a nessun altro senza un mio nuovo consenso, che indicherà il nome del partner. Posso chiederne la cancellazione in ogni momento.',
   },
+  avviso_officina: {
+    finalita: 'avviso_officina',
+    versione: '2026-10-31',
+    testo:
+      "Voglio ricevere da Rata Vera una sola email, quando il confronto con il prezzo giusto è pronto. L'email serve solo a questo avviso: dopo l'invio la cancelliamo, e comunque entro 6 mesi. Posso chiederne la cancellazione prima, in ogni momento.",
+  },
+  contatto_stampa: {
+    finalita: 'contatto_stampa',
+    versione: '2026-10-31',
+    testo:
+      "Accetto di ricevere da Rata Vera, all'indirizzo indicato, l'avviso di uscita di ogni edizione dell'Indice con i dati per la stampa. Nessun altro uso. Posso chiedere la cancellazione in ogni momento.",
+  },
 } as const satisfies Record<string, TestoConsenso>;

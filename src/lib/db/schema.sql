@@ -46,13 +46,15 @@ CREATE INDEX IF NOT EXISTS idx_noleggio_stato ON richieste_noleggio (stato, crea
 -- Registro dei consensi: una riga per finalità, con il testo esatto mostrato e la sua versione.
 CREATE TABLE IF NOT EXISTS consensi (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  finalita TEXT NOT NULL CHECK (finalita IN ('archivio', 'contatto_noleggio', 'newsletter', 'contatto_b2b')),
+  finalita TEXT NOT NULL CHECK (finalita IN ('archivio', 'contatto_noleggio', 'newsletter', 'contatto_b2b', 'avviso_officina', 'contatto_stampa')),
   testo TEXT NOT NULL,
   versione TEXT NOT NULL,
   accettato INTEGER NOT NULL CHECK (accettato IN (0, 1)),
   scheda_id TEXT REFERENCES schede (id),
   richiesta_id TEXT REFERENCES richieste_noleggio (id),
   b2b_id TEXT,
+  officina_id TEXT REFERENCES attese_officina (id),
+  stampa_id TEXT REFERENCES richieste_stampa (id),
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 
@@ -62,7 +64,7 @@ CREATE TABLE IF NOT EXISTS eventi (
   nome TEXT NOT NULL CHECK (nome IN (
     'decodifica_ok', 'decodifica_errore', 'decodifica_manuale', 'scheda_creata', 'scheda_condivisa',
     'archivio_consenso', 'tre_strade_usato', 'noleggio_inviato', 'verdetto_click', 'b2b_click',
-    'scena_vista', 'scena_atto2_interagito', 'mostra_venditore'
+    'scena_vista', 'scena_atto2_interagito', 'mostra_venditore', 'officina_attesa', 'indice_csv'
   )),
   scheda_id TEXT,
   ip_hash TEXT,
@@ -94,3 +96,21 @@ CREATE INDEX IF NOT EXISTS idx_verdetto_created ON richieste_verdetto (created_a
 -- 0003: impronta del codice di cancellazione della scheda (solo SHA-256, mai il codice).
 ALTER TABLE schede ADD COLUMN token_cancellazione_hash TEXT;
 -- 0004: eventi della scena del risultato (v2): scena_vista, scena_atto2_interagito, mostra_venditore (vedi migrazione).
+-- 0005 (v2, §3 e §4): officina e stampa. Eventi e consensi qui sopra sono già nella forma di 0005.
+CREATE TABLE IF NOT EXISTS attese_officina (
+  id TEXT PRIMARY KEY,
+  modello TEXT NOT NULL CHECK (length(modello) BETWEEN 2 AND 60),
+  intervento TEXT NOT NULL CHECK (intervento IN ('tagliando', 'freni', 'frizione', 'distribuzione', 'gomme', 'revisione', 'batteria', 'climatizzatore', 'altro')),
+  importo REAL NOT NULL CHECK (importo > 0 AND importo <= 20000),
+  provincia TEXT NOT NULL CHECK (length(provincia) = 2),
+  email TEXT,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+CREATE INDEX IF NOT EXISTS idx_officina_created ON attese_officina (created_at);
+CREATE TABLE IF NOT EXISTS richieste_stampa (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL,
+  testata TEXT NOT NULL CHECK (length(testata) BETWEEN 2 AND 80),
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+CREATE INDEX IF NOT EXISTS idx_stampa_created ON richieste_stampa (created_at);
