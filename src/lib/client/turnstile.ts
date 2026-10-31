@@ -29,6 +29,34 @@ export async function montaTurnstile(el: HTMLElement, siteKey: string, onToken: 
     callback: (t: string) => onToken(t),
     'expired-callback': () => onToken(null),
     'error-callback': () => onToken(null),
+    // Invisibile finché Cloudflare non chiede un'interazione: niente riquadro vuoto né scritte di servizio in pagina.
+    appearance: 'interaction-only',
   });
   return () => api.remove(id);
+}
+
+const SCRIPT_IMPLICITO = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+const ATTESA_DOPO_CARICAMENTO_MS = 2_500;
+
+/**
+ * Moduli con il widget implicito (.cf-turnstile): lo script di Cloudflare si scarica al primo gesto sul modulo
+ * (focus o tocco) o 2,5 s dopo il caricamento della pagina, così non contende la rete al primo schermo (LCP di /indice).
+ */
+export function caricaTurnstilePigro(doc: Document): void {
+  const widget = [...doc.querySelectorAll<HTMLElement>('[data-turnstile-pigro]')];
+  if (widget.length === 0) return;
+  let fatto = false;
+  const carica = () => {
+    if (fatto || doc.querySelector(`script[src="${SCRIPT_IMPLICITO}"]`)) return;
+    fatto = true;
+    doc.head.appendChild(Object.assign(doc.createElement('script'), { src: SCRIPT_IMPLICITO, async: true, defer: true }));
+  };
+  for (const w of widget) {
+    const modulo = w.closest('form') ?? w.parentElement;
+    modulo?.addEventListener('focusin', carica, { once: true });
+    modulo?.addEventListener('pointerdown', carica, { once: true });
+  }
+  const dopo = () => setTimeout(carica, ATTESA_DOPO_CARICAMENTO_MS);
+  if (doc.readyState === 'complete') dopo();
+  else addEventListener('load', dopo, { once: true });
 }

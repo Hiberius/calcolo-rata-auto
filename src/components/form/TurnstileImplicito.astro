@@ -1,6 +1,21 @@
 ---
+import { MESSAGGIO_NON_ATTIVO } from '~/lib/turnstile';
+
+/**
+ * Verifica anti-robot dei moduli che si inviano senza JavaScript. Con la chiave vuota (segreto non configurato) non
+ * c'è nessun widget: una riga dice che l'invio non è ancora attivo. Con la chiave il widget resta invisibile finché
+ * Cloudflare non chiede un'interazione (appearance interaction-only): nessuno spazio bianco riservato sotto il consenso.
+ * Lo script di Cloudflare arriva al primo gesto sul modulo o poco dopo il caricamento, mai prima del contenuto.
+ */
 interface Props { siteKey: string }
 const { siteKey } = Astro.props;
 ---
-<div class="cf-turnstile min-h-[65px]" data-sitekey={siteKey} data-language="it" data-theme="light"></div>
-<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{siteKey
+  ? <div class="cf-turnstile empty:hidden" data-sitekey={siteKey} data-language="it" data-theme="light" data-appearance="interaction-only" data-turnstile-pigro></div>
+  : <p class="nota text-tenue" data-antirobot-spento>{MESSAGGIO_NON_ATTIVO}</p>}
+{siteKey && (
+  <script>
+    import { caricaTurnstilePigro } from '~/lib/client/turnstile';
+    caricaTurnstilePigro(document);
+  </script>
+)}

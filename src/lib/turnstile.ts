@@ -56,3 +56,22 @@ export async function verificaTurnstile(
     return { ok: false, codici: ['rete'] };
   }
 }
+
+interface VariabiliAntiRobot {
+  readonly PUBLIC_TURNSTILE_SITE_KEY?: string | undefined;
+  readonly TURNSTILE_SECRET_KEY?: string | undefined;
+}
+
+/**
+ * La chiave pubblica da dare ai moduli, oppure '' se la verifica non può funzionare: senza il segreto, fuori da
+ * localhost, il server rifiuta ogni token (segretoTurnstile). In quel caso il widget non si mostra nemmeno: con la chiave
+ * di test Cloudflare stamperebbe «Solo per test» in pagina, e i moduli dicono invece in una riga che non sono ancora attivi.
+ */
+export function chiaveAntiRobot(env: VariabiliAntiRobot | undefined, urlRichiesta: string): string {
+  const chiave = (env?.PUBLIC_TURNSTILE_SITE_KEY ?? '').trim() || TURNSTILE_SITE_KEY_TEST;
+  if (richiestaLocale(urlRichiesta)) return chiave;
+  return env?.TURNSTILE_SECRET_KEY ? chiave : '';
+}
+
+/** Detto una volta sola, uguale nei moduli: il modulo esiste, la verifica anti-robot non è ancora accesa. */
+export const MESSAGGIO_NON_ATTIVO = 'Questo invio si attiva a giorni, appena è accesa la verifica anti-robot. Intanto i conti sul preventivo funzionano: scrivi i numeri o guarda l’esempio.';
