@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { EVENTI_CLIENT } from '../client/evento';
 import { ID_SCHEDA_RE } from '../ids';
 
 /** Le caselle dei form HTML arrivano come "on": le trasformiamo in booleani. */
@@ -31,7 +32,7 @@ export type RichiestaNoleggio = z.output<typeof RichiestaNoleggioSchema>;
 
 export const EventoSchema = z
   .object({
-    nome: z.enum(['scheda_condivisa', 'tre_strade_usato', 'decodifica_manuale']),
+    nome: z.enum(EVENTI_CLIENT),
     schedaId: z.string().regex(ID_SCHEDA_RE).optional(),
   })
   .strict();

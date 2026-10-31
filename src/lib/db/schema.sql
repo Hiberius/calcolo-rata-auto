@@ -61,7 +61,8 @@ CREATE TABLE IF NOT EXISTS eventi (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   nome TEXT NOT NULL CHECK (nome IN (
     'decodifica_ok', 'decodifica_errore', 'decodifica_manuale', 'scheda_creata', 'scheda_condivisa',
-    'archivio_consenso', 'tre_strade_usato', 'noleggio_inviato', 'verdetto_click', 'b2b_click'
+    'archivio_consenso', 'tre_strade_usato', 'noleggio_inviato', 'verdetto_click', 'b2b_click',
+    'scena_vista', 'scena_atto2_interagito', 'mostra_venditore'
   )),
   scheda_id TEXT,
   ip_hash TEXT,
@@ -92,3 +93,4 @@ CREATE TABLE IF NOT EXISTS richieste_verdetto (
 CREATE INDEX IF NOT EXISTS idx_verdetto_created ON richieste_verdetto (created_at);
 -- 0003: impronta del codice di cancellazione della scheda (solo SHA-256, mai il codice).
 ALTER TABLE schede ADD COLUMN token_cancellazione_hash TEXT;
+-- 0004: eventi della scena del risultato (v2): scena_vista, scena_atto2_interagito, mostra_venditore (vedi migrazione).

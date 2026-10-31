@@ -3,6 +3,7 @@ import type { Analisi } from '../calc';
 export const NOMI_EVENTO = [
   'decodifica_ok', 'decodifica_errore', 'decodifica_manuale', 'scheda_creata', 'scheda_condivisa',
   'archivio_consenso', 'tre_strade_usato', 'noleggio_inviato', 'verdetto_click', 'b2b_click',
+  'scena_vista', 'scena_atto2_interagito', 'mostra_venditore',
 ] as const;
 export type NomeEvento = (typeof NOMI_EVENTO)[number];
 export type Finalita = 'archivio' | 'contatto_noleggio' | 'newsletter' | 'contatto_b2b';

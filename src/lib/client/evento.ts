@@ -1,5 +1,6 @@
 /** Eventi che il browser può segnalare (gli altri li registra il server). Mai dati personali o di credito. */
-export type EventoClient = 'scheda_condivisa' | 'tre_strade_usato' | 'decodifica_manuale';
+export const EVENTI_CLIENT = ['scheda_condivisa', 'tre_strade_usato', 'decodifica_manuale', 'scena_vista', 'scena_atto2_interagito', 'mostra_venditore'] as const;
+export type EventoClient = (typeof EVENTI_CLIENT)[number];
 
 export function inviaEvento(nome: EventoClient, schedaId?: string): void {
   try {
