@@ -25,6 +25,9 @@ async function scorriAtti(page: Page) {
 }
 
 test('dopo l’esempio la scena è il primo schermo del risultato, con tre atti e la tabella sotto', async ({ page }) => {
+  const errori: string[] = [];
+  page.on('console', (m) => { if (m.type() === 'error') errori.push(m.text()); });
+  page.on('pageerror', (e) => errori.push(e.message));
   await apriEsempio(page);
   for (const n of [1, 2, 3]) await expect(page.locator(`[data-atto="${n}"]`)).toHaveCount(1);
   const scena = await page.locator('[data-scena]').boundingBox();
@@ -39,6 +42,7 @@ test('dopo l’esempio la scena è il primo schermo del risultato, con tre atti 
   await expect(page.locator('[data-riepilogo="2"]')).toContainText('A fine piano devi 10.434,00 €');
   expect((await page.locator('[data-scena]').innerText()).toLowerCase()).not.toMatch(VIETATE);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+  expect(errori).toEqual([]);
 });
 
 test('i cursori di anticipo, durata e km cambiano i numeri dal vivo', async ({ page }) => {
