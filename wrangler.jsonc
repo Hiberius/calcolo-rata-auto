@@ -17,7 +17,7 @@
   "kv_namespaces": [
     { "binding": "KV", "id": "d2347e80ecb846d4af2491ddec46b477" }
   ],
-  "ai": { "binding": "AI" },
+  "ai": { "binding": "AI", "remote": true },
   // Variabili pubbliche. La chiave Turnstile qui sotto e' quella di TEST di Cloudflare (passa sempre):
   // sostituirla con la chiave vera quando il sito e' sul dominio. I segreti vanno con `wrangler secret put`.
   "vars": {

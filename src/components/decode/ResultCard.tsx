@@ -60,7 +60,10 @@ export default function ResultCard({ analisi: a, azioni }: Props) {
         <section class="grid gap-2 border-y-2 border-segnale py-4" aria-label="Costo del credito">
           <p class="flex flex-wrap items-baseline justify-between gap-3 text-segnale">
             <span class="font-semibold text-lg">Costo del credito</span>
-            <span class="numeri text-3xl sm:text-4xl font-semibold">{euro(t.costoCredito)} · {percentuale(t.costoCreditoPct)}</span>
+            <span class="numeri flex flex-wrap items-baseline gap-x-3 font-semibold">
+              <span class="text-3xl sm:text-4xl whitespace-nowrap">{euro(t.costoCredito)}</span>
+              <span class="text-xl sm:text-2xl whitespace-nowrap">{percentuale(t.costoCreditoPct)} del prezzo</span>
+            </span>
           </p>
           <p class="font-medium">{a.verdetto.etichetta}</p>
           {a.verdetto.fraseQuotaRata && <p class="text-tenue">{a.verdetto.fraseQuotaRata}</p>}

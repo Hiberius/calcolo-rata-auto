@@ -64,7 +64,11 @@ export function validaEstrazione(grezzo: unknown): { ok: true; risposta: Rispost
   if (!parsed.success) return { ok: false };
   const g = parsed.data;
   const numerici = CAMPI_NUMERICI.map((c) => [c, normalizzaNumero(g[c] ?? null)] as const).filter(([, v]) => v != null);
-  const plausibili = numerici.map(([c, v]) => [c, numeroPlausibile(c, v)] as const);
+  // Se il modello copia lo stesso importo in contanti e promo, il prezzo in contanti non è davvero scritto: lo togliamo.
+  const promo = normalizzaNumero(g.prezzoPromo ?? null);
+  const plausibili = numerici
+    .filter(([c, v]) => !(c === 'prezzoContanti' && promo != null && v === promo))
+    .map(([c, v]) => [c, numeroPlausibile(c, v)] as const);
   const testi = CAMPI_TESTO.map((c) => [c, testoPulito(g[c])] as const).filter(([, v]) => v != null);
   const tipo = tipoDa(g.tipo);
   const campi: Campi = Object.fromEntries([

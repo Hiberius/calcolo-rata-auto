@@ -63,6 +63,12 @@ describe('validaEstrazione', () => {
     expect(validaEstrazione({ anticipo: { a: 1 } }).ok).toBe(false);
   });
 
+  it('non accetta un prezzo in contanti copiato dal prezzo promozionale', () => {
+    const esito = validaEstrazione({ prezzoPromo: 14950, prezzoContanti: '14.950', anticipo: 1, nRate: 2, rata: 3 });
+    expect(esito.ok && esito.risposta.campi.prezzoContanti).toBeUndefined();
+    expect(esito.ok && esito.risposta.campi.prezzoPromo).toBe(14950);
+  });
+
   it('legge il JSON anche dentro testo libero', () => {
     expect(leggiJson('ecco: {"rata": 99} fine')).toEqual({ rata: 99 });
     expect(leggiJson('niente')).toBeNull();

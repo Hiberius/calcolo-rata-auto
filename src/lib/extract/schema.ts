@@ -49,7 +49,8 @@ export const JSON_SCHEMA_ESTRAZIONE = {
     },
     testoRilevante: { type: 'string', description: 'Le righe del documento con i numeri, senza dati personali.' },
   },
-  required: ['anticipo', 'nRate', 'rata', 'confidenza'],
+  // Tutti richiesti (anche a null): con pochi campi obbligatori Llama 4 Scout tende a fermarsi presto.
+  required: [...CAMPI_NUMERICI, ...CAMPI_TESTO, 'tipo', 'confidenza'],
 } as const;
 
 /** Risposta dell'endpoint al browser. */
