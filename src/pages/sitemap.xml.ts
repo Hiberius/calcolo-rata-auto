@@ -1,13 +1,14 @@
 import type { APIRoute } from 'astro';
 import { tutteLeGuide } from '~/lib/guide';
 import { tutteLePromo } from '~/lib/promo';
+import { URL_SITO } from '~/lib/sito';
 
 export const prerender = true;
 
 const STATICHE = ['/', '/promozioni', '/indice', '/indice/metodologia', '/officina', '/noleggio', '/guide', '/metodologia', '/criteri', '/chi-siamo', '/privacy', '/cookie'];
 
 export const GET: APIRoute = ({ site }) => {
-  const base = (site?.toString() ?? 'https://ratavera.it/').replace(/\/$/, '');
+  const base = (site?.toString() ?? URL_SITO).replace(/\/$/, '');
   const percorsi = [
     ...STATICHE.map((p) => ({ p, ultima: null as string | null })),
     ...tutteLeGuide().map((g) => ({ p: `/guide/${g.slug}`, ultima: g.aggiornato })),

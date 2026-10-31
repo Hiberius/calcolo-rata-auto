@@ -3,6 +3,7 @@ import type { SSRManifest } from 'astro';
 import { App } from 'astro/app';
 import { pulisci } from './lib/db/pulizia';
 import { applicaSicurezza, senzaCondizionali } from './lib/sicurezza';
+import { rinvio } from './lib/rinvio';
 
 type Handle = typeof handle;
 
@@ -15,6 +16,8 @@ export function createExports(manifest: SSRManifest) {
   return {
     default: {
       async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+        const verso = request.method === 'GET' || request.method === 'HEAD' ? rinvio(new URL(request.url)) : null;
+        if (verso) return applicaSicurezza(new Response(null, { status: 301, headers: { location: verso } }));
         const risposta = await handle(manifest, app, senzaCondizionali(request) as unknown as Parameters<Handle>[2], env as unknown as Parameters<Handle>[3], ctx as Parameters<Handle>[4]);
         return applicaSicurezza(risposta);
       },

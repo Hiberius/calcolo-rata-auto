@@ -28,6 +28,15 @@ function nomiSegreti(): string[] {
 
 const wrangler = WranglerSchema.parse(leggiJsonc(readFileSync(join(RADICE, 'wrangler.jsonc'), 'utf8')));
 const problemi = problemiConfigurazione({ vars: wrangler.vars, segreti: nomiSegreti() });
+
+// L'indirizzo pubblico deve rispondere: canonical, og:image, sitemap e testo condiviso puntano lì (revisione del 31/10).
+const sito = (wrangler.vars['PUBLIC_SITE_URL'] ?? '').trim();
+try {
+  const r = await fetch(sito, { method: 'HEAD', redirect: 'manual', signal: AbortSignal.timeout(8_000) });
+  if (r.status !== 200) problemi.push(`PUBLIC_SITE_URL (${sito}) risponde ${r.status}, non 200: i link condivisi non si aprono.`);
+} catch (e) {
+  problemi.push(`PUBLIC_SITE_URL (${sito || 'vuota'}) non risponde: ${e instanceof Error ? e.message : String(e)}.`);
+}
 if (problemi.length === 0) {
   console.log('[controlla-deploy] configurazione completa.');
 } else {

@@ -4,6 +4,7 @@ import { analizzaLeggero } from '~/lib/calc/leggero';
 import { MESSAGGIO_TOTALE_INCOERENTE } from '~/lib/calc/totale';
 import { normalizzaMarca, normalizzaModello, normalizzaVersione } from '~/lib/calc/veicolo';
 import { daValori } from '~/lib/client/campiVivo';
+import { rinvio } from '~/lib/rinvio';
 import { segretoTurnstile, TURNSTILE_SECRET_KEY_TEST, verificaTurnstile } from '~/lib/turnstile';
 
 function ok(input: Record<string, unknown>, ipotesi?: Record<string, unknown>) {
@@ -102,5 +103,15 @@ describe('Turnstile', () => {
     expect(segretoTurnstile('vero', 'https://ratavera.it/api/scheda')).toBe('vero');
     const esito = await verificaTurnstile('token-finto', undefined, '1.2.3.4', 'https://ratavera.it/api/scheda');
     expect(esito).toEqual({ ok: false, codici: ['segreto-mancante'] });
+  });
+});
+
+describe('un indirizzo per pagina e icone di default (revisione del 31/10)', () => {
+  it('il .html va alla versione pulita, le icone chieste dai browser all’icona vera', () => {
+    expect(rinvio(new URL('https://x.dev/guide/taeg-finanziamento-auto.html'))).toBe('/guide/taeg-finanziamento-auto');
+    expect(rinvio(new URL('https://x.dev/index.html'))).toBe('/');
+    expect(rinvio(new URL('https://x.dev/cookie.html?a=1'))).toBe('/cookie?a=1');
+    expect(rinvio(new URL('https://x.dev/guide'))).toBeNull();
+    expect(rinvio(new URL('https://x.dev/favicon.ico'))).toBe('/icone/favicon-32.png');
   });
 });

@@ -25,7 +25,7 @@
   // sostituirla con la chiave vera quando il sito e' sul dominio. I segreti vanno con `wrangler secret put`.
   "vars": {
     "PUBLIC_TURNSTILE_SITE_KEY": "1x00000000000000000000AA",
-    "PUBLIC_SITE_URL": "https://ratavera.it",
+    "PUBLIC_SITE_URL": "https://ratavera.hiberius.workers.dev",
     "ESTRAZIONE_LIMITE_GIORNO": "20",
     "ESTRAZIONE_LIMITE_MINUTO": "3",
     "EMAIL_MITTENTE": "notifiche@ratavera.it",

@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /api/
 
-Sitemap: https://ratavera.it/sitemap.xml
+Sitemap: https://ratavera.hiberius.workers.dev/sitemap.xml
