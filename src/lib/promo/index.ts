@@ -18,7 +18,7 @@ export function slugDi(testo: string): string {
 
 /** Dalla promo all'input del modulo calcolo: stessi nomi tranne TAEG, credito e totale dovuto (dichiarati). */
 export function preventivoDaPromo(p: Promo): PreventivoInput {
-  const { id: _id, taeg, importoCredito, importoTotaleDovuto, requisiti: _r, validoDal: _d, validoAl: _a, urlFonte, dataVerifica: _v, note: _n, discrepanze: _x, ...numeri } = p;
+  const { id: _id, valoreFuturoGarantito: _vfg, taeg, importoCredito, importoTotaleDovuto, requisiti: _r, validoDal: _d, validoAl: _a, urlFonte, dataVerifica: _v, note: _n, discrepanze: _x, ...numeri } = p;
   return {
     ...numeri,
     ...(taeg !== undefined ? { taegDichiarato: taeg } : {}),

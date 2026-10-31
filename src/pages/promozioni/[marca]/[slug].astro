@@ -3,6 +3,7 @@ import Base from '~/layouts/Base.astro';
 import PromoBox from '~/components/compare/PromoBox.astro';
 import CalcoloVivo from '~/components/compare/CalcoloVivo';
 import ResultCard from '~/components/decode/ResultCard';
+import Scena from '~/components/scene/Scena';
 import { dataBreve } from '~/lib/date';
 import { euro } from '~/lib/calc/format';
 import { tutteLePromo } from '~/lib/promo';
@@ -27,6 +28,11 @@ const { fonte: _fonte, ...base } = a.preventivo;
   <section class="contenitore pt-8 sm:pt-14 grid gap-4">
     <p class="text-sm"><a class="link" href="/promozioni">Promozioni</a> / {p.marca}</p>
     <h1 class="font-semibold tracking-tight leading-[1.05] text-[length:var(--testo-titolo)] max-w-[22ch]">{titolo}: i conti della promozione</h1>
+  </section>
+
+  <!-- La scena è il primo schermo del risultato; la tabella completa resta sotto (specifica v2, §2). -->
+  <section class="contenitore pt-8" aria-label="La scena della promozione">
+    <Scena client:only="preact" preventivo={base} vfg={p.valoreFuturoGarantito ?? null} />
   </section>
 
   <section class="contenitore sezione grid gap-12 lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start">

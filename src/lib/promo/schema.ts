@@ -22,6 +22,8 @@ export const PromoSchema = z
     nRate: z.number().int().min(0).max(120),
     rata: euro,
     maxiRata: euro.optional(),
+    /** Valore futuro garantito dalla casa, se la promozione lo dichiara (di solito coincide con la maxi rata). */
+    valoreFuturoGarantito: euro.optional(),
     tan: percento.optional(),
     taeg: percento.optional(),
     importoCredito: euro.optional(),
