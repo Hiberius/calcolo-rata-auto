@@ -14,8 +14,8 @@ const p = (...children: Nodo[]): Nodo => ({ type: 'element', tagName: 'p', prope
 const t = (value: string): Nodo => ({ type: 'text', value });
 
 describe('glossario in linea', () => {
-  it('sei voci, una riga ciascuna, niente punti esclamativi', () => {
-    expect(Object.keys(GLOSSARIO).sort()).toEqual(['maxi', 'secci', 'taeg', 'tan', 'totaleDovuto', 'vfg']);
+  it('sette voci (con il debito residuo della scena), una riga ciascuna, niente punti esclamativi', () => {
+    expect(Object.keys(GLOSSARIO).sort()).toEqual(['maxi', 'residuo', 'secci', 'taeg', 'tan', 'totaleDovuto', 'vfg']);
     for (const g of Object.values(GLOSSARIO)) {
       expect(g.definizione.length).toBeLessThan(160);
       expect(g.definizione).not.toMatch(/[!\n]/);

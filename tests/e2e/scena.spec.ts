@@ -71,7 +71,9 @@ test('mostralo al venditore: schermo intero, si apre e si chiude', async ({ page
   await expect(vista).toBeVisible();
   await expect(vista).toContainText('18.253,25 €');
   await expect(vista).toContainText('Qual è il prezzo in contanti?');
-  await expect(vista).toContainText('Il TAEG include le spese di incasso delle rate?');
+  // innerText: le definizioni del glossario (nascoste finché non le apri) non entrano nel testo letto.
+  await expect(vista).toContainText('Il TAEG include le spese di incasso delle rate?', { useInnerText: true });
+  await expect(vista.locator('[data-termine]').first()).toBeVisible();
   await vista.getByRole('button', { name: 'Esci' }).click();
   await expect(vista).toBeHidden();
   await page.getByRole('button', { name: 'Mostralo al venditore' }).click();

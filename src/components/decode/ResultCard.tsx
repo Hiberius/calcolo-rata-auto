@@ -1,6 +1,8 @@
 import type { ComponentChildren } from 'preact';
 import type { Analisi } from '~/lib/calc';
-import { euro, percentuale } from '~/lib/calc/format';
+import { percentuale } from '~/lib/calc/format';
+import { importo } from '~/lib/formato';
+import NumeroCheConta from '../ui/NumeroCheConta';
 import Callout from '../ui/Callout';
 import Disclaimer from '../ui/Disclaimer';
 import ComposizioneTotale from '../ui/ComposizioneTotale';
@@ -9,6 +11,7 @@ import ScenariFine from './ScenariFine';
 import { t as testo } from '~/markets';
 
 const TIPO_PREZZO = { contanti: 'in contanti', promo: 'promozionale', listino: 'di listino', assente: '' } as const;
+const euro = (v: number | null | undefined): string => importo(v, 'scena');
 
 function Taeg({ a }: { a: Analisi }) {
   const { stato, nota } = a.taeg;
@@ -35,25 +38,26 @@ export default function ResultCard({ analisi: a, azioni, ambito = 'risultato', e
   const m = a.mercato;
   const titolo = [p.marca, p.modello, p.versione].filter(Boolean).join(' ');
   return (
-    <article class="scontrino rounded-t px-5 py-8 sm:px-10 sm:py-12 grid gap-10 entra" aria-labelledby="totale-titolo" data-risultato>
+    <article class="scontrino px-5 py-8 sm:px-10 sm:py-12 grid gap-10" aria-labelledby="totale-titolo" data-risultato data-stampa>
       <header class="grid gap-3">
-        {etichetta && <p class="numeri w-fit border border-inchiostro px-2 py-0.5 text-xs uppercase tracking-wide" data-etichetta-esempio>{etichetta}</p>}
-        <p class="numeri text-sm text-tenue">{titolo || testo(m, 'risultato.tuoPreventivo')} · <s>{testo(m, 'risultato.alMese', { importo: euro(p.rata) })}</s></p>
-        <h2 id="totale-titolo" class="grid gap-1">
-          <span class="text-lg font-medium">{testo(m, 'risultato.paghiDavvero')}</span>
-          <span class="numeri totale-grande" data-totale>{euro(t.totalePagatoTenendo)}</span>
+        {etichetta && <p class="riga-scontrino numeri w-fit border border-inchiostro px-2 py-0.5 text-xs uppercase tracking-[0.08em]" style={{ '--i': 0 }} data-etichetta-esempio>{etichetta}</p>}
+        <p class="riga-scontrino numeri text-sm text-tenue" style={{ '--i': 1 }}>{titolo || testo(m, 'risultato.tuoPreventivo')} · <s class="rata-barrata">{testo(m, 'risultato.alMese', { importo: euro(p.rata) })}</s></p>
+        {/* F3: il totale conta da zero quando lo scontrino è in vista; poi si sottolinea il costo del credito. */}
+        <h2 id="totale-titolo" class="riga-scontrino grid gap-1" style={{ '--i': 2 }}>
+          <span class="text-lg font-medium">{testo(m, 'risultato.paghiDavvero')}</span>{' '}
+          <NumeroCheConta valore={t.totalePagatoTenendo} class="numero-eroe" dato="totale" />
         </h2>
         {t.prezzoRiferimento != null && (
-          <p class="numeri">Prezzo {TIPO_PREZZO[t.prezzoRiferimentoTipo]} {euro(t.prezzoRiferimento)}</p>
+          <p class="riga-scontrino numeri" style={{ '--i': 3 }}>Prezzo {TIPO_PREZZO[t.prezzoRiferimentoTipo]} {euro(t.prezzoRiferimento)}</p>
         )}
       </header>
 
       {t.costoCredito != null && (
-        <section class="grid gap-2 border-y-2 border-segnale py-4" aria-label="Costo del credito">
+        <section class="riga-scontrino grid gap-2 border-y-2 border-segnale py-4" style={{ '--i': 4 }} aria-label="Costo del credito">
           <p class="flex flex-wrap items-baseline justify-between gap-3 text-segnale-scuro">
             <span class="font-semibold text-lg">{testo(m, 'risultato.costoCredito')}</span>
             <span class="numeri flex flex-wrap items-baseline gap-x-3 font-semibold">
-              <span class="text-3xl sm:text-4xl whitespace-nowrap">{euro(t.costoCredito)}</span>
+              <span class="traccia-costo text-3xl sm:text-4xl whitespace-nowrap">{euro(t.costoCredito)}</span>
               <span class="text-xl sm:text-2xl whitespace-nowrap">{percentuale(t.costoCreditoPct)} {testo(m, 'risultato.delPrezzo')}</span>
             </span>
           </p>
@@ -68,7 +72,7 @@ export default function ResultCard({ analisi: a, azioni, ambito = 'risultato', e
 
       <section class="grid gap-3" aria-labelledby="composizione-titolo">
         <h3 id="composizione-titolo" class="font-semibold text-lg">{testo(m, 'risultato.composizione')}</h3>
-        <ComposizioneTotale analisi={a} ambito={`${ambito}-voci`} />
+        <ComposizioneTotale analisi={a} ambito={`${ambito}-voci`} primaRiga={5} />
       </section>
 
       <section class="grid gap-3">

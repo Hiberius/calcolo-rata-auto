@@ -18,6 +18,22 @@ export interface StatoCurve {
   readonly etichette?: EtichetteCurve | undefined;
   /** Anteprima della home: niente etichette sugli assi, solo le curve. */
   readonly senzaAssi?: boolean | undefined;
+  /** F4. Mirino: il mese sotto il puntatore, con i due valori letti sulle curve. */
+  readonly mirino?: Mirino | null | undefined;
+}
+
+export interface Mirino {
+  readonly mese: number;
+  /** Come scrivere un importo (la regola della scena, lib/formato). */
+  readonly euro: (valore: number) => string;
+  readonly etichette: { readonly valore: string; readonly debito: string; readonly mese: string };
+}
+
+/** Il mese sotto il puntatore, dal punto x in pixel (stessa scala del disegno). */
+export function meseSotto(x: number, larghezza: number, durata: number, senzaAssi = false): number {
+  const m = senzaAssi ? MARGINE_NUDO : MARGINE;
+  const w = Math.max(1, larghezza - m.sinistra - m.destra);
+  return Math.min(durata, Math.max(0, Math.round(((x - m.sinistra) / w) * durata)));
 }
 
 const MARGINE = { sinistra: 52, destra: 14, alto: 18, basso: 30 } as const;
@@ -179,6 +195,46 @@ function puntiFinali(ctx: CanvasRenderingContext2D, s: StatoCurve, sc: Scala): v
   ctx.fillText(testo, x - 14, yTesto);
 }
 
+/** Linea di 1 px sul mese, i due punti e i due numeri letti, su un riquadro del colore del fondo. */
+function mirino(ctx: CanvasRenderingContext2D, a: Area, s: StatoCurve, sc: Scala, mi: Mirino): void {
+  const p = s.serie.punti.find((q) => q.mese === mi.mese) ?? s.serie.punti.at(-1);
+  if (!p) return;
+  const mg = margine(s);
+  const x = Math.round(sc.x(p.mese)) + 0.5;
+  ctx.save();
+  ctx.strokeStyle = SCENA.carta;
+  ctx.globalAlpha = 0.6;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x, mg.alto);
+  ctx.lineTo(x, a.altezza - mg.basso);
+  ctx.stroke();
+  ctx.restore();
+  punto(ctx, x, sc.y(p.valore), SCENA.carta);
+  punto(ctx, x, sc.y(p.debito), SCENA.segnale);
+  const righe: readonly (readonly [string, string])[] = [
+    [`${mi.etichette.mese} ${p.mese}`, SCENA.tenue],
+    [`${mi.etichette.valore} ${mi.euro(p.valore)}`, SCENA.carta],
+    [`${mi.etichette.debito} ${mi.euro(p.debito)}`, SCENA.segnale],
+  ];
+  ctx.font = `500 12px ${MONO}`;
+  const larghezza = Math.max(...righe.map(([t]) => ctx.measureText(t).width)) + 16;
+  const altezza = righe.length * 17 + 10;
+  const aDestra = x + 10 + larghezza <= a.larghezza - mg.destra;
+  const xBox = aDestra ? x + 10 : x - 10 - larghezza;
+  const yBox = mg.alto + 2;
+  ctx.fillStyle = SCENA.fondo;
+  ctx.fillRect(xBox, yBox, larghezza, altezza);
+  ctx.strokeStyle = SCENA.griglia;
+  ctx.strokeRect(xBox + 0.5, yBox + 0.5, larghezza - 1, altezza - 1);
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  righe.forEach(([t, colore], k) => {
+    ctx.fillStyle = colore;
+    ctx.fillText(t, xBox + 8, yBox + 6 + k * 17);
+  });
+}
+
 /** Atto 2: valore stimato (scende) e debito residuo nel tempo, con la zona in cui il debito supera il valore. */
 export function disegnaCurve(ctx: CanvasRenderingContext2D, a: Area, s: StatoCurve): void {
   const sc = scala(a, s);
@@ -189,4 +245,5 @@ export function disegnaCurve(ctx: CanvasRenderingContext2D, a: Area, s: StatoCur
   linea(ctx, s, sc, fino, 'valore', SCENA.carta, 2);
   linea(ctx, s, sc, fino, 'debito', SCENA.segnale, 2.5);
   if (s.avanzamento >= 1 && !s.senzaAssi) puntiFinali(ctx, s, sc);
+  if (s.mirino && s.avanzamento >= 1) mirino(ctx, a, s, sc, s.mirino);
 }

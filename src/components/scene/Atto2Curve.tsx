@@ -1,13 +1,17 @@
-import { useCallback, useMemo } from 'preact/hooks';
-import { euro, euroIntero, numero, punti } from '~/lib/calc/format';
+import { useCallback, useMemo, useState } from 'preact/hooks';
+import { numero, punti } from '~/lib/calc/format';
+import { importo } from '~/lib/formato';
 import { fraseIncrocio, limitiCursori, pianoConCursori, serieScena, type BaseScena, type Cursori } from '~/lib/calc/scena';
 import type { PianoDebito } from '~/lib/calc/valore';
 import { MODELLO_VALORE, type SerieValoreDebito } from '~/lib/calc/valore';
 import { t } from '~/markets';
 import { MERCATO_IT } from '~/markets/it';
 import type { ChiaveTesto, Mercato } from '~/markets/tipi';
+import Termine from '../ui/Termine';
+import TestoConGlossario from '../ui/TestoConGlossario';
 import Cursore from './Cursore';
-import { disegnaCurve } from './disegno/curve';
+import { disegnaCurve, meseSotto, type Mirino } from './disegno/curve';
+import { useSerieMorbida } from './useSerieMorbida';
 import { useAvanzamento } from './useAvanzamento';
 import { useTela, type Area } from './useTela';
 
@@ -32,9 +36,17 @@ export function titoloDurata(mesi: number, m: Mercato = MERCATO_IT): string {
 
 const MODELLO = `Valore stimato con un modello dichiarato: −${MODELLO_VALORE.perditaPrimoAnno * 100}% il primo anno, −${MODELLO_VALORE.perditaAnniSuccessivi * 100}% l’anno dopo, ±${MODELLO_VALORE.correzionePerPasso * 100}% ogni ${numero(MODELLO_VALORE.passoKm, 0)} km sopra o sotto ${numero(MODELLO_VALORE.kmRiferimento, 0)} km l’anno, mai sotto il ${MODELLO_VALORE.quotaMinima * 100}% del prezzo.`;
 
+const euro = (v: number): string => importo(v, 'scena');
+const ETICHETTE_MIRINO: Mirino['etichette'] = { valore: 'valore', debito: 'debito', mese: 'mese' };
+
 function riepilogo(s: SerieValoreDebito, m: Mercato): string {
   const vfg = s.vfg ? ` ${t(m, 'atto2.vfg')} ${euro(s.vfg.importo)}, ${s.vfg.sopraStima ? 'sopra' : 'sotto'} la stima.` : '';
   return `${fraseIncrocio(s, m)} ${t(m, 'atto2.fineDebito')} ${euro(s.debitoFinale)}. ${t(m, 'atto2.fineValore')} ${euro(s.valoreFinale)}.${vfg}`;
+}
+
+/** Interazione 9: il numero cambiato da un cursore riceve un velo vermiglio che si spegne (la key lo riavvia). */
+function Vivo({ testo }: { testo: string }) {
+  return <span key={testo} class="velo">{testo}</span>;
 }
 
 /** Da dove viene il tasso del debito, detto in chiaro: il TAN se torna, altrimenti il tasso ricavato e perché. */
@@ -65,10 +77,21 @@ export default function Atto2Curve({ base, cursori, onCursori, statico, tipo, m 
     if (!serie) return 1;
     return Math.max(base.prezzo ?? 0, serie.vfg?.importo ?? 0, ...serie.punti.map((p) => p.debito)) * 1.06;
   }, [serie, base.prezzo]);
+  const vista = useSerieMorbida(serie, massimo);
+  const [mese, setMese] = useState<number | null>(null);
   const disegno = useCallback((ctx: CanvasRenderingContext2D, area: Area) => {
-    if (serie) disegnaCurve(ctx, area, { serie, massimo, avanzamento, etichette: { vfg: t(m, 'atto2.vfgGrafico'), mese: (n) => t(m, 'atto2.mese', { mese: n }) } });
-  }, [serie, massimo, avanzamento, m]);
+    if (!vista.serie) return;
+    const mirino = mese != null ? { mese, euro, etichette: ETICHETTE_MIRINO } : null;
+    disegnaCurve(ctx, area, { serie: vista.serie, massimo: vista.massimo, avanzamento, mirino, etichette: { vfg: t(m, 'atto2.vfgGrafico'), mese: (n) => t(m, 'atto2.mese', { mese: n }) } });
+  }, [vista, avanzamento, m, mese]);
   const tela = useTela(disegno);
+  /** F4. Mirino: segue il puntatore (o il dito che scorre in orizzontale) senza ritardo; i numeri restano anche nel riepilogo. */
+  function punta(e: PointerEvent) {
+    const el = e.currentTarget as HTMLCanvasElement;
+    if (!vista.serie) return;
+    const r = el.getBoundingClientRect();
+    setMese(meseSotto(e.clientX - r.left, r.width, vista.serie.durata));
+  }
   const cambiata = piano != null && base.piano != null && piano !== base.piano;
   // I cursori restano anche quando la combinazione non è possibile, così si torna indietro.
   const conCursori = base.piano != null && base.prezzo != null;
@@ -89,31 +112,33 @@ export default function Atto2Curve({ base, cursori, onCursori, statico, tipo, m 
         <>
           <div class="relative grid gap-3">
             <p class="etichetta-stima justify-self-end sm:absolute sm:right-0 sm:top-0" data-etichetta-stima>{t(m, 'scena.stima')}</p>
-            <canvas ref={tela} class="block h-[260px] w-full sm:h-[360px]" aria-hidden="true" data-tela="curve" />
+            <canvas ref={tela} class="block h-[260px] w-full cursor-crosshair touch-pan-y sm:h-[360px]" aria-hidden="true" data-tela="curve"
+              onPointerMove={punta} onPointerDown={punta} onPointerLeave={() => setMese(null)} onPointerCancel={() => setMese(null)} />
           </div>
-          <ul class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-[var(--scena-tenue)]" aria-hidden="true">
+          <ul class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-[var(--scena-tenue)]">
             <li class="flex items-center gap-2"><span class="h-0.5 w-6 bg-[var(--scena-carta)]" />{t(m, 'atto2.legendaValore')}</li>
-            <li class="flex items-center gap-2"><span class="h-[3px] w-6 bg-[var(--scena-segnale)]" />{t(m, 'atto2.legendaDebito')}</li>
+            <li class="flex items-center gap-2"><span class="h-[3px] w-6 bg-[var(--scena-segnale)]" /><TestoConGlossario testo={t(m, 'atto2.legendaDebito')} ambito="scena-legenda" /></li>
             {serie.mesiSopra > 0 && <li class="flex items-center gap-2"><span class="h-3 w-6 bg-[rgba(242,130,95,0.36)]" />{t(m, 'atto2.legendaZona')}</li>}
           </ul>
-          <dl class="grid gap-x-10 gap-y-4 sm:grid-cols-3">
-            <div class="grid gap-1">
-              <dt class="text-sm text-[var(--scena-tenue)]">{t(m, 'atto2.fineDebito')}</dt>
-              <dd class="numeri text-2xl font-semibold text-[var(--scena-segnale)]" data-debito-finale>{euro(serie.debitoFinale)}</dd>
+          {/* Il debito a fine piano è il numero che pesa: grande e in vermiglio; valore e rata accanto, una misura sotto. */}
+          <dl class="grid gap-x-10 gap-y-5 sm:grid-cols-[minmax(0,5fr)_minmax(0,4fr)_minmax(0,4fr)] sm:items-end">
+            <div class="grid gap-1.5">
+              <dt class="nota text-[var(--scena-tenue)]">{t(m, 'atto2.fineDebito')}</dt>
+              <dd class="numero-scena text-[clamp(1.75rem,1.2rem+2vw,2.75rem)] text-[var(--scena-segnale)]" data-debito-finale><Vivo testo={euro(serie.debitoFinale)} /></dd>
             </div>
-            <div class="grid gap-1">
-              <dt class="text-sm text-[var(--scena-tenue)]">{t(m, 'atto2.fineValore')}</dt>
-              <dd class="numeri text-2xl font-semibold" data-valore-finale>{euro(serie.valoreFinale)}</dd>
+            <div class="grid gap-1.5">
+              <dt class="nota text-[var(--scena-tenue)]">{t(m, 'atto2.fineValore')}</dt>
+              <dd class="numero-scena" data-valore-finale><Vivo testo={euro(serie.valoreFinale)} /></dd>
             </div>
-            <div class="grid gap-1">
-              <dt class="text-sm text-[var(--scena-tenue)]">{t(m, cambiata ? 'atto2.rataStimata' : 'atto2.rataPreventivo')}</dt>
-              <dd class="numeri text-2xl font-semibold" data-rata-scena>{euro(piano.rata)}</dd>
+            <div class="grid gap-1.5">
+              <dt class="nota text-[var(--scena-tenue)]">{t(m, cambiata ? 'atto2.rataStimata' : 'atto2.rataPreventivo')}</dt>
+              <dd class="numero-scena" data-rata-scena><Vivo testo={euro(piano.rata)} /></dd>
             </div>
           </dl>
           {serie.vfg && (
-            <p class="max-w-prose text-sm" data-vfg>
-              {t(m, 'atto2.vfg')}: <span class="numeri font-semibold text-[var(--scena-attenzione)]">{euro(serie.vfg.importo)}</span>,{' '}
-              {serie.vfg.sopraStima ? 'sopra' : 'sotto'} la nostra stima di {euroIntero(serie.vfg.stima)}. Leggi le condizioni: di solito valgono solo con i km e lo stato previsti.
+            <p class="max-w-prose nota" data-vfg>
+              <Termine voce="vfg" ambito="scena-vfg">{t(m, 'atto2.vfg')}</Termine>: <span class="numeri font-semibold text-[var(--scena-attenzione)]">{euro(serie.vfg.importo)}</span>,{' '}
+              {serie.vfg.sopraStima ? 'sopra' : 'sotto'} la nostra stima di {euro(serie.vfg.stima)}. Leggi le condizioni: di solito valgono solo con i km e lo stato previsti.
             </p>
           )}
         </>
@@ -121,15 +146,15 @@ export default function Atto2Curve({ base, cursori, onCursori, statico, tipo, m 
       {conCursori && (
         <fieldset class="grid gap-6 border-t border-[var(--scena-riga)] pt-6 sm:grid-cols-3">
           <legend class="sr-only">Cambia anticipo, durata e km all’anno</legend>
-          <Cursore id="scena-anticipo" etichetta={t(m, 'atto2.anticipo')} valore={cursori.anticipo} limite={limiti.anticipo} testo={euroIntero(cursori.anticipo)} onCambia={(v) => onCursori({ ...cursori, anticipo: v })} />
+          <Cursore id="scena-anticipo" etichetta={t(m, 'atto2.anticipo')} valore={cursori.anticipo} limite={limiti.anticipo} testo={euro(cursori.anticipo)} onCambia={(v) => onCursori({ ...cursori, anticipo: v })} />
           <Cursore id="scena-durata" etichetta={t(m, 'atto2.durata')} valore={cursori.durata} limite={limiti.durata} testo={t(m, 'atto2.mesi', { n: cursori.durata })} onCambia={(v) => onCursori({ ...cursori, durata: v })} />
           <Cursore id="scena-km" etichetta={t(m, 'atto2.km')} valore={cursori.kmAnnui} limite={limiti.kmAnnui} testo={`${numero(cursori.kmAnnui, 0)} km`} onCambia={(v) => onCursori({ ...cursori, kmAnnui: v })} />
         </fieldset>
       )}
       {serie && piano && (
         <>
-          <p class="max-w-prose text-xs text-[var(--scena-tenue)]" data-nota-tasso={base.fonteTasso}>
-            {MODELLO} {notaTasso(base, piano, m)} <a class="link" href="/metodologia#valore">Come lo calcoliamo</a>
+          <p class="max-w-[72ch] nota text-[var(--scena-tenue)]" data-nota-tasso={base.fonteTasso}>
+            {MODELLO} <TestoConGlossario testo={notaTasso(base, piano, m)} ambito="scena-tasso" /> <a class="link" href="/metodologia#valore">Come lo calcoliamo</a>
           </p>
           <p class="sr-only" data-riepilogo="2" aria-live="polite">{riepilogo(serie, m)}</p>
         </>

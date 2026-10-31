@@ -6,6 +6,7 @@ export const GLOSSARIO = {
   vfg: { termine: 'valore futuro garantito', definizione: "Il valore dell'auto a fine contratto fissato alla firma: è l'importo della maxi rata finale." },
   secci: { termine: 'SECCI', definizione: 'Il modulo «Informazioni europee di base sul credito ai consumatori»: il venditore deve dartelo prima della firma, con tutti i costi.' },
   totaleDovuto: { termine: 'importo totale dovuto', definizione: "Quanto restituisci al finanziatore: rate, maxi rata e spese del credito, senza l'anticipo." },
+  residuo: { termine: 'debito residuo', definizione: 'Quello che devi ancora restituire dopo le rate già pagate, senza gli interessi futuri: alla fine del piano è la maxi rata.' },
 } as const;
 
 export type VoceGlossario = keyof typeof GLOSSARIO;
@@ -19,6 +20,7 @@ export function idTermine(ambito: string, voce: VoceGlossario): string {
 export const FORME_NEL_TESTO: readonly (readonly [VoceGlossario, RegExp])[] = [
   ['vfg', /\bvalore futuro garantito\b/i],
   ['totaleDovuto', /\bimporto totale dovuto\b/i],
+  ['residuo', /\b(?:debito|capitale) residuo\b/i],
   ['maxi', /\bmaxi rata\b/i],
   ['taeg', /\bTAEG\b/],
   ['tan', /\bTAN\b/],

@@ -6,7 +6,7 @@ import { ripartizioneTotale } from '~/lib/calc/ripartizione';
 import { baseScena, cursoriIniziali, possessoFinale, scalaEuro, type Cursori } from '~/lib/calc/scena';
 import { inviaEvento } from '~/lib/client/evento';
 import { salvaPreventivo } from '~/lib/client/sessione';
-import { allaPrimaVista, menoMovimento, seguiMenoMovimento } from '~/lib/motion';
+import { allaPrimaVista, movimentoPermesso, seguiMovimento } from '~/lib/motion';
 import Atto1Flusso from './Atto1Flusso';
 import Atto2Curve from './Atto2Curve';
 import Atto3Strade from './Atto3Strade';
@@ -24,8 +24,8 @@ interface Props {
 }
 
 function useMenoMovimento(): boolean {
-  const [ridotto, setRidotto] = useState(menoMovimento);
-  useEffect(() => seguiMenoMovimento(setRidotto), []);
+  const [ridotto, setRidotto] = useState(() => !movimentoPermesso());
+  useEffect(() => seguiMovimento((permesso) => setRidotto(!permesso)), []);
   return ridotto;
 }
 
@@ -72,8 +72,8 @@ export default function Scena({ preventivo, vfg = null, etichetta, mercato }: Pr
     <div ref={radice} class="pannello-scena" data-scena data-scena-statica={statico ? 'true' : 'false'}>
       <header class="flex flex-wrap items-start justify-between gap-4">
         <div class="grid gap-2">
-          {etichetta && <p class="numeri w-fit border border-[var(--scena-riga)] px-2 py-0.5 text-xs uppercase tracking-wide">{etichetta}</p>}
-          <h2 class="text-sm uppercase tracking-[0.18em] text-[var(--scena-tenue)]">{t(m, 'scena.titolo')}</h2>
+          {etichetta && <p class="numeri w-fit rounded-[var(--raggio)] border border-[var(--scena-tenue)] px-2 py-0.5 text-xs uppercase tracking-[0.08em]" data-etichetta-scena>{etichetta}</p>}
+          <h2 class="numeri text-xs font-medium uppercase tracking-[0.08em] text-[var(--scena-tenue)]">{t(m, 'scena.titolo')}</h2>
         </div>
         <button type="button" class="btn btn-scena" onClick={apriVenditore} data-mostra-venditore>{t(m, 'scena.venditore')}</button>
       </header>

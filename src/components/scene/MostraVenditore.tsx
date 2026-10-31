@@ -1,8 +1,14 @@
 import { useEffect, useRef } from 'preact/hooks';
-import { euro, percentuale, punti } from '~/lib/calc/format';
+import { percentuale, punti } from '~/lib/calc/format';
+import { importo } from '~/lib/formato';
+import type { VoceGlossario } from '~/lib/glossario';
 import type { Analisi } from '~/lib/calc/tipi';
 import { t } from '~/markets';
 import type { ChiaveTesto } from '~/markets/tipi';
+import Termine from '../ui/Termine';
+import TestoConGlossario from '../ui/TestoConGlossario';
+
+const euro = (v: number | null | undefined): string => importo(v, 'scena');
 
 interface Props {
   analisi: Analisi;
@@ -26,10 +32,10 @@ export function domandeAlVenditore(a: Analisi): readonly string[] {
   return chiavi.map((k) => t(m, k));
 }
 
-function Riga({ etichetta, valore, segnale = false }: { etichetta: string; valore: string; segnale?: boolean }) {
+function Riga({ etichetta, valore, segnale = false, voce }: { etichetta: string; valore: string; segnale?: boolean; voce?: VoceGlossario }) {
   return (
     <div class="grid gap-0.5 border-b border-[var(--scena-riga)] py-3">
-      <dt class="text-base text-[var(--scena-tenue)]">{etichetta}</dt>
+      <dt class="text-base text-[var(--scena-tenue)]">{voce ? <Termine voce={voce} ambito={`venditore-${voce}-${etichetta.length}`}>{etichetta}</Termine> : etichetta}</dt>
       <dd class={`numeri text-[clamp(1.75rem,1rem+4vw,3rem)] font-semibold leading-none ${segnale ? 'text-[var(--scena-segnale)]' : ''}`}>{valore}</dd>
     </div>
   );
@@ -70,15 +76,15 @@ export default function MostraVenditore({ analisi: a, aperta, onChiudi }: Props)
           <Riga etichetta={t(m, 'venditore.pagoInTutto')} valore={euro(tot.totalePagatoTenendo)} />
           {tot.prezzoRiferimento != null && <Riga etichetta={t(m, TIPO_PREZZO[tot.prezzoRiferimentoTipo])} valore={euro(tot.prezzoRiferimento)} />}
           {tot.costoCredito != null && <Riga etichetta={t(m, 'risultato.costoCredito')} valore={`${euro(tot.costoCredito)} · ${percentuale(tot.costoCreditoPct, 0)}`} segnale />}
-          {p.maxiRata ? <Riga etichetta={t(m, 'venditore.maxi')} valore={euro(p.maxiRata)} /> : null}
-          {p.taegDichiarato != null && <Riga etichetta={t(m, 'venditore.tassoDichiarato')} valore={punti(p.taegDichiarato)} />}
+          {p.maxiRata ? <Riga etichetta={t(m, 'venditore.maxi')} valore={euro(p.maxiRata)} voce="maxi" /> : null}
+          {p.taegDichiarato != null && <Riga etichetta={t(m, 'venditore.tassoDichiarato')} valore={punti(p.taegDichiarato)} voce="taeg" />}
           {a.taeg.taegRicostruito != null && <Riga etichetta={t(m, 'venditore.tassoRicostruito')} valore={punti(a.taeg.taegRicostruito)} />}
         </dl>
         <div class="grid gap-3">
           <h3 class="text-xl font-semibold">{t(m, 'venditore.domande')}</h3>
           <ol class="grid gap-3 text-[clamp(1.125rem,1rem+1vw,1.5rem)] leading-snug">
             {domandeAlVenditore(a).map((d, k) => (
-              <li key={d} class="grid grid-cols-[2rem_1fr] gap-2"><span class="numeri text-[var(--scena-segnale)]">{k + 1}</span>{d}</li>
+              <li key={d} class="grid grid-cols-[2rem_1fr] gap-2"><span class="numeri text-[var(--scena-segnale)]">{k + 1}</span><span><TestoConGlossario testo={d} ambito={`venditore-domanda-${k}`} /></span></li>
             ))}
           </ol>
         </div>
