@@ -23,11 +23,19 @@ async function chiediCancellazione(id: string, token: string): Promise<{ ok: boo
   return (await r.json()) as { ok: boolean; errore?: string };
 }
 
-/** Pulsante «Elimina questa scheda» su /s/[id], solo per chi ha il codice (creazione nello stesso browser o link). */
+/**
+ * Pulsante «Elimina questa scheda» su /s/[id], solo per chi ha il codice (creazione nello stesso browser o link).
+ * Ascolta anche il cambio di # : chi è già sulla scheda e incolla il link di cancellazione non ricarica la pagina.
+ */
 export function avviaEliminaScheda(doc: Document, posizione: Location, cronologia: History): void {
+  monta(doc, posizione, cronologia);
+  doc.defaultView?.addEventListener('hashchange', () => monta(doc, posizione, cronologia));
+}
+
+function monta(doc: Document, posizione: Location, cronologia: History): void {
   const radice = doc.querySelector<HTMLElement>('[data-elimina]');
   const id = radice?.dataset['id'];
-  if (!radice || !id) return;
+  if (!radice || !id || radice.childElementCount > 0) return;
   const daLink = tokenDalFrammento(posizione.hash);
   if (daLink) {
     salvaTokenCancellazione(id, daLink);
