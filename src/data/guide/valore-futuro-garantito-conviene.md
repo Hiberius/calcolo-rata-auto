@@ -67,4 +67,4 @@ Il VFG è calcolato su un chilometraggio preciso, scritto nel contratto. Ogni ch
 
 Chiedi il prezzo in contanti, il SECCI, il documento con i criteri di riconsegna e il costo per chilometro in eccesso. Hai 14 giorni per recedere dal contratto di credito dopo la firma. Nel 2025, nell'inchiesta di Altroconsumo su 90 concessionarie, solo il 16% consegnava il SECCI senza che il cliente insistesse: chiederlo è normale.
 
-Per vedere tutte le voci del tuo preventivo, compresi i numeri che non tornano, usa la [decodifica](/#decodifica). Per confrontare con l'acquisto in contanti e con il noleggio, la pagina [tre strade](/noleggio).
+Per vedere tutte le voci del tuo preventivo, compresi i numeri che non tornano, [leggi il preventivo](/#decodifica) in home. Per confrontare con l'acquisto in contanti e con il noleggio, la pagina [Confronta](/noleggio).

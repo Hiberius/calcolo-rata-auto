@@ -25,7 +25,7 @@ const siteKey = Astro.locals.runtime?.env?.PUBLIC_TURNSTILE_SITE_KEY || TURNSTIL
     </div>
   </section>
 
-  <section id="decodifica" class="contenitore scroll-mt-6" aria-label="Decodifica il preventivo">
+  <section id="decodifica" class="contenitore scroll-mt-6" aria-label="Leggi il preventivo">
     <DecodeForm client:load siteKey={siteKey} />
   </section>
 

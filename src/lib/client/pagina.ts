@@ -20,15 +20,23 @@ function scrivi(chiave: string, valore: string): void {
   }
 }
 
-/** Banner informativo (nessun consenso da chiedere: niente cookie di profilazione) e click misurati sui pulsanti di pagamento. */
+/** Riga informativa sui cookie con «Chiudi»: nessun consenso da chiedere, perché non ci sono cookie di profilazione. */
+function rigaCookie(doc: Document): void {
+  const modello = doc.querySelector<HTMLTemplateElement>('template[data-riga-cookie]');
+  if (!modello || leggi(CHIAVE_BANNER) === '1') return;
+  const riga = modello.content.firstElementChild?.cloneNode(true);
+  if (!(riga instanceof HTMLElement)) return;
+  doc.body.appendChild(riga);
+  riga.querySelector('[data-chiudi-banner]')?.addEventListener('click', () => {
+    scrivi(CHIAVE_BANNER, '1');
+    riga.remove();
+  });
+}
+
+/** Glossario in linea, riga sui cookie e click misurati sui pulsanti di pagamento. */
 export function avviaPagina(doc: Document): void {
   avviaGlossario(doc);
-  const banner = doc.querySelector<HTMLElement>('[data-banner-cookie]');
-  if (banner && leggi(CHIAVE_BANNER) !== '1') banner.hidden = false;
-  doc.querySelector('[data-chiudi-banner]')?.addEventListener('click', () => {
-    scrivi(CHIAVE_BANNER, '1');
-    if (banner) banner.hidden = true;
-  });
+  rigaCookie(doc);
   doc.addEventListener('click', (e) => {
     const el = (e.target as Element | null)?.closest<HTMLElement>('[data-evento]');
     const nome = el?.dataset['evento'];

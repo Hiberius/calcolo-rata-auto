@@ -57,4 +57,4 @@ Pur non essendo un finanziamento, il noleggiatore valuta l'affidabilità del cli
 
 ## Il confronto con i tuoi numeri
 
-Per fare lo stesso confronto con il tuo preventivo apri la pagina [tre strade](/noleggio): il preventivo della decodifica viene ripreso in automatico e tutte le ipotesi, dal TAEG del prestito al valore dell'auto a fine contratto, si possono cambiare. Se vuoi un preventivo di noleggio vero per il modello che ti interessa, dalla stessa pagina puoi chiederlo a un partner di noleggio a lungo termine.
+Per fare lo stesso confronto con il tuo preventivo apri la pagina [Confronta](/noleggio): il preventivo che hai letto in home viene ripreso in automatico e tutte le ipotesi, dal TAEG del prestito al valore dell'auto a fine contratto, si possono cambiare. Se vuoi un preventivo di noleggio vero per il modello che ti interessa, dalla stessa pagina puoi chiederlo a Rata Vera: se poi lo firmi, il noleggiatore può riconoscerci un compenso, e lo diciamo prima.

@@ -55,4 +55,4 @@ Non pagare la maxi rata senza scegliere una delle tre strade è un inadempimento
 
 Le regole europee sul credito ai consumatori, recepite in Italia con il decreto legislativo 212/2025, rafforzano gli obblighi di informazione prima della firma. Il SECCI resta il documento da chiedere: contiene TAEG, importo totale dovuto e costi. Con quello, e con il calcolo qui sopra, sai già oggi quanto ti costerà ciascuna uscita.
 
-Per rifare tutti i conti del tuo contratto usa la [decodifica del preventivo](/#decodifica); per confrontarlo con il noleggio, [tre strade](/noleggio).
+Per rifare tutti i conti del tuo contratto [leggi il preventivo](/#decodifica) in home; per confrontarlo con il prestito e il noleggio, apri [Confronta](/noleggio).
