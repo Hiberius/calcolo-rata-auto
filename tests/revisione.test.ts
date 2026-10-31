@@ -114,4 +114,10 @@ describe('un indirizzo per pagina e icone di default (revisione del 31/10)', () 
     expect(rinvio(new URL('https://x.dev/guide'))).toBeNull();
     expect(rinvio(new URL('https://x.dev/favicon.ico'))).toBe('/icone/favicon-32.png');
   });
+  it('più barre iniziali non diventano un rinvio verso un altro sito (open redirect, revisione di sicurezza del 31/10)', () => {
+    expect(rinvio(new URL('https://x.dev//evil.com/a.html'))).toBe('/evil.com/a');
+    expect(rinvio(new URL('https://x.dev/\\evil.com/a.html'))).toBe('/evil.com/a');
+    expect(rinvio(new URL('https://x.dev////evil.com/index.html?x=1'))).toBe('/evil.com/?x=1');
+    expect(rinvio(new URL('https://x.dev//index.html'))).toBe('/');
+  });
 });

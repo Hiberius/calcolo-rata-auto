@@ -9,6 +9,8 @@ export function rinvio(url: URL): string | null {
   const icona = ICONE[url.pathname];
   if (icona) return icona;
   if (url.pathname.startsWith('/_astro/') || !url.pathname.endsWith('.html')) return null;
-  const pulito = url.pathname.replace(/\/index\.html$/, '/').replace(/\.html$/, '') || '/';
+  // Più barre iniziali («//evil.com/x.html») farebbero del Location l'indirizzo di un altro sito: una barra sola, sempre.
+  const percorso = `/${url.pathname.replace(/^\/+/, '')}`;
+  const pulito = percorso.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
   return `${pulito}${url.search}`;
 }
