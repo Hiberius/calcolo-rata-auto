@@ -1,9 +1,8 @@
 import { z } from 'zod';
-import { IPOTESI_PREDEFINITE as D } from './config';
+import { EURO_MAX, IPOTESI_PREDEFINITE as D } from './config';
 import { normalizzaMarca, normalizzaModello, normalizzaVersione } from './veicolo';
 
-/** Tetto agli importi: nessun preventivo d'auto supera 10 milioni; evita Infinity e notazione esponenziale. */
-export const EURO_MAX = 10_000_000;
+export { EURO_MAX } from './config';
 
 /** Importo in euro: numero finito, non negativo. Le stringhe vanno normalizzate prima (vedi extract/validate). */
 const euro = z.number({ error: 'Deve essere un numero' }).nonnegative({ error: 'Non può essere negativo' }).max(EURO_MAX, { error: 'Importo troppo alto' });

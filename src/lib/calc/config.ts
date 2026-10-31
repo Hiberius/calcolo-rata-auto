@@ -20,3 +20,5 @@ export const IPOTESI_PREDEFINITE = {
 } as const;
 /** Ipotesi di valore residuo quando non c'è la maxi rata: dopo circa 3 anni un'auto vale intorno al 45% del prezzo. */
 export const QUOTA_VALORE_RESIDUO = 0.45;
+/** Tetto agli importi: nessun preventivo d'auto supera 10 milioni; evita Infinity e notazione esponenziale. */
+export const EURO_MAX = 10_000_000;

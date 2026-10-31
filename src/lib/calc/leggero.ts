@@ -1,6 +1,6 @@
-import { IPOTESI_PREDEFINITE } from './config';
+import { EURO_MAX, IPOTESI_PREDEFINITE } from './config';
 import { calcolaAnalisi } from './motore';
-import { EURO_MAX, type Analisi, type Ipotesi, type Preventivo } from './tipi';
+import type { Analisi, Ipotesi, Preventivo } from './tipi';
 
 /** Numeri di un calcolo dimostrativo (guide, promo): tipo e accessori hanno un valore predefinito. */
 export type NumeriLeggeri = Omit<Preventivo, 'tipo' | 'accessoriInclusiNelPrezzo'> & Partial<Pick<Preventivo, 'tipo' | 'accessoriInclusiNelPrezzo'>>;
