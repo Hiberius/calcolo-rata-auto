@@ -1,5 +1,6 @@
 import { FORME_NEL_TESTO, type VoceGlossario } from '~/lib/glossario';
 import Termine from './Termine';
+import { tipografia } from '~/lib/formato';
 
 interface Props {
   testo: string;
@@ -15,7 +16,9 @@ interface Pezzo { readonly inizio: number; readonly fine: number; readonly voce:
  * Testo con il glossario in linea (problema 3 della revisione): la prima occorrenza di ogni voce (TAEG, maxi rata,
  * debito residuo, valore futuro garantito…) diventa la stessa parola spiegabile al tocco delle guide e del risultato.
  */
-export default function TestoConGlossario({ testo, ambito, salta = [] }: Props) {
+export default function TestoConGlossario({ testo: grezzo, ambito, salta = [] }: Props) {
+  // Le frasi arrivano scritte dal calcolo: qui prendono lo spazio non separabile prima di € e %.
+  const testo = tipografia(grezzo);
   const pezzi: Pezzo[] = [];
   for (const [voce, forma] of FORME_NEL_TESTO) {
     if (salta.includes(voce)) continue;

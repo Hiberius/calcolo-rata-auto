@@ -69,7 +69,7 @@ export default function CalcoloVivo({ variante, iniziale, base, titolo }: Props)
   }, [valori, base]);
 
   return (
-    <section class="scontrino rounded-t grid gap-6 px-5 py-7 sm:px-8" aria-label={titolo ?? 'Calcolo'} data-calcolo-vivo={variante}>
+    <section class="riquadro grid gap-6 px-5 py-7 sm:px-8" aria-label={titolo ?? 'Calcolo'} data-calcolo-vivo={variante}>
       {titolo && <h2 class="titolo-sottosezione">{titolo}</h2>}
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {campi.map((k) => (

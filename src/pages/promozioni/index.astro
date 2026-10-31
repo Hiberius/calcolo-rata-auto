@@ -25,9 +25,11 @@ const inGriglia = inVigore.length >= 3;
     <p class="text-lg max-w-[30em] text-tenue">
       Ogni offerta è nello stesso riquadro: rata, anticipo, maxi rata, TAN, TAEG, prezzo, validità e fonte. Accanto c’è quello che paghi in tutto e il costo del credito.
     </p>
+    {inGriglia && (
     <p class="text-sm max-w-[36em]">
-      Ordine unico: costo del credito in percentuale del prezzo, dal più basso. Nessuna posizione a pagamento. <a class="link" href="/criteri">Come scegliamo e ordiniamo</a>.
-    </p>
+        Ordine unico: costo del credito in percentuale del prezzo, dal più basso. Nessuna posizione a pagamento. <a class="link" href="/criteri">Come scegliamo e ordiniamo</a>.
+      </p>
+    )}
   </section>
 
   <section class="contenitore grid gap-8" aria-label="Elenco delle promozioni">
