@@ -8,13 +8,14 @@
     "build": "astro build",
     "preview": "wrangler dev",
     "check": "astro check",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p scripts",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "deploy": "astro build && wrangler deploy",
     "db:migrate:local": "wrangler d1 migrations apply ratavera-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply ratavera-db --remote",
-    "cf-typegen": "wrangler types"
+    "cf-typegen": "wrangler types",
+    "promo:raccogli": "vite-node --config vitest.config.ts scripts/promo/raccogli.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.6.13",
@@ -32,6 +33,7 @@
     "@astrojs/check": "^0.9.12",
     "@cloudflare/workers-types": "^5.20261031.1",
     "@playwright/test": "1.63",
+    "@types/node": "^22.19.1",
     "typescript": "^5.9.3",
     "vitest": "^3.2.7",
     "wrangler": "^4.156.0"
