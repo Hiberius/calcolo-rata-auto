@@ -5,7 +5,11 @@ const P208 = { anticipo: '4326', nRate: '35', rata: '99', maxiRata: '10434', pre
 test('la home carica e la decodifica manuale della 208 mostra il totale', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('h1')).toBeVisible();
-  await page.getByRole('button', { name: 'Scrivi i numeri' }).click();
+  // Il modulo è un'isola: sotto carico il primo clic può arrivare prima dell'idratazione, si riprova finché il modulo c'è.
+  await expect(async () => {
+    await page.getByRole('button', { name: 'Scrivi i numeri' }).click();
+    await expect(page.locator('input[name="anticipo"]')).toBeVisible({ timeout: 1_000 });
+  }).toPass({ timeout: 15_000 });
   for (const [campo, valore] of Object.entries(P208)) {
     await page.locator(`input[name="${campo}"]`).fill(valore);
   }
