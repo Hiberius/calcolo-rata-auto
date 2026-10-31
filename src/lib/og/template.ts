@@ -43,7 +43,7 @@ function breve(v: VoceTotale, a: Analisi): string {
 
 function incrocioDi(a: Analisi): string | null {
   const base = baseScena(a);
-  return rigaIncrocio(serieScena(base, cursoriIniziali(base)));
+  return rigaIncrocio(serieScena(base, cursoriIniziali(base)), base.fonteTasso, a.mercato);
 }
 
 function titoloDi(a: Analisi): string {

@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'preact/hooks';
 import { euro, euroIntero, numero, punti } from '~/lib/calc/format';
 import { fraseIncrocio, limitiCursori, pianoConCursori, serieScena, type BaseScena, type Cursori } from '~/lib/calc/scena';
+import type { PianoDebito } from '~/lib/calc/valore';
 import { MODELLO_VALORE, type SerieValoreDebito } from '~/lib/calc/valore';
 import { t } from '~/markets';
 import { MERCATO_IT } from '~/markets/it';
@@ -36,6 +37,15 @@ function riepilogo(s: SerieValoreDebito, m: Mercato): string {
   return `${fraseIncrocio(s, m)} ${t(m, 'atto2.fineDebito')} ${euro(s.debitoFinale)}. ${t(m, 'atto2.fineValore')} ${euro(s.valoreFinale)}.${vfg}`;
 }
 
+/** Da dove viene il tasso del debito, detto in chiaro: il TAN se torna, altrimenti il tasso ricavato e perché. */
+export function notaTasso(base: BaseScena, piano: PianoDebito, m: Mercato = MERCATO_IT): string {
+  const valori = { nominale: m.termini.tassoNominale, valore: punti(piano.tanAnnuo), tan: base.tanDichiarato != null ? punti(base.tanDichiarato) : '' };
+  const chiave: ChiaveTesto = base.fonteTasso === 'tan' ? 'atto2.tassoTan'
+    : base.fonteTasso === 'implicito' ? (base.tanDichiarato != null ? 'atto2.tassoImplicito' : 'atto2.tassoImplicitoSenzaTan')
+    : base.fonteTasso === 'taeg' ? 'atto2.tassoTaeg' : 'atto2.tassoNessuno';
+  return `${t(m, chiave, valori)} ${t(m, 'atto2.ricalcolo')}`;
+}
+
 function SenzaCurva({ tipo }: { tipo: Props['tipo'] }) {
   return (
     <p class="atto-frase max-w-[34ch]">
@@ -60,6 +70,9 @@ export default function Atto2Curve({ base, cursori, onCursori, statico, tipo, m 
   }, [serie, massimo, avanzamento, m]);
   const tela = useTela(disegno);
   const cambiata = piano != null && base.piano != null && piano !== base.piano;
+  // I cursori restano anche quando la combinazione non è possibile, così si torna indietro.
+  const conCursori = base.piano != null && base.prezzo != null;
+  const impossibile = conCursori && piano == null;
 
   return (
     <section ref={ref} class="atto grid gap-8" aria-labelledby="atto2-titolo" data-atto="2" data-avanzamento={avanzamento >= 1 ? '1' : '0'}>
@@ -68,7 +81,9 @@ export default function Atto2Curve({ base, cursori, onCursori, statico, tipo, m 
           <p class="atto-numero">02</p>
           <h3 id="atto2-titolo" class="atto-titolo">{titoloDurata(cursori.durata, m)}</h3>
         </div>
-        {serie ? <p class="atto-frase" data-frase-incrocio data-mese-incrocio={serie.meseIncrocio ?? 'nessuno'}>{fraseIncrocio(serie, m)}</p> : <SenzaCurva tipo={tipo} />}
+        {serie ? <p class="atto-frase" data-frase-incrocio data-mese-incrocio={serie.meseIncrocio ?? 'nessuno'}>{fraseIncrocio(serie, m)}</p>
+          : impossibile ? <p class="atto-frase max-w-[34ch]" data-combinazione-impossibile>{t(m, 'atto2.impossibile')}</p>
+          : <SenzaCurva tipo={tipo} />}
       </div>
       {serie && piano && (
         <>
@@ -101,14 +116,20 @@ export default function Atto2Curve({ base, cursori, onCursori, statico, tipo, m 
               {serie.vfg.sopraStima ? 'sopra' : 'sotto'} la nostra stima di {euroIntero(serie.vfg.stima)}. Leggi le condizioni: di solito valgono solo con i km e lo stato previsti.
             </p>
           )}
-          <fieldset class="grid gap-6 border-t border-[var(--scena-riga)] pt-6 sm:grid-cols-3">
-            <legend class="sr-only">Cambia anticipo, durata e km all’anno</legend>
-            <Cursore id="scena-anticipo" etichetta={t(m, 'atto2.anticipo')} valore={cursori.anticipo} limite={limiti.anticipo} testo={euroIntero(cursori.anticipo)} onCambia={(v) => onCursori({ ...cursori, anticipo: v })} />
-            <Cursore id="scena-durata" etichetta={t(m, 'atto2.durata')} valore={cursori.durata} limite={limiti.durata} testo={t(m, 'atto2.mesi', { n: cursori.durata })} onCambia={(v) => onCursori({ ...cursori, durata: v })} />
-            <Cursore id="scena-km" etichetta={t(m, 'atto2.km')} valore={cursori.kmAnnui} limite={limiti.kmAnnui} testo={`${numero(cursori.kmAnnui, 0)} km`} onCambia={(v) => onCursori({ ...cursori, kmAnnui: v })} />
-          </fieldset>
-          <p class="max-w-prose text-xs text-[var(--scena-tenue)]">
-            {MODELLO} Debito: capitale residuo del piano al tasso {punti(piano.tanAnnuo)}, più la maxi rata a fine piano. Cambiando anticipo o durata la maxi rata resta la stessa e la rata si ricalcola. <a class="link" href="/metodologia#valore">Come lo calcoliamo</a>
+        </>
+      )}
+      {conCursori && (
+        <fieldset class="grid gap-6 border-t border-[var(--scena-riga)] pt-6 sm:grid-cols-3">
+          <legend class="sr-only">Cambia anticipo, durata e km all’anno</legend>
+          <Cursore id="scena-anticipo" etichetta={t(m, 'atto2.anticipo')} valore={cursori.anticipo} limite={limiti.anticipo} testo={euroIntero(cursori.anticipo)} onCambia={(v) => onCursori({ ...cursori, anticipo: v })} />
+          <Cursore id="scena-durata" etichetta={t(m, 'atto2.durata')} valore={cursori.durata} limite={limiti.durata} testo={t(m, 'atto2.mesi', { n: cursori.durata })} onCambia={(v) => onCursori({ ...cursori, durata: v })} />
+          <Cursore id="scena-km" etichetta={t(m, 'atto2.km')} valore={cursori.kmAnnui} limite={limiti.kmAnnui} testo={`${numero(cursori.kmAnnui, 0)} km`} onCambia={(v) => onCursori({ ...cursori, kmAnnui: v })} />
+        </fieldset>
+      )}
+      {serie && piano && (
+        <>
+          <p class="max-w-prose text-xs text-[var(--scena-tenue)]" data-nota-tasso={base.fonteTasso}>
+            {MODELLO} {notaTasso(base, piano, m)} <a class="link" href="/metodologia#valore">Come lo calcoliamo</a>
           </p>
           <p class="sr-only" data-riepilogo="2" aria-live="polite">{riepilogo(serie, m)}</p>
         </>

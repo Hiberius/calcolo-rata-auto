@@ -1,6 +1,7 @@
 ---
 import { analizza } from '~/lib/calc';
-import { euroIntero, percentuale } from '~/lib/calc/format';
+import { BASE_ANTEPRIMA, fraseAnteprima, serieAnteprima } from '~/lib/calc/anteprima';
+import { euroIntero, numero, percentuale } from '~/lib/calc/format';
 import { ripartizioneTotale } from '~/lib/calc/ripartizione';
 import { ETICHETTA_STIMA } from '~/lib/calc/valore';
 import { preventivoDaForm } from '~/lib/client/campi';
@@ -11,6 +12,8 @@ import { COLORE_CONTENITORE } from '~/components/scene/disegno/colori';
 const esito = analizza(preventivoDaForm(ESEMPIO_208));
 const ripartizione = esito.ok ? ripartizioneTotale(esito.analisi) : null;
 const voci = ripartizione?.contenitori.filter((c) => c.importo > 0) ?? [];
+// La frase dell'incrocio nasce dalla stessa serie che disegna il canvas, mai scritta a mano.
+const fraseIniziale = fraseAnteprima(serieAnteprima(BASE_ANTEPRIMA.anticipo));
 ---
 <figure class="anteprima" data-anteprima aria-labelledby="anteprima-didascalia">
   <div class="flex items-baseline justify-between gap-3">
@@ -33,9 +36,9 @@ const voci = ripartizione?.contenitori.filter((c) => c.importo > 0) ?? [];
   <div class="numeri flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs text-[var(--scena-tenue)]" aria-hidden="true">
     <span class="flex items-center gap-2"><span class="h-0.5 w-5 bg-[var(--scena-carta)]"></span>valore stimato</span>
     <span class="flex items-center gap-2"><span class="h-[3px] w-5 bg-[var(--scena-segnale)]"></span>debito</span>
-    <span>anticipo <span class="text-[var(--scena-carta)]" data-anteprima-anticipo>4.326 €</span></span>
+    <span>anticipo <span class="text-[var(--scena-carta)]" data-anteprima-anticipo>{numero(BASE_ANTEPRIMA.anticipo, 0)} €</span></span>
   </div>
-  <p class="numeri text-xs text-[var(--scena-segnale)]" aria-hidden="true" data-anteprima-incrocio>dal mese 36 il debito supera il valore</p>
+  <p class="numeri text-xs text-[var(--scena-segnale)]" aria-hidden="true" data-anteprima-incrocio>{fraseIniziale}</p>
   <figcaption id="anteprima-didascalia" class="text-sm text-[var(--scena-tenue)]">
     La Peugeot 208 dell’esempio: dove vanno i {ripartizione ? euroIntero(ripartizione.totale) : 'soldi'} che paghi, e il valore stimato dell’auto contro il debito residuo mentre l’anticipo scende a zero. Meno anticipo, prima devi all’auto più di quanto vale.
   </figcaption>

@@ -1,5 +1,5 @@
 import { numero } from '../calc/format';
-import { fotogramma, MASSIMO_ANTEPRIMA, serieAnteprima, TEMPI } from '../calc/anteprima';
+import { fotogramma, fraseAnteprima, MASSIMO_ANTEPRIMA, serieAnteprima, TEMPI } from '../calc/anteprima';
 import { menoMovimento } from '../motion';
 import { disegnaCurve } from '../../components/scene/disegno/curve';
 import { prepara } from '../../components/scene/disegno/tela';
@@ -42,7 +42,7 @@ export function avviaAnteprima(doc: Document): void {
     const pronto = prepara(tela);
     if (pronto) disegnaCurve(pronto.ctx, pronto.area, { serie, massimo: MASSIMO_ANTEPRIMA, avanzamento: f.avanzamento, senzaAssi: true });
     scrivi(lettura, `${numero(Math.round(f.anticipo), 0)} €`);
-    scrivi(incrocio, serie.meseIncrocio == null ? 'il debito resta sotto il valore' : `dal mese ${serie.meseIncrocio} il debito supera il valore`);
+    scrivi(incrocio, fraseAnteprima(serie));
   };
 
   // Livello ridotto: un fotogramma statico con le curve complete e l'anticipo del preventivo, nessun loop.

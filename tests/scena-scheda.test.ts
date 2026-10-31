@@ -17,7 +17,8 @@ const VIETATE = /truff|fregatur|trappol/i;
 describe('scheda: immagine dell’atto 2 e riga dell’incrocio', () => {
   it('il testo da copiare dice da quale mese il debito supera il valore stimato', () => {
     const testo = testoCondivisione(datiScheda(ok(P208), 'abcDEF12', 'https://ratavera.it'));
-    expect(testo).toContain('TAEG 11,03%. Dal mese 36 devi all’auto più di quanto vale, stima. ratavera.it/s/abcDEF12');
+    // Debito al tasso che fa tornare rata e maxi rata (10,41%): al TAN dichiarato, 7,49%, non tornano (revisione del 31/10).
+    expect(testo).toContain('TAEG 11,03%. Dal mese 25 devi all’auto più di quanto vale (stima, non quotazione). ratavera.it/s/abcDEF12');
     expect(testo).not.toMatch(VIETATE);
   });
 
@@ -34,7 +35,7 @@ describe('scheda: immagine dell’atto 2 e riga dell’incrocio', () => {
     expect(d.svg).toContain('<polygon');
     expect(/^[\x20-\x7E]*$/.test(d.svg)).toBe(true);
     expect(d.svg).not.toContain('<text');
-    expect(d.frase).toBe('Dal mese 36 devi all’auto più di quanto vale (stima, non quotazione).');
+    expect(d.frase).toBe('Dal mese 25 devi all’auto più di quanto vale (stima, non quotazione).');
     expect(JSON.stringify(nodoScena(d))).toContain('data:image/svg+xml;base64,');
     expect(testoScena(d)).toContain('STIMA, NON QUOTAZIONE');
   });

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { analizza, type Analisi } from '~/lib/calc';
 import { rataCostante } from '~/lib/calc/rata';
-import { baseScena, cursoriIniziali, fraseIncrocio, pianoConCursori, rigaIncrocio, serieScena } from '~/lib/calc/scena';
-import { debitoResiduo, durataPiano, MODELLO_VALORE, rataDelPiano, serieValoreDebito, valoreStimato, type PianoDebito } from '~/lib/calc/valore';
+import { anticipoMassimo, baseScena, combinazioneImpossibile, cursoriIniziali, fraseIncrocio, limitiCursori, pianoConCursori, rigaIncrocio, serieScena } from '~/lib/calc/scena';
+import { debitoResiduo, durataPiano, MODELLO_VALORE, rataDelPiano, serieValoreDebito, tassoImplicito, valoreStimato, type PianoDebito } from '~/lib/calc/valore';
 
 function ok(input: unknown): Analisi {
   const esito = analizza(input);
@@ -76,7 +76,7 @@ describe('serie valore e debito', () => {
     expect(s.debitoFinale).toBe(10_434);
     expect(s.valoreFinale).toBeLessThan(10_434);
     expect(fraseIncrocio(s)).toBe(`Dal mese ${m} devi all’auto più di quanto vale (stima, non quotazione).`);
-    expect(rigaIncrocio(s)).toBe(`Dal mese ${m} devi all’auto più di quanto vale, stima.`);
+    expect(rigaIncrocio(s)).toBe(`Dal mese ${m} devi all’auto più di quanto vale (stima, non quotazione).`);
   });
 
   it('prestito classico senza maxi rata: nessun incrocio', () => {
@@ -141,5 +141,88 @@ describe('serie valore e debito', () => {
     expect(serieScena(nol, cursoriIniziali(nol))).toBeNull();
     const senza = baseScena(ok({ anticipo: 2_000, nRate: 35, rata: 150, maxiRata: 9_000, tan: 6 }));
     expect(serieScena(senza, cursoriIniziali(senza))).toBeNull();
+  });
+});
+
+describe('tasso del piano: il TAN solo se torna con la rata (revisione del 31/10)', () => {
+  it('208: al 7,49% la rata sarebbe 72,85 €, non 99 €; il debito scende al tasso implicito 10,41% e non salta a fine piano', () => {
+    expect(rataDelPiano(10_624, 7.49, 35, 10_434)).toBeCloseTo(72.85, 2);
+    const b = baseScena(ok(P208));
+    expect(b.fonteTasso).toBe('implicito');
+    expect(b.tanDichiarato).toBe(7.49);
+    expect(b.piano?.tanAnnuo).toBeCloseTo(10.4058, 3);
+    const s = serieScena(b, cursoriIniziali(b));
+    if (!s) throw new Error('serie assente');
+    expect(s.meseIncrocio).toBe(25);
+    expect(s.punti[35]?.debito).toBeCloseTo(10_344.3, 0);
+    // Dall'ultima rata alla maxi rata il debito cresce solo di un mese di interessi.
+    expect((s.punti[36]?.debito ?? 0) - (s.punti[35]?.debito ?? 0)).toBeLessThan(100);
+    expect(s.debitoFinale).toBe(10_434);
+  });
+
+  it('SEAT Arona: TAN 2,95% e rata 169 € tornano, il piano resta al TAN', () => {
+    const b = baseScena(ok(ARONA));
+    expect(b.fonteTasso).toBe('tan');
+    expect(b.piano?.tanAnnuo).toBe(2.95);
+    expect(tassoImplicito(19_163.6, 169, 35, 14_750.6)).toBeCloseTo(2.95, 2);
+  });
+
+  it('senza TAN: tasso implicito da rate e maxi rata, non il TAEG usato come nominale', () => {
+    const b = baseScena(ok({ ...P208, tan: undefined }));
+    expect(b.fonteTasso).toBe('implicito');
+    expect(b.piano?.tanAnnuo).toBeCloseTo(10.4058, 3);
+    const s = serieScena(b, cursoriIniziali(b));
+    expect(s?.meseIncrocio).toBe(25);
+  });
+
+  it('rate e maxi rata sotto il capitale: nessun tasso usabile, niente riga dell’incrocio da condividere', () => {
+    const b = baseScena(ok({ prezzoContanti: 30_000, anticipo: 0, importoCreditoDichiarato: 30_000, nRate: 35, rata: 100, maxiRata: 9_000 }));
+    expect(b.fonteTasso).toBe('nessuno');
+    const s = serieScena(b, cursoriIniziali(b));
+    expect(s?.meseIncrocio).not.toBeNull();
+    expect(rigaIncrocio(s ?? null, b.fonteTasso)).toBeNull();
+  });
+});
+
+describe('cursore dell’anticipo: mai un capitale sotto la maxi rata', () => {
+  it('SEAT Arona: il massimo lascia un capitale almeno pari alla maxi rata, e lì la rata resta positiva', () => {
+    const b = baseScena(ok(ARONA), 14_750.6);
+    const max = anticipoMassimo(b);
+    expect(limitiCursori(b).anticipo.max).toBe(max);
+    expect(max).toBeLessThan(13_000);
+    expect(b.anticipo + (b.piano?.capitale ?? 0) - max).toBeGreaterThanOrEqual(14_750.6);
+    const piano = pianoConCursori(b, { ...cursoriIniziali(b), anticipo: max });
+    expect(piano?.rata).toBeGreaterThan(0);
+    expect(piano?.capitale).toBe(Math.round((piano?.capitale ?? 0) * 100) / 100);
+  });
+
+  it('oltre il massimo la combinazione non è possibile, invece di una rata a 0 €', () => {
+    const b = baseScena(ok(ARONA), 14_750.6);
+    const c = { ...cursoriIniziali(b), anticipo: 13_000 };
+    expect(pianoConCursori(b, c)).toBeNull();
+    expect(serieScena(b, c)).toBeNull();
+    expect(combinazioneImpossibile(b, c)).toBe(true);
+    expect(combinazioneImpossibile(b, cursoriIniziali(b))).toBe(false);
+  });
+
+  it('su 2.000 preventivi casuali nessun punto dei cursori dà una rata negativa', () => {
+    let seme = 7;
+    const caso = () => { seme = (seme * 16_807) % 2_147_483_647; return seme / 2_147_483_647; };
+    for (let k = 0; k < 2_000; k += 1) {
+      const prezzo = 10_000 + Math.round(caso() * 40_000);
+      const anticipo = Math.round(caso() * prezzo * 0.3);
+      const nRate = 23 + Math.round(caso() * 25);
+      const maxi = Math.round(caso() * (prezzo - anticipo) * 0.7);
+      const tan = 1 + caso() * 9;
+      const rata = Math.max(1, Math.round(rataDelPiano(prezzo - anticipo, tan, nRate, maxi) * 100) / 100);
+      const b = baseScena(ok({ prezzoContanti: prezzo, anticipo, nRate, rata, maxiRata: maxi, tan }));
+      const lim = limitiCursori(b);
+      for (const a of [lim.anticipo.min, lim.anticipo.max, Math.round((lim.anticipo.min + lim.anticipo.max) / 2)]) {
+        for (const durata of [lim.durata.min, nRate + 1, lim.durata.max]) {
+          const piano = pianoConCursori(b, { anticipo: a, durata, kmAnnui: 15_000 });
+          if (piano) expect(piano.rata).toBeGreaterThanOrEqual(0);
+        }
+      }
+    }
   });
 });

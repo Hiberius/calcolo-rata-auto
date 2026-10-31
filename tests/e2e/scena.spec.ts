@@ -103,7 +103,7 @@ test('scheda: immagine della scena accanto allo scontrino', async ({ page, reque
   expect(png.headers()['content-type']).toContain('image/png');
   await page.goto(`/s/${id}`);
   await expect(page.locator('[data-immagine-scena] img')).toBeVisible();
-  await expect(page.locator('#testo-condivisione')).toContainText('Dal mese 36 devi all’auto più di quanto vale, stima.');
+  await expect(page.locator('#testo-condivisione')).toContainText('Dal mese 25 devi all’auto più di quanto vale (stima, non quotazione).');
 });
 
 for (const larghezza of [375, 768, 1024, 1440]) {

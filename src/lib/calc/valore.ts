@@ -1,5 +1,6 @@
 import { TESTI_IT } from '../../markets/it';
 import { arrotonda } from './format';
+import { tassoMensile } from './taeg';
 
 /**
  * Modello dichiarato del valore stimato dell'auto nel tempo (specifica v2, §2 atto 2).
@@ -73,14 +74,30 @@ export function debitoResiduo(p: PianoDebito, mese: number): number {
 /**
  * Rata che, al TAN, porta il capitale a lasciare esattamente la maxi rata da pagare il mese dopo l'ultima rata.
  * Serve ai cursori: cambiando anticipo o durata si ricalcola la rata con la stessa logica del piano.
+ * Può essere negativa: vuol dire che la maxi rata da sola supera il capitale cresciuto agli interessi (piano impossibile).
  */
 export function rataDelPiano(capitale: number, tanAnnuo: number, nRate: number, maxiRata: number): number {
   if (nRate <= 0 || capitale <= 0) return 0;
   const i = tanAnnuo / 100 / 12;
-  if (i === 0) return Math.max(0, (capitale - maxiRata) / nRate);
+  if (i === 0) return (capitale - maxiRata) / nRate;
   const crescita = (1 + i) ** nRate;
   const residuoVoluto = maxiRata / (1 + i);
-  return Math.max(0, ((capitale * crescita - residuoVoluto) * i) / (crescita - 1));
+  return ((capitale * crescita - residuoVoluto) * i) / (crescita - 1);
+}
+
+/** Oltre questo scarto tra la rata del preventivo e quella che darebbe il TAN, TAN e rata non tornano. */
+export const TOLLERANZA_RATA_EURO = 1;
+
+/**
+ * Tasso nominale annuo (punti percentuali) che fa tornare capitale, n rate uguali e maxi rata al mese n+1, senza spese.
+ * null se non esiste: rate e maxi rata insieme non arrivano al capitale, o il tasso sarebbe oltre il 60% l'anno.
+ */
+export function tassoImplicito(capitale: number, rata: number, nRate: number, maxiRata: number): number | null {
+  if (capitale <= 0 || nRate <= 0 || rata < 0 || maxiRata < 0) return null;
+  const rate = Array.from({ length: nRate }, (_, k) => ({ mese: k + 1, importo: -rata }));
+  const maxi = maxiRata > 0 ? [{ mese: nRate + 1, importo: -maxiRata }] : [];
+  const i = tassoMensile([{ mese: 0, importo: capitale }, ...rate, ...maxi]);
+  return i == null ? null : i * 1200;
 }
 
 export interface PuntoSerie {

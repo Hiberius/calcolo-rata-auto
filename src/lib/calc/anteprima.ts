@@ -1,6 +1,11 @@
 import { easeInOut, easeOutExpo } from '../motion';
 import { pianoConCursori, type BaseScena } from './scena';
-import { serieValoreDebito, type SerieValoreDebito } from './valore';
+import { serieValoreDebito, tassoImplicito, type SerieValoreDebito } from './valore';
+
+/** I numeri della 208 dell'esempio (lib/esempio.ts). Al TAN dichiarato (7,49%) rata e maxi rata non tornano: il debito
+ * scende al tasso che le fa tornare, come nella scena (lib/calc/scena.ts, tassoDelPiano). */
+const CAPITALE = 14_950 - 4_326;
+const TAN_DICHIARATO = 7.49;
 
 /**
  * Anteprima della scena in home (specifica v2, §1): l'atto 2 della Peugeot 208 dell'esempio, con l'anticipo che scende
@@ -8,12 +13,19 @@ import { serieValoreDebito, type SerieValoreDebito } from './valore';
  */
 export const BASE_ANTEPRIMA: BaseScena = {
   prezzo: 14_950,
-  piano: { capitale: 14_950 - 4_326, tanAnnuo: 7.49, nRate: 35, rata: 99, maxiRata: 10_434 },
+  piano: { capitale: CAPITALE, tanAnnuo: tassoImplicito(CAPITALE, 99, 35, 10_434) ?? TAN_DICHIARATO, nRate: 35, rata: 99, maxiRata: 10_434 },
   anticipo: 4_326,
   durata: 36,
   kmAnnui: 15_000,
   vfg: null,
+  fonteTasso: 'implicito',
+  tanDichiarato: TAN_DICHIARATO,
 };
+
+/** Frase sotto l'anteprima: con l'anticipo del preventivo il server la scrive, poi la aggiorna il loop. */
+export function fraseAnteprima(serie: SerieValoreDebito): string {
+  return serie.meseIncrocio == null ? 'il debito resta sotto il valore' : `dal mese ${serie.meseIncrocio} il debito supera il valore`;
+}
 
 /** Asse fisso: il debito più alto possibile (anticipo zero) più un margine, così le curve si muovono e l'asse no. */
 export const MASSIMO_ANTEPRIMA = 14_950 * 1.06;
