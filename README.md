@@ -13,13 +13,13 @@ Astro 5 + Cloudflare Workers (D1, KV, Workers AI, Turnstile). Specifiche: `../00
 | `npm run check` / `npm run typecheck` | astro check / tsc (sito e `scripts/`) |
 | `npm run promo:raccogli` | raccolta promo da `scripts/promo/fonti.json` (Playwright + Workers AI + controllo aritmetico). Servono `CF_ACCOUNT_ID` e `CLOUDFLARE_API_TOKEN`. Valide in `src/data/promos`, dubbie in `../05_Promo/da-verificare` |
 | `npm run test:e2e` | Playwright smoke (avvia da solo build + wrangler dev) |
-| `npm run deploy` | build + `wrangler deploy` |
+| `npm run deploy` | controllo della configurazione (`scripts/controlla-deploy.ts`: chiave Turnstile vera, segreti, P.IVA e sede), poi build + `wrangler deploy`. Si ferma se manca qualcosa; `RATAVERA_DEPLOY_PROVVISORIO=1 npm run deploy` per un deploy provvisorio consapevole |
 
 ## Segreti (`wrangler secret put`)
 `TURNSTILE_SECRET_KEY`, `HASH_SALT`, `ADMIN_TOKEN`, `BREVO_API_KEY`, `NOTIFY_EMAIL`, opzionale `ANTHROPIC_API_KEY`. Le variabili pubbliche stanno in `wrangler.jsonc` (`vars`): chiave Turnstile, mittente email, `PUBLIC_PIVA` e `PUBLIC_SEDE` (blocco «Chi c'è dietro e come guadagniamo»; vuote = "in aggiornamento").
 `PUBLIC_CF_ANALYTICS_TOKEN` (Cloudflare Web Analytics) si legge a build time: `PUBLIC_CF_ANALYTICS_TOKEN=... npm run deploy`.
 Il valore di `ADMIN_TOKEN` di produzione sta in `.segreti/ADMIN_TOKEN.txt` (ignorato da git). In locale: `/admin?token=admin-test`.
-Finché `PUBLIC_TURNSTILE_SITE_KEY` e `TURNSTILE_SECRET_KEY` non sono quelle vere, Turnstile usa le chiavi di test di Cloudflare (passano sempre).
+Finché `PUBLIC_TURNSTILE_SITE_KEY` e `TURNSTILE_SECRET_KEY` non sono quelle vere, in locale Turnstile usa le chiavi di test di Cloudflare (passano sempre); fuori da localhost, senza segreto, i moduli rispondono «modulo non ancora attivo» (503, codice `non_attivo`) invece di un errore anti-robot.
 
 ## Dove sta cosa
 - `src/lib/calc` funzioni pure del §4 (totale, TAEG per bisezione, scenari, tre strade, discrepanze, verdetto, formato)

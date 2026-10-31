@@ -21,6 +21,7 @@ export const MESSAGGI = {
   metodo: 'Metodo non consentito.',
   corpo: 'Richiesta non valida: ricarica la pagina e riprova.',
   turnstile: 'Verifica anti-robot non riuscita: ricarica la pagina e riprova.',
+  nonAttivo: 'Questo modulo non è ancora attivo: stiamo completando la verifica anti-robot. Riprova tra qualche giorno o scrivici a ciao@ratavera.it. Il calcolo con i numeri inseriti a mano funziona già.',
   limite: "Hai fatto molte richieste: riprova tra un'ora. Puoi sempre inserire i numeri a mano.",
   interno: 'Qualcosa non ha funzionato da parte nostra: riprova tra poco.',
 } as const;

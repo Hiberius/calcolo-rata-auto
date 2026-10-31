@@ -2,18 +2,19 @@ import type { z } from 'zod';
 import { hashIpGiornaliero } from '../hash';
 import { ipDa, jsonErrore, jsonOk, MESSAGGI } from '../http';
 import { controllaLimiti, type Limite } from '../ratelimit';
-import { verificaTurnstile } from '../turnstile';
+import { turnstileNonConfigurato, verificaTurnstile } from '../turnstile';
 
-export type CodiceErrore = 'dati' | 'turnstile' | 'limite' | 'interno' | 'consenso';
+export type CodiceErrore = 'dati' | 'turnstile' | 'non_attivo' | 'limite' | 'interno' | 'consenso';
 
 const MESSAGGI_MODULO: Record<CodiceErrore, string> = {
   dati: 'Alcuni campi non sono validi: controllali e riprova.',
   turnstile: MESSAGGI.turnstile,
+  non_attivo: MESSAGGI.nonAttivo,
   limite: 'Hai già inviato diverse richieste oggi: riprova domani o scrivici.',
   interno: MESSAGGI.interno,
   consenso: 'Il testo del consenso è cambiato: ricarica la pagina e riprova.',
 };
-const STATUS: Record<CodiceErrore, number> = { dati: 422, turnstile: 403, limite: 429, interno: 500, consenso: 409 };
+const STATUS: Record<CodiceErrore, number> = { dati: 422, turnstile: 403, non_attivo: 503, limite: 429, interno: 500, consenso: 409 };
 const CAMPI_TOKEN = ['cf-turnstile-response', 'turnstileToken', 'g-recaptcha-response'] as const;
 const MAX_CORPO = 16 * 1024;
 
@@ -73,7 +74,7 @@ export async function controllaModulo<S extends z.ZodType>(
   if (!esito.success) return { ok: false, codice: 'dati', campi: [...new Set(esito.error.issues.map((i) => i.path.join('.') || 'modulo'))] };
   const ip = ipDa(request);
   const turnstile = await verificaTurnstile(token, env.TURNSTILE_SECRET_KEY, ip, request.url);
-  if (!turnstile.ok) return { ok: false, codice: 'turnstile' };
+  if (!turnstile.ok) return { ok: false, codice: turnstileNonConfigurato(turnstile) ? 'non_attivo' : 'turnstile' };
   const ipHash = await hashIpGiornaliero(ip, env.HASH_SALT);
   const frequenza = await controllaLimiti(env.KV, ipHash, [limite]);
   if (!frequenza.consentito) return { ok: false, codice: 'limite' };

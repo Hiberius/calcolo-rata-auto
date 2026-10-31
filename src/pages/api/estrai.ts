@@ -5,7 +5,7 @@ import { QuotaEsaurita } from '~/lib/extract/workersAi';
 import { hashIpGiornaliero } from '~/lib/hash';
 import { ipDa, jsonErrore, jsonOk, MESSAGGI } from '~/lib/http';
 import { controllaLimiti } from '~/lib/ratelimit';
-import { verificaTurnstile } from '~/lib/turnstile';
+import { turnstileNonConfigurato, verificaTurnstile } from '~/lib/turnstile';
 
 export const prerender = false;
 
@@ -27,7 +27,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   const ip = ipDa(request);
   const turnstile = await verificaTurnstile(String(form.get('cf-turnstile-response') ?? ''), env.TURNSTILE_SECRET_KEY, ip, request.url);
-  if (!turnstile.ok) return jsonErrore(403, MESSAGGI.turnstile);
+  if (!turnstile.ok) return turnstileNonConfigurato(turnstile) ? jsonErrore(503, MESSAGGI.nonAttivo) : jsonErrore(403, MESSAGGI.turnstile);
 
   const ipHash = await hashIpGiornaliero(ip, env.HASH_SALT);
   const limite = await controllaLimiti(env.KV, ipHash, [

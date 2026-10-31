@@ -26,6 +26,14 @@ export function segretoTurnstile(segreto: string | undefined, urlRichiesta: stri
   return richiestaLocale(urlRichiesta) ? TURNSTILE_SECRET_KEY_TEST : null;
 }
 
+/** Codici che vogliono dire "la verifica non è configurata da parte nostra", non "sei un robot". */
+const CODICI_NON_CONFIGURATO = new Set(['segreto-mancante', 'missing-input-secret', 'invalid-input-secret']);
+
+/** La verifica è fallita perché manca o è sbagliato il segreto: il modulo non è attivo, riprovare non serve. */
+export function turnstileNonConfigurato(esito: EsitoTurnstile): boolean {
+  return esito.codici.some((c) => CODICI_NON_CONFIGURATO.has(c));
+}
+
 export async function verificaTurnstile(
   token: string | null | undefined,
   segreto: string | undefined,
