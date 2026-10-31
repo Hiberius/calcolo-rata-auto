@@ -52,7 +52,12 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
   const caricaEsempio = useRef<() => void>(() => undefined);
 
   function vaiAlRisultato() {
-    requestAnimationFrame(() => scorriVerso(document.getElementById('risultato')));
+    // Il fuoco va sul risultato: chi usa un lettore di schermo lo sente arrivare senza una regione live da 1.800 caratteri.
+    requestAnimationFrame(() => {
+      const el = document.getElementById('risultato');
+      scorriVerso(el);
+      el?.focus({ preventScroll: true });
+    });
   }
 
   function cambia(chiave: DefCampo['chiave'] | 'tipo', valore: string) {
@@ -125,10 +130,11 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
     <div class="grid gap-10" onPointerDown={() => void caricaMotore().catch(() => undefined)} onFocusIn={() => void caricaMotore().catch(() => undefined)}>
       <div class="grid gap-6">
         <div class="flex flex-wrap items-center gap-3">
-          <div role="group" aria-label="Come vuoi inserire il preventivo" class="inline-flex w-fit border-2 border-inchiostro rounded overflow-hidden">
+          {/* Niente overflow sul gruppo: l'anello del fuoco (3 px) sta dentro il pulsante e non viene tagliato. */}
+          <div role="group" aria-label="Come vuoi inserire il preventivo" class="grid w-full grid-cols-2 border-2 border-inchiostro rounded-[var(--raggio)] sm:inline-grid sm:w-fit">
             {(['foto', 'manuale'] as const).map((m) => (
               <button key={m} type="button" aria-pressed={modo === m} onClick={() => setModo(m)}
-                class={`px-4 py-2.5 font-semibold transition-colors ${modo === m ? 'bg-inchiostro text-carta' : 'hover:bg-carta-scura'}`}>
+                class={`relative min-h-11 px-4 py-2.5 font-semibold transition-colors focus-visible:z-10 focus-visible:[outline-offset:-5px] ${modo === m ? 'bg-inchiostro text-carta focus-visible:[outline-color:var(--scena-segnale)]' : 'hover:bg-carta-scura'}`}>
                 {m === 'foto' ? 'Carica una foto' : 'Scrivi i numeri'}
               </button>
             ))}
@@ -167,11 +173,12 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
         )}
       </div>
 
-      <div id="risultato" class="scroll-mt-6 grid gap-10" aria-live="polite">
+      <div id="risultato" class="scroll-mt-6 grid gap-10 focus:outline-none" tabIndex={-1} aria-label="Risultato">
         {calcolo?.analisi && <ScenaPigra preventivo={calcolo.analisi.preventivo} etichetta={esempio ? etichettaEsempio() : undefined} />}
         {calcolo?.analisi && (
           <ResultCard
             analisi={calcolo.analisi}
+            conta={false}
             etichetta={esempio ? etichettaEsempio() : undefined}
             azioni={
               <>
@@ -180,7 +187,7 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
                   {!esempio && !calcolo.analisi.totali.messaggi.includes(MESSAGGIO_TOTALE_INCOERENTE) && (
                     <button type="button" class="btn btn-primario" aria-expanded={schedaAperta} onClick={() => setSchedaAperta((v) => !v)}>Crea la scheda da condividere</button>
                   )}
-                  <a class="btn btn-secondario" href="/noleggio" onClick={() => salvaPreventivo(preventivo)}>Confronta le tre strade</a>
+                  <a class="btn btn-secondario" href="/noleggio" onClick={() => salvaPreventivo(preventivo)}>Confronta con contanti e noleggio</a>
                 </div>
                 {schedaAperta && <CreaScheda siteKey={siteKey} preventivo={preventivo} />}
               </>

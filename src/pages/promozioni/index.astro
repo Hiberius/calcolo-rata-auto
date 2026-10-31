@@ -1,7 +1,6 @@
 ---
 import Base from '~/layouts/Base.astro';
 import PromoBox from '~/components/compare/PromoBox.astro';
-import TitoloRighe from '~/components/ui/TitoloRighe.astro';
 import { tutteLePromo } from '~/lib/promo';
 import { VUOTO_SENZA_PROMO } from '~/lib/client/filtriPromo';
 
@@ -11,6 +10,10 @@ Astro.response.headers.set('cache-control', 'public, max-age=900');
 const tutte = tutteLePromo(new Date());
 const inVigore = tutte.filter((d) => !d.scaduta);
 const marche = [...new Set(inVigore.map((d) => d.promo.marca))].sort();
+// Filtri e griglia solo quando servono: con meno di 6 offerte i filtri filtrano poco; con meno di 3 una griglia
+// a due colonne lascia mezza pagina vuota, e accanto all'offerta va il criterio (revisione del 31/10).
+const conFiltri = inVigore.length >= 6;
+const inGriglia = inVigore.length >= 3;
 ---
 <Base
   title="Promozioni auto ufficiali con i conti fatti: totale e costo del credito | Rata Vera"
@@ -18,17 +21,18 @@ const marche = [...new Set(inVigore.map((d) => d.promo.marca))].sort();
 >
   <section class="contenitore pt-8 pb-10 sm:pt-14 grid gap-5">
     <p class="etichetta">Promozioni ufficiali in vigore · {inVigore.length === 1 ? '1 offerta' : `${inVigore.length} offerte`}</p>
-    <TitoloRighe righe={['Promozioni ufficiali,', 'con i conti fatti.']} accento={1} classe="titolo-pagina max-w-[18ch]" />
-    <p class="text-lg max-w-prose text-tenue">
-      Ogni offerta è nello stesso riquadro: rata, anticipo, maxi rata, TAN, TAEG, prezzo, validità e fonte. Accanto c'è quello che paghi in tutto e il costo del credito.
+    <h1 class="titolo-pagina max-w-[16ch]">Promozioni ufficiali: quanto paghi in tutto.</h1>
+    <p class="text-lg max-w-[30em] text-tenue">
+      Ogni offerta è nello stesso riquadro: rata, anticipo, maxi rata, TAN, TAEG, prezzo, validità e fonte. Accanto c’è quello che paghi in tutto e il costo del credito.
     </p>
-    <p class="text-sm max-w-prose">
+    <p class="text-sm max-w-[36em]">
       Ordine unico: costo del credito in percentuale del prezzo, dal più basso. Nessuna posizione a pagamento. <a class="link" href="/criteri">Come scegliamo e ordiniamo</a>.
     </p>
   </section>
 
   <section class="contenitore grid gap-8" aria-label="Elenco delle promozioni">
-    <form class="grid gap-3 sm:grid-cols-4 border-y border-riga py-4" data-filtri aria-label="Filtri">
+    {conFiltri && (
+      <form class="grid gap-3 sm:grid-cols-4 border-y border-riga py-4" data-filtri aria-label="Filtri">
       <label class="grid gap-1 text-sm"><span class="font-medium">Marca</span>
         <select class="campo" name="marca"><option value="">Tutte</option>{marche.map((m) => <option value={m}>{m}</option>)}</select>
       </label>
@@ -42,13 +46,28 @@ const marche = [...new Set(inVigore.map((d) => d.promo.marca))].sort();
         <select class="campo" name="maxi"><option value="">Indifferente</option><option value="1">Sì</option><option value="0">No</option></select>
       </label>
     </form>
+    )}
 
-    <div class="grid gap-10 lg:grid-cols-2" data-elenco>
-      {inVigore.map((d) => <PromoBox decodificata={d} link />)}
-    </div>
+    {inGriglia ? (
+      <div class="grid gap-10 lg:grid-cols-2" data-elenco>
+        {inVigore.map((d) => <PromoBox decodificata={d} link />)}
+      </div>
+    ) : (
+      <div class="grid gap-10 lg:grid-cols-[minmax(0,36rem)_minmax(0,1fr)] lg:gap-14" data-elenco>
+        {inVigore.map((d) => <PromoBox decodificata={d} link />)}
+        {inVigore.length > 0 && (
+          <aside class="grid content-start gap-4 border-t border-inchiostro pt-5 lg:mt-1" aria-labelledby="criterio-titolo">
+            <h2 id="criterio-titolo" class="titolo-scheda">Come scegliamo e ordiniamo</h2>
+            <p class="max-w-[28em] text-tenue">Solo offerte pubblicate dalle case, con la fonte e la data in cui l’abbiamo controllata. L’ordine è uno solo: costo del credito in percentuale del prezzo, dal più basso. Nessuna posizione a pagamento.</p>
+            <p class="max-w-[28em] text-tenue">Le stesse offerte formano l’Indice Rata Vera: esce quando ne abbiamo controllate almeno 20.</p>
+            <p class="flex flex-wrap gap-x-5"><a class="link tocco" href="/criteri">I criteri per esteso</a><a class="link tocco" href="/indice">L’Indice</a></p>
+          </aside>
+        )}
+      </div>
+    )}
     <p class="text-tenue empty:hidden" data-vuoto aria-live="polite">{inVigore.length === 0 ? VUOTO_SENZA_PROMO : ''}</p>
-    <p class="text-sm text-tenue max-w-prose">
-      Le offerte scadute escono dall'elenco in automatico. Il dataset cresce ogni settimana: ogni riquadro riporta la data in cui abbiamo controllato la fonte.
+    <p class="text-sm text-tenue max-w-[36em]">
+      Le offerte scadute escono dall’elenco in automatico. Il dataset cresce ogni settimana: ogni riquadro riporta la data in cui abbiamo controllato la fonte.
     </p>
   </section>
 </Base>

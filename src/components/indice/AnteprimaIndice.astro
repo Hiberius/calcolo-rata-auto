@@ -7,15 +7,16 @@ import { ETICHETTE_METRICA, METRICHE } from '~/lib/indice/metriche';
 
 const BARRE = [0.32, 0.41, 0.47, 0.55, 0.62, 0.7, 0.81, 0.93];
 const COLONNE = ['#', 'Marca e modello', 'Costo del credito', 'TAEG dichiarato', 'TAEG ricostruito', 'Anticipo', 'Maxi rata', 'Scadenza'];
+/** Sotto i 640 px la tabella disegnata ha tre colonne: niente scorrimento orizzontale di un disegno, niente titoli tagliati. */
+const ESSENZIALI = new Set([1, 2, 7]);
 ---
 <figure class="anteprima-indice grid gap-6" aria-labelledby="anteprima-indice-titolo" data-anteprima-indice>
   <figcaption class="flex flex-wrap items-baseline justify-between gap-3">
     <span id="anteprima-indice-titolo" class="etichetta text-inchiostro">Anteprima: così sarà l’Indice</span>
     <span class="nota text-tenue">Disegno senza dati: nessun nome, nessun numero.</span>
   </figcaption>
-  <div class="flex flex-wrap gap-2" aria-hidden="true">
-    {METRICHE.map((m, i) => <span class:list={['nota rounded-[var(--raggio)] border px-3 py-1.5', i === 0 ? 'border-inchiostro bg-inchiostro text-carta' : 'border-bordo-campo text-tenue']}>{ETICHETTE_METRICA[m]}</span>)}
-  </div>
+  <!-- Non pulsanti finti: una riga di testo dice per cosa si potrà ordinare. -->
+  <p class="nota text-tenue">Ordinabile per: {METRICHE.map((m) => ETICHETTE_METRICA[m].toLowerCase()).join(', ')}.</p>
   <ol class="grid gap-2" aria-hidden="true">
     {BARRE.map((q, i) => (
       <li class="grid grid-cols-[minmax(0,7rem)_minmax(0,1fr)_3rem] items-center gap-3 sm:grid-cols-[minmax(0,12rem)_minmax(0,1fr)_4.5rem]">
@@ -25,11 +26,11 @@ const COLONNE = ['#', 'Marca e modello', 'Costo del credito', 'TAEG dichiarato',
       </li>
     ))}
   </ol>
-  <div class="overflow-x-auto" aria-hidden="true">
-    <table class="tabella-indice min-w-[44rem] opacity-80">
-      <thead><tr>{COLONNE.map((c, i) => <th class:list={{ num: i !== 1 }}>{c}</th>)}</tr></thead>
+  <div aria-hidden="true">
+    <table class="tabella-indice tabella-finta">
+      <thead><tr>{COLONNE.map((c, i) => <th class:list={{ num: i !== 1, 'solo-largo': !ESSENZIALI.has(i) }}>{c}</th>)}</tr></thead>
       <tbody>
-        {[0, 1, 2].map(() => <tr>{COLONNE.map((_, i) => <td><span class="cella-finta" style={`width:${i === 1 ? 80 : 60}%; margin-inline-start:${i === 1 ? 0 : 'auto'}`} /></td>)}</tr>)}
+        {[0, 1, 2].map(() => <tr>{COLONNE.map((_, i) => <td class:list={{ 'solo-largo': !ESSENZIALI.has(i) }}><span class="cella-finta" style={`width:${i === 1 ? 80 : 60}%; margin-inline-start:${i === 1 ? 0 : 'auto'}`} /></td>)}</tr>)}
       </tbody>
     </table>
   </div>

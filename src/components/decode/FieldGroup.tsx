@@ -26,7 +26,7 @@ function Campo({ def, valore, incerto, errore, letto, onCambia }: { def: DefCamp
   const id = `campo-${def.chiave}`;
   const descrizione = [def.aiuto && `${id}-aiuto`, incerto && `${id}-incerto`, errore && `${id}-errore`].filter(Boolean).join(' ') || undefined;
   return (
-    <div class="grid gap-1">
+    <div class="grid content-start gap-1">
       {/* Il «?» del glossario sta fuori dalla label: un pulsante non può stare dentro una label. */}
       <div class="text-sm font-medium flex items-center justify-between gap-2">
         <span class="inline-flex items-center">
@@ -49,9 +49,9 @@ function Campo({ def, valore, incerto, errore, letto, onCambia }: { def: DefCamp
         maxLength={def.chiave === 'provincia' ? 2 : 80}
         onInput={(e) => onCambia(def.chiave, (e.currentTarget as HTMLInputElement).value)}
       />
-      {def.aiuto && <span id={`${id}-aiuto`} class="text-xs text-tenue"><Aiuto def={def} /></span>}
-      {incerto && <span id={`${id}-incerto`} class="text-xs text-[#8A6A00]">Da confermare: controlla questo numero sul preventivo.</span>}
-      {errore && <span id={`${id}-errore`} class="text-xs text-segnale-scuro">{errore}</span>}
+      {def.aiuto && <span id={`${id}-aiuto`} class="text-[0.8125rem] leading-snug text-tenue"><Aiuto def={def} /></span>}
+      {incerto && <span id={`${id}-incerto`} class="text-[0.8125rem] text-[#8A6A00]">Da confermare: controlla questo numero sul preventivo.</span>}
+      {errore && <span id={`${id}-errore`} class="text-[0.8125rem] text-segnale-scuro">{errore}</span>}
     </div>
   );
 }

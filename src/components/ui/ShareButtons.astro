@@ -8,7 +8,7 @@ const { testo, url, immagineQuadrata } = Astro.props;
 ---
 <div class="grid gap-4" data-condividi>
   <label for="testo-condivisione" class="font-semibold">Testo pronto da incollare</label>
-  <textarea id="testo-condivisione" readonly rows="4" class="campo font-mono text-sm leading-relaxed resize-none">{testo}</textarea>
+  <textarea id="testo-condivisione" readonly rows="7" class="campo campo-testo font-mono text-sm leading-relaxed resize-none">{testo}</textarea>
   <div class="flex flex-wrap gap-3">
     <button type="button" class="btn btn-primario" data-copia>Copia testo per Reddit o Facebook</button>
     <a class="btn btn-secondario" href={immagineQuadrata} download>Scarica immagine</a>

@@ -1,11 +1,10 @@
 ---
 import Base from '~/layouts/Base.astro';
 import PromoBox from '~/components/compare/PromoBox.astro';
-import CalcoloVivo from '~/components/compare/CalcoloVivo';
 import ResultCard from '~/components/decode/ResultCard';
 import Scena from '~/components/scene/Scena';
 import { dataBreve } from '~/lib/date';
-import { euro } from '~/lib/calc/format';
+import { euro } from '~/lib/formato';
 import { tutteLePromo } from '~/lib/promo';
 import { paginaNonTrovata } from '~/lib/nonTrovata';
 
@@ -32,20 +31,27 @@ const { fonte: _fonte, ...base } = a.preventivo;
 
   <!-- La scena è il primo schermo del risultato; la tabella completa resta sotto (specifica v2, §2). -->
   <section class="contenitore pt-8" aria-label="La scena della promozione">
-    <Scena client:only="preact" preventivo={base} vfg={p.valoreFuturoGarantito ?? null} />
+    {/* client:only: il server non rende la scena. Il segnaposto è più alto dello schermo, così quando la scena arriva
+        nulla di visibile si sposta (CLS 0,46-0,57 prima della revisione del 31/10). */}
+    <Scena client:only="preact" preventivo={base} vfg={p.valoreFuturoGarantito ?? null}>
+      <div slot="fallback" class="pannello-scena min-h-[130svh]" aria-busy="true" aria-label="Caricamento della scena"></div>
+    </Scena>
   </section>
 
-  <section class="contenitore sezione grid gap-12 lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start">
-    <div class="grid gap-6 lg:sticky lg:top-6">
+  <!-- Il riquadro unico della promozione (fonte e scadenza), poi i conti: lo scontrino si stampa quando arriva in vista.
+       Le tre strade stanno nell'atto 3 della scena, una volta sola (revisione del 31/10). -->
+  <section class="contenitore sezione grid gap-10 lg:grid-cols-[minmax(0,36rem)_minmax(0,1fr)] lg:items-end lg:gap-14" aria-labelledby="riquadro-titolo">
+    <div class="grid gap-3">
+      <h2 id="riquadro-titolo" class="titolo-scheda">La promozione come la pubblica la casa</h2>
       <PromoBox decodificata={d} composizione={false} />
-      <p><a class="btn btn-primario w-full" href="/#decodifica">Leggi il tuo preventivo</a></p>
     </div>
-    <ResultCard analisi={a} azioni={null} />
+    <div class="grid content-end gap-4">
+      <p class="max-w-[28em] text-tenue">Sotto, i conti sugli stessi numeri: quanto paghi in tutto, da dove viene il totale e cosa controllare.</p>
+      <p><a class="btn btn-primario" href="/#decodifica">Leggi il tuo preventivo</a></p>
+    </div>
   </section>
 
-  <section class="contenitore grid gap-6 pb-8" aria-labelledby="strade-titolo">
-    <h2 id="strade-titolo" class="text-2xl font-semibold tracking-tight">Stessa auto, tre strade</h2>
-    <p class="max-w-prose text-tenue">Cambia canone di noleggio, durata e TAEG del prestito: le colonne si aggiornano. Le ipotesi sono tue, i numeri della promo restano quelli della fonte, anticipo compreso.</p>
-    <CalcoloVivo client:visible variante="promo" base={base} iniziale={{ taegPrestito: '8,5', mesiNoleggio: String(p.nRate + (p.maxiRata ? 1 : 0)) }} />
+  <section class="contenitore pb-8" aria-label="I conti della promozione">
+    <ResultCard analisi={a} azioni={null} />
   </section>
 </Base>

@@ -28,8 +28,9 @@ const schema = {
   <article class="contenitore pt-8 pb-12 sm:pt-14 grid gap-10">
     <header class="grid gap-4">
       <p class="text-sm"><a class="link" href="/guide">Guide</a> · aggiornata il {dataLunga(g.aggiornato)}</p>
-      <h1 class="titolo-pagina max-w-[22ch]">{g.titolo}</h1>
-      <p class="frase-grande max-w-[40ch] text-tenue">{g.lede}</p>
+      {/* Titolo alla misura di sezione e attacco corto: il primo schermo mostra titolo, attacco e l'inizio del calcolo. */}
+      <h1 class="titolo-guida max-w-[22ch]">{g.titolo}</h1>
+      <p class="attacco-guida max-w-[30em] text-tenue">{g.lede}</p>
     </header>
 
     <div id="calcolo" class="scroll-mt-6">
@@ -38,8 +39,8 @@ const schema = {
 
     <div class="prosa"><Content /></div>
 
-    <section class="grid gap-3 max-w-[68ch]" aria-labelledby="fonti-titolo">
-      <h2 id="fonti-titolo" class="text-lg font-semibold">Fonti</h2>
+    <section class="grid gap-3 max-w-[36em]" aria-labelledby="fonti-titolo">
+      <h2 id="fonti-titolo" class="titolo-sottosezione">Fonti</h2>
       <ul class="grid gap-2 text-sm">
         {g.fonti.map((f) => <li><a class="link" href={f.url} rel="noopener" target="_blank">{f.titolo}</a></li>)}
       </ul>
@@ -47,7 +48,7 @@ const schema = {
 
     <aside class="grid gap-4 border-t-4 border-inchiostro pt-6" aria-label="Altre guide">
       <p class="font-semibold">Altre guide</p>
-      <ul class="grid gap-2 sm:grid-cols-2">{altre.map((x) => <li><a class="link" href={`/guide/${x.slug}`}>{x.titolo}</a></li>)}</ul>
+      <ul class="grid gap-x-6 sm:grid-cols-2">{altre.map((x) => <li><a class="link tocco py-2" href={`/guide/${x.slug}`}>{x.titolo}</a></li>)}</ul>
       <p><a class="btn btn-primario" href="/#decodifica">Leggi il tuo preventivo</a></p>
     </aside>
   </article>

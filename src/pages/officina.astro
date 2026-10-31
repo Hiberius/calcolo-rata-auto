@@ -1,14 +1,13 @@
 ---
 import Base from '~/layouts/Base.astro';
 import ModuloOfficina from '~/components/form/ModuloOfficina.astro';
-import TitoloRighe from '~/components/ui/TitoloRighe.astro';
 import { contaAtteseOfficina } from '~/lib/db/officina';
 import { TESTO_ATTESA, testoContatore } from '~/lib/officina';
-import { TURNSTILE_SITE_KEY_TEST } from '~/lib/turnstile';
+import { chiaveAntiRobot } from '~/lib/turnstile';
 
 export const prerender = false;
 const env = Astro.locals.runtime?.env;
-const siteKey = env?.PUBLIC_TURNSTILE_SITE_KEY || TURNSTILE_SITE_KEY_TEST;
+const siteKey = chiaveAntiRobot(env, Astro.url.href);
 Astro.response.headers.set('cache-control', 'no-store');
 const contatore = testoContatore(env?.DB ? await contaAtteseOfficina(env.DB) : null);
 const [frase1, frase2] = TESTO_ATTESA.split('. ');
@@ -19,10 +18,10 @@ const [frase1, frase2] = TESTO_ATTESA.split('. ');
 >
   <section class="contenitore grid gap-10 pt-8 pb-12 sm:pt-14 lg:grid-cols-[minmax(0,6fr)_minmax(0,6fr)] lg:gap-16" aria-labelledby="officina-titolo">
     <div class="grid content-start gap-6">
-      <p class="etichetta">Officina · confronto a dicembre</p>
-      <TitoloRighe id="officina-titolo" righe={['Il preventivo', 'dell’officina.']} accento={1} classe="titolo-display max-w-[12ch]" />
-      <p class="frase-grande max-w-[30ch]">{frase1}.</p>
-      <p class="max-w-[52ch] text-lg text-tenue">{frase2}</p>
+      <p class="etichetta">Officina · in arrivo</p>
+      <h1 id="officina-titolo" class="titolo-pagina max-w-[12ch]">Il preventivo dell’officina.</h1>
+      <p class="frase-grande max-w-[22em]">{frase1}.</p>
+      <p class="max-w-[28em] text-lg text-tenue">{frase2}</p>
       {contatore && <p class="numeri text-2xl" data-contatore-officina>{contatore}</p>}
       <dl class="grid gap-4 border-t border-riga pt-6 sm:grid-cols-2">
         <div class="grid gap-1">

@@ -1,13 +1,16 @@
 import type { ComponentChildren } from 'preact';
 import type { Scenari } from '~/lib/calc';
-import { euro, numero, punti } from '~/lib/calc/format';
+import { euro, numero, punti } from '~/lib/formato';
 
 function Colonna({ titolo, totale, children }: { titolo: string; totale: number; children: ComponentChildren }) {
   return (
-    <div class="grid content-start gap-2 border-t-2 border-inchiostro pt-3">
-      <h4 class="font-semibold">{titolo}</h4>
-      <p class="numeri text-2xl">{euro(totale)}</p>
-      <div class="text-sm text-tenue grid gap-1">{children}</div>
+    <div class="grid content-start gap-2 border-t border-inchiostro pt-3">
+      {/* Una riga per possibilità, nome e totale sulla stessa linea: niente tre colonne uguali (specifica, f). */}
+      <div class="flex flex-wrap items-baseline justify-between gap-x-4">
+        <h4 class="font-semibold">{titolo}</h4>
+        <p class="numeri text-xl whitespace-nowrap">{euro(totale)}</p>
+      </div>
+      <div class="nota text-tenue grid gap-1 max-w-[34em]">{children}</div>
     </div>
   );
 }
@@ -20,7 +23,7 @@ export default function ScenariFine({ scenari }: { scenari: Scenari }) {
   return (
     <div class="grid gap-4">
       <p>{scenari.nota}</p>
-      <div class="grid gap-6 md:grid-cols-3">
+      <div class="grid gap-5">
         <Colonna titolo="La tieni" totale={tieni.totale}>
           <p>Paghi la maxi rata di {euro(tieni.maxiRata)}.</p>
           <p>

@@ -10,7 +10,7 @@ const { siteKey } = Astro.props;
 const consenso = CONSENSI.avviso_officina;
 const ETICHETTE = { modello: 'modello', intervento: 'intervento', importo: 'importo', provincia: 'provincia', email: 'email', consensoAvviso: 'consenso all’avviso' };
 ---
-<form id="modulo" method="post" action="/api/officina" class="scontrino grid gap-6 px-5 py-7 sm:px-8 sm:py-9 scroll-mt-6" data-modulo-officina data-stampa novalidate>
+<form id="modulo" method="post" action="/api/officina" class="riquadro grid gap-6 px-5 py-7 sm:px-8 sm:py-9 scroll-mt-6" data-modulo-officina novalidate>
   <EsitoModulo etichette={ETICHETTE} successo="Fatto: il tuo preventivo è nell’archivio, anonimo. Se hai lasciato l’email ti scriviamo una volta sola, quando il confronto è pronto." />
   <div class="grid gap-1">
     <p class="etichetta">Preventivo o fattura dell’officina</p>
@@ -45,7 +45,7 @@ const ETICHETTE = { modello: 'modello', intervento: 'intervento', importo: 'impo
         <input class="campo pr-10 text-lg" name="importo" inputmode="decimal" autocomplete="off" required maxlength="12" placeholder="0,00" />
         <span class="numeri pointer-events-none absolute inset-y-0 right-3 grid place-items-center text-tenue" aria-hidden="true">€</span>
       </span>
-      <span class="text-xs text-tenue">Il totale, IVA compresa, come sul foglio.</span>
+      <span class="text-[0.8125rem] leading-snug text-tenue">Il totale, IVA compresa, come sul foglio.</span>
     </label>
     <label class="grid gap-1.5 text-sm content-start"><span class="font-medium">Provincia</span>
       <select class="campo" name="provincia" required>
@@ -69,6 +69,6 @@ const ETICHETTE = { modello: 'modello', intervento: 'intervento', importo: 'impo
   <TurnstileImplicito siteKey={siteKey} />
   <div class="grid gap-2">
     <button type="submit" class="btn btn-primario w-full sm:w-auto sm:justify-self-start">Lascia il preventivo</button>
-    <p class="text-xs text-tenue max-w-prose">Il preventivo entra anonimo nell’archivio. L’email, se la lasci, la teniamo a parte, senza collegarla al preventivo. Nessun giudizio sul prezzo in questa fase. <a class="link" href="/privacy">Come trattiamo i dati</a>.</p>
+    <p class="nota text-tenue max-w-[36em]">Il preventivo entra anonimo nell’archivio. L’email, se la lasci, la teniamo a parte, senza collegarla al preventivo. Nessun giudizio sul prezzo in questa fase. <a class="link" href="/privacy">Come trattiamo i dati</a>.</p>
   </div>
 </form>

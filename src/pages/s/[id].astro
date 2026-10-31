@@ -5,7 +5,7 @@ import Disclaimer from '~/components/ui/Disclaimer';
 import NumberRow from '~/components/ui/NumberRow';
 import ComposizioneTotale from '~/components/ui/ComposizioneTotale';
 import SpiegazioneTaeg from '~/components/ui/SpiegazioneTaeg';
-import { euro, percentuale, punti } from '~/lib/calc/format';
+import { costoCreditoPct, euro, punti, tipografia } from '~/lib/formato';
 import { datiScheda, testoCondivisione } from '~/lib/og/template';
 import { caricaScheda } from '~/lib/scheda';
 import PromoBox from '~/components/compare/PromoBox.astro';
@@ -46,7 +46,7 @@ const scena = a && dati ? datiScena(a, dati.urlBreve) : null;
   >
     <section class="contenitore sezione grid gap-12 lg:grid-cols-[minmax(0,34rem)_1fr] lg:items-start">
       <!-- F1: lo scontrino si stampa all'apertura del link (solo CSS; con meno movimento è subito intero). -->
-      <article class="scontrino px-6 py-10 sm:px-10 grid gap-6" aria-labelledby="scheda-titolo" data-stampa>
+      <article class="scontrino scontrino-misura px-6 py-10 sm:px-10 grid gap-6" aria-labelledby="scheda-titolo" data-stampa>
         <p class="riga-scontrino numeri text-xs text-tenue flex justify-between gap-4 uppercase tracking-[0.08em]" style="--i:0"><span>Rata Vera</span><span>{dati.taeg}</span></p>
         <div class="riga-scontrino grid gap-1" style="--i:1">
           <h1 id="scheda-titolo" class="titolo-scheda text-[clamp(1.375rem,1.1rem+1.2vw,1.875rem)]">{dati.titolo}</h1>
@@ -54,12 +54,12 @@ const scena = a && dati ? datiScena(a, dati.urlBreve) : null;
         </div>
         <p class="riga-scontrino grid gap-1" style="--i:2">
           <span class="text-lg font-medium">Paghi davvero</span>
-          <span class="numero-eroe totale-grande">{euro(a.totali.totalePagatoTenendo)}</span>
+          <span class="numero-eroe numero-scontrino">{euro(a.totali.totalePagatoTenendo)}</span>
         </p>
         <div class="grid">
           {a.totali.prezzoRiferimento != null && <NumberRow etichetta={TIPO_PREZZO[a.totali.prezzoRiferimentoTipo]} valore={euro(a.totali.prezzoRiferimento)} indice={3} />}
           {a.totali.costoCredito != null && (
-            <NumberRow etichetta="Costo del credito" valore={`${euro(a.totali.costoCredito)} · ${percentuale(a.totali.costoCreditoPct)}`} tono="segnale" indice={4} />
+            <NumberRow etichetta="Costo del credito" valore={`${euro(a.totali.costoCredito)} · ${costoCreditoPct(a.totali.costoCreditoPct)}`} tono="segnale" indice={4} />
           )}
           {a.taeg.taegRicostruito != null && <NumberRow etichetta="TAEG ricostruito dai numeri" valore={punti(a.taeg.taegRicostruito)} tono="tenue" termine="taeg" ambito="scheda-taeg" indice={5} />}
         </div>
@@ -68,7 +68,7 @@ const scena = a && dati ? datiScena(a, dati.urlBreve) : null;
           <h2 class="titolo-scheda">Da dove viene il totale</h2>
           <ComposizioneTotale analisi={a} ambito="scheda-voci" primaRiga={6} />
         </div>
-        <p class="font-medium">{a.verdetto.etichetta}</p>
+        <p class="font-medium">{tipografia(a.verdetto.etichetta)}</p>
         {a.totali.messaggi[0] && <p class="text-sm border-t-2 border-attenzione pt-2">{a.totali.messaggi[0]}</p>}
         {a.taeg.stato === 'da_verificare' && <p class="text-sm border-t-2 border-attenzione pt-2">TAEG da verificare: {a.taeg.nota}</p>}
         {a.ricostruzione.discrepanze.map((d) => <p class="text-sm border-t-2 border-attenzione pt-2">{d.messaggio}</p>)}
@@ -96,8 +96,8 @@ const scena = a && dati ? datiScena(a, dati.urlBreve) : null;
         )}
         <div class="grid gap-3">
           <h2 class="font-semibold text-lg">Hai un preventivo anche tu?</h2>
-          <p class="text-tenue max-w-prose">Fotografalo o scrivi i numeri: vedi il totale, il costo del credito e la fine del contratto.</p>
-          <p><a class="btn btn-secondario" href="/#decodifica">Leggi il tuo</a></p>
+          <p class="text-tenue max-w-[30em]">Fotografalo o scrivi i numeri: vedi il totale, il costo del credito e la fine del contratto.</p>
+          <p><a class="btn btn-secondario" href="/#decodifica">Leggi il tuo preventivo</a></p>
         </div>
       </div>
     </section>

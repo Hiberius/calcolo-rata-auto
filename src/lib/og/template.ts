@@ -1,6 +1,6 @@
 import type { Analisi } from '../calc';
 import { composizioneTotale, type VoceTotale } from '../calc/composizione';
-import { euro, euroIntero, numero, percentuale, punti } from '../calc/format';
+import { euro, numero, percentuale, punti } from '../calc/format';
 import { baseScena, cursoriIniziali, rigaIncrocio, serieScena } from '../calc/scena';
 
 export interface DatiScheda {
@@ -61,11 +61,13 @@ export function datiScheda(a: Analisi, id: string, sito: string): DatiScheda {
     id,
     titolo: titoloDi(a),
     rataPubblicizzata: `${compatto(p.rata)} €/mese`,
-    totale: euroIntero(t.totalePagatoTenendo),
+    // Contesto «condivisione» (revisione del 31/10): totale, prezzo e costo del credito al centesimo come sulla scheda,
+    // quota del prezzo con un decimale come ovunque. Le voci della somma restano corte (4.326 + 35×99 …).
+    totale: euro(t.totalePagatoTenendo),
     totaleEsatto: euro(t.totalePagatoTenendo),
-    prezzo: t.prezzoRiferimento != null ? euroIntero(t.prezzoRiferimento) : null,
-    costoCredito: t.costoCredito != null ? euroIntero(t.costoCredito) : null,
-    costoCreditoPct: t.costoCreditoPct != null ? percentuale(t.costoCreditoPct, 0) : null,
+    prezzo: t.prezzoRiferimento != null ? euro(t.prezzoRiferimento) : null,
+    costoCredito: t.costoCredito != null ? euro(t.costoCredito) : null,
+    costoCreditoPct: t.costoCreditoPct != null ? percentuale(t.costoCreditoPct, 1) : null,
     composizione: `${parti.join(' + ')} = ${euro(t.totalePagatoTenendo)}`,
     taeg: p.taegDichiarato != null ? `TAEG ${punti(p.taegDichiarato)}` : 'TAEG non indicato',
     incrocio: incrocioDi(a),
