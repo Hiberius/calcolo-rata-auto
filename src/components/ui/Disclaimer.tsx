@@ -1,4 +1,4 @@
-import { AVVERTENZA } from '~/lib/calc';
+import { AVVERTENZA } from '~/lib/calc/config';
 
 /** Avvertenza fissa §1.9: presente in ogni risultato. */
 export default function Disclaimer() {

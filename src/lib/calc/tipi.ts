@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { IPOTESI_PREDEFINITE as D } from './config';
 
 /** Importo in euro: numero finito, non negativo. Le stringhe vanno normalizzate prima (vedi extract/validate). */
 const euro = z.number({ error: 'Deve essere un numero' }).nonnegative({ error: 'Non può essere negativo' });
@@ -45,15 +46,15 @@ export type Preventivo = z.output<typeof PreventivoSchema>;
 
 /** Ipotesi dichiarate e modificabili: non vengono dal preventivo. */
 export const IpotesiSchema = z.object({
-  tanRifinanziamento: percento.default(8),
-  mesiRifinanziamento: z.number().int().min(1).max(120).default(36),
-  tanPrestito: percento.default(7.5),
-  taegPrestito: percento.default(8.5),
+  tanRifinanziamento: percento.default(D.tanRifinanziamento),
+  mesiRifinanziamento: z.number().int().min(1).max(120).default(D.mesiRifinanziamento),
+  tanPrestito: percento.default(D.tanPrestito),
+  taegPrestito: percento.default(D.taegPrestito),
   mesiPrestito: z.number().int().min(1).max(120).optional(),
   canoneNoleggio: euro.optional(),
-  anticipoNoleggio: euro.default(0),
+  anticipoNoleggio: euro.default(D.anticipoNoleggio),
   mesiNoleggio: z.number().int().min(1).max(120).optional(),
-  kmAnnui: z.number().int().min(0).max(200_000).default(15_000),
+  kmAnnui: z.number().int().min(0).max(200_000).default(D.kmAnnui),
 });
 export type IpotesiInput = z.input<typeof IpotesiSchema>;
 export type Ipotesi = z.output<typeof IpotesiSchema>;
