@@ -19,9 +19,6 @@ interface Env {
   /** Dati del titolare nel blocco «Chi c'è dietro»: vuoti = "in aggiornamento". */
   readonly PUBLIC_PIVA?: string;
   readonly PUBLIC_SEDE?: string;
-  readonly PUBLIC_STRIPE_LINK_VERDETTO?: string;
-  readonly PUBLIC_STRIPE_LINK_B2B_149?: string;
-  readonly PUBLIC_STRIPE_LINK_B2B_299?: string;
 }
 
 interface ImportMetaEnv {

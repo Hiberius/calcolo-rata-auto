@@ -1,5 +1,5 @@
 /** Eventi che il browser può segnalare (gli altri li registra il server). Mai dati personali o di credito. */
-export type EventoClient = 'scheda_condivisa' | 'tre_strade_usato' | 'verdetto_click' | 'b2b_click' | 'decodifica_manuale';
+export type EventoClient = 'scheda_condivisa' | 'tre_strade_usato' | 'decodifica_manuale';
 
 export function inviaEvento(nome: EventoClient, schedaId?: string): void {
   try {

@@ -1,8 +1,6 @@
-import { inviaEvento, type EventoClient } from './evento';
 import { avviaGlossario } from './glossario';
 
 const CHIAVE_BANNER = 'ratavera:banner-cookie';
-const EVENTI_LINK: ReadonlySet<string> = new Set<EventoClient>(['verdetto_click', 'b2b_click']);
 
 function leggi(chiave: string): string | null {
   try {
@@ -33,13 +31,8 @@ function rigaCookie(doc: Document): void {
   });
 }
 
-/** Glossario in linea, riga sui cookie e click misurati sui pulsanti di pagamento. */
+/** Glossario in linea e riga sui cookie, su ogni pagina. */
 export function avviaPagina(doc: Document): void {
   avviaGlossario(doc);
   rigaCookie(doc);
-  doc.addEventListener('click', (e) => {
-    const el = (e.target as Element | null)?.closest<HTMLElement>('[data-evento]');
-    const nome = el?.dataset['evento'];
-    if (nome && EVENTI_LINK.has(nome)) inviaEvento(nome as EventoClient);
-  });
 }

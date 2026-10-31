@@ -73,9 +73,14 @@ test('promozioni e guida con calcolo vivo', async ({ page }) => {
 test('nessuna violazione della CSP sulle pagine principali', async ({ page }) => {
   const violazioni: string[] = [];
   page.on('console', (m) => { if (m.type() === 'error' && /Content Security Policy|Refused to/i.test(m.text())) violazioni.push(m.text()); });
-  for (const p of ['/', '/noleggio', '/promozioni', '/guide/noleggio-lungo-termine-privati-conviene', '/per-concessionari', '/verdetto', '/privacy']) {
+  for (const p of ['/', '/noleggio', '/promozioni', '/guide/noleggio-lungo-termine-privati-conviene', '/chi-siamo', '/privacy']) {
     await page.goto(p, { waitUntil: 'load' });
     if (await page.locator('.cf-turnstile').count()) await expect(page.locator('input[name="cf-turnstile-response"]')).not.toHaveValue('', { timeout: 20_000 });
   }
   expect(violazioni).toEqual([]);
+});
+
+test('pagine e endpoint tolti rispondono 410', async ({ request }) => {
+  for (const p of ['/per-concessionari', '/verdetto']) expect((await request.get(p)).status()).toBe(410);
+  for (const p of ['/api/b2b', '/api/verdetto']) expect((await request.post(p, { data: {} })).status()).toBe(410);
 });

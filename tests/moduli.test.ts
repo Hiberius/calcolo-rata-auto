@@ -3,7 +3,7 @@ import { adattatoreEmail, emailRichiesta } from '~/lib/consegna';
 import { CONSENSI } from '~/lib/consent';
 import { inviaNotifica } from '~/lib/email';
 import { messaggioErrore, rispondi, separaToken } from '~/lib/moduli';
-import { ContattoB2bSchema, EventoSchema, RichiestaNoleggioSchema, RichiestaVerdettoSchema } from '~/lib/moduli/schemi';
+import { EventoSchema, RichiestaNoleggioSchema } from '~/lib/moduli/schemi';
 import { costoNetto, residuoPredefinito } from '~/lib/calc/residuo';
 import { analizzaLeggero } from '~/lib/calc/leggero';
 import { analizza } from '~/lib/calc';
@@ -40,21 +40,11 @@ describe('modulo noleggio (§9)', () => {
 });
 
 describe('altri moduli', () => {
-  it('B2B: sito facoltativo ma, se c’è, deve essere un indirizzo', () => {
-    const base = { nome: 'Luca', azienda: 'Auto Srl', email: 'luca@auto.it', consensoContatto: 'on', versioneConsenso: '2026-10-31' };
-    expect(ContattoB2bSchema.safeParse(base).success).toBe(true);
-    expect(ContattoB2bSchema.safeParse({ ...base, sito: 'https://auto.it' }).success).toBe(true);
-    expect(ContattoB2bSchema.safeParse({ ...base, sito: 'non un sito' }).success).toBe(false);
-  });
-
-  it('verdetto: codice scheda di 8 caratteri base58', () => {
-    expect(RichiestaVerdettoSchema.safeParse({ schedaId: 'abcDEF12', email: 'a@b.it' }).success).toBe(true);
-    expect(RichiestaVerdettoSchema.safeParse({ schedaId: 'abc0EF12', email: 'a@b.it' }).success).toBe(false);
-  });
-
   it('evento: solo i nomi che il browser può mandare', () => {
     expect(EventoSchema.safeParse({ nome: 'tre_strade_usato' }).success).toBe(true);
     expect(EventoSchema.safeParse({ nome: 'noleggio_inviato' }).success).toBe(false);
+    expect(EventoSchema.safeParse({ nome: 'verdetto_click' }).success).toBe(false);
+    expect(EventoSchema.safeParse({ nome: 'b2b_click' }).success).toBe(false);
     expect(EventoSchema.safeParse({ nome: 'scheda_condivisa', email: 'x@y.it' }).success).toBe(false);
   });
 
@@ -65,10 +55,10 @@ describe('altri moduli', () => {
   });
 
   it('form HTML: risposta 303 verso la pagina con l’esito', () => {
-    const form = new Request('https://x.it/api/b2b', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' } });
-    expect(rispondi(form, '/per-concessionari', { ok: true }).headers.get('location')).toBe('/per-concessionari?inviato=1#modulo');
-    expect(rispondi(form, '/per-concessionari', { ok: false, codice: 'dati', campi: ['email'] }).headers.get('location')).toContain('errore=dati&campi=email');
-    const json = new Request('https://x.it/api/b2b', { method: 'POST', headers: { 'content-type': 'application/json' } });
+    const form = new Request('https://x.it/api/noleggio', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' } });
+    expect(rispondi(form, '/noleggio', { ok: true }).headers.get('location')).toBe('/noleggio?inviato=1#modulo');
+    expect(rispondi(form, '/noleggio', { ok: false, codice: 'dati', campi: ['email'] }).headers.get('location')).toContain('errore=dati&campi=email');
+    const json = new Request('https://x.it/api/noleggio', { method: 'POST', headers: { 'content-type': 'application/json' } });
     expect(rispondi(json, '/x', { ok: false, codice: 'limite' }).status).toBe(429);
     expect(messaggioErrore('turnstile')).toContain('anti-robot');
     expect(messaggioErrore('<script>')).toBeNull();

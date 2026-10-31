@@ -29,32 +29,9 @@ export const RichiestaNoleggioSchema = z
   .strict();
 export type RichiestaNoleggio = z.output<typeof RichiestaNoleggioSchema>;
 
-export const ContattoB2bSchema = z
-  .object({
-    nome: testo(2, 80, 'Scrivi il tuo nome'),
-    azienda: testo(2, 120, 'Scrivi il nome della concessionaria'),
-    email,
-    sito: z.union([z.literal(''), z.url({ protocol: /^https?$/, error: 'Indirizzo del sito non valido' }).max(200)]).optional(),
-    messaggio: z.string().trim().max(1000, { error: 'Al massimo 1.000 caratteri' }).optional(),
-    consensoContatto: casella.refine((v) => v, { error: 'Serve il consenso per essere ricontattati' }),
-    versioneConsenso: z.string().max(20),
-  })
-  .strict();
-export type ContattoB2b = z.output<typeof ContattoB2bSchema>;
-
-export const RichiestaVerdettoSchema = z
-  .object({
-    schedaId: z.string().trim().regex(ID_SCHEDA_RE, { error: 'Codice scheda di 8 caratteri, lo trovi nel link /s/…' }),
-    email,
-    riferimentoPagamento: z.string().trim().max(100).optional(),
-    nota: z.string().trim().max(500, { error: 'Al massimo 500 caratteri' }).optional(),
-  })
-  .strict();
-export type RichiestaVerdetto = z.output<typeof RichiestaVerdettoSchema>;
-
 export const EventoSchema = z
   .object({
-    nome: z.enum(['scheda_condivisa', 'tre_strade_usato', 'verdetto_click', 'b2b_click', 'decodifica_manuale']),
+    nome: z.enum(['scheda_condivisa', 'tre_strade_usato', 'decodifica_manuale']),
     schedaId: z.string().regex(ID_SCHEDA_RE).optional(),
   })
   .strict();

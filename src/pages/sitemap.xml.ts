@@ -4,7 +4,7 @@ import { tutteLePromo } from '~/lib/promo';
 
 export const prerender = true;
 
-const STATICHE = ['/', '/promozioni', '/noleggio', '/guide', '/per-concessionari', '/verdetto', '/metodologia', '/criteri', '/chi-siamo', '/privacy', '/cookie'];
+const STATICHE = ['/', '/promozioni', '/noleggio', '/guide', '/metodologia', '/criteri', '/chi-siamo', '/privacy', '/cookie'];
 
 export const GET: APIRoute = ({ site }) => {
   const base = (site?.toString() ?? 'https://ratavera.it/').replace(/\/$/, '');

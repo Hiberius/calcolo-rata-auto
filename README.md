@@ -16,7 +16,7 @@ Astro 5 + Cloudflare Workers (D1, KV, Workers AI, Turnstile). Specifica: `../00_
 | `npm run deploy` | build + `wrangler deploy` |
 
 ## Segreti (`wrangler secret put`)
-`TURNSTILE_SECRET_KEY`, `HASH_SALT`, `ADMIN_TOKEN`, `BREVO_API_KEY`, `NOTIFY_EMAIL`, opzionale `ANTHROPIC_API_KEY`. Le variabili pubbliche stanno in `wrangler.jsonc` (`vars`): chiave Turnstile, link Stripe (vuoti = "disponibile a breve"), mittente email.
+`TURNSTILE_SECRET_KEY`, `HASH_SALT`, `ADMIN_TOKEN`, `BREVO_API_KEY`, `NOTIFY_EMAIL`, opzionale `ANTHROPIC_API_KEY`. Le variabili pubbliche stanno in `wrangler.jsonc` (`vars`): chiave Turnstile, mittente email, `PUBLIC_PIVA` e `PUBLIC_SEDE` (blocco «Chi c'è dietro e come guadagniamo»; vuote = "in aggiornamento").
 `PUBLIC_CF_ANALYTICS_TOKEN` (Cloudflare Web Analytics) si legge a build time: `PUBLIC_CF_ANALYTICS_TOKEN=... npm run deploy`.
 Il valore di `ADMIN_TOKEN` di produzione sta in `.segreti/ADMIN_TOKEN.txt` (ignorato da git). In locale: `/admin?token=admin-test`.
 Finché `PUBLIC_TURNSTILE_SITE_KEY` e `TURNSTILE_SECRET_KEY` non sono quelle vere, Turnstile usa le chiavi di test di Cloudflare (passano sempre).
@@ -29,6 +29,7 @@ Finché `PUBLIC_TURNSTILE_SITE_KEY` e `TURNSTILE_SECRET_KEY` non sono quelle ver
 - `src/components/decode` isola Preact della home
 - `src/lib/promo` + `src/data/promos/*.json` promozioni (§7), validate con zod a build time; pagine `/promozioni`
 - `src/data/guide/*.md` le 5 guide (§3), frontmatter validato in `src/lib/guide.ts`; calcolo vivo `src/components/compare/CalcoloVivo.tsx` (senza zod)
-- `src/lib/moduli` moduli pubblici (noleggio, concessionarie, verdetto, eventi): zod `.strict()`, Turnstile, limite KV, 303 per i form HTML
+- `src/lib/moduli` moduli pubblici (noleggio, eventi): zod `.strict()`, Turnstile, limite KV, 303 per i form HTML
+- `src/lib/rimosse.ts` offerta concessionarie e verdetto esperto, tolti il 31/10/2026: `/per-concessionari`, `/verdetto`, `/api/b2b`, `/api/verdetto` rispondono 410; le tabelle D1 restano
 - `src/lib/consegna.ts` `DeliveryAdapter` (v1: email Brevo, `src/lib/email.ts`)
 - `src/worker.ts` ingresso del Worker: CSP con nonce (HTMLRewriter) e intestazioni di sicurezza su tutte le pagine, cron di pulizia (`src/lib/db/pulizia.ts`)

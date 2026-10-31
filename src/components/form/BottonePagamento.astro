@@ -1,7 +1,0 @@
----
-interface Props { href: string | null; etichetta: string; evento: 'verdetto_click' | 'b2b_click' }
-const { href, etichetta, evento } = Astro.props;
----
-{href
-  ? <a class="btn btn-primario" href={href} rel="noopener" data-evento={evento}>{etichetta}</a>
-  : <p class="btn btn-secondario cursor-default" aria-disabled="true" data-pagamento-assente>Pagamento disponibile a breve</p>}

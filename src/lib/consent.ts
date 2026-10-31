@@ -20,9 +20,4 @@ export const CONSENSI = {
     testo:
       'Accetto di essere contattato da Rata Vera, via email o telefono, per ricevere offerte di noleggio a lungo termine sul modello che ho indicato. I miei dati non vengono passati a nessun altro senza un mio nuovo consenso, che indicherà il nome del partner. Posso chiederne la cancellazione in ogni momento.',
   },
-  contatto_b2b: {
-    finalita: 'contatto_b2b',
-    versione: '2026-10-31',
-    testo: 'Accetto di essere ricontattato da Rata Vera per questa richiesta. I dati restano a Rata Vera e non vengono ceduti.',
-  },
 } as const satisfies Record<string, TestoConsenso>;
