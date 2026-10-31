@@ -1,7 +1,17 @@
 import type { StatoForm } from './client/campi';
+import { dataBreve, oggiItalia } from './date';
 
-/** Etichetta fissa accanto al risultato dell'esempio: è un'offerta vera, ma non più in vigore. */
-export const ETICHETTA_ESEMPIO = 'esempio reale, offerta scaduta il 31/10/2026';
+/** Ultimo giorno di validità dell'offerta Peugeot 208 di ottobre 2026 usata come esempio. */
+export const SCADENZA_ESEMPIO = '2026-10-31';
+
+/**
+ * Una sola formula, uguale in home e sopra la scena (revisione del 31/10, problema 6), vera in ogni giorno:
+ * fino al 31/10 «valida fino al», dal giorno dopo (ora di Roma, come le promo) «scaduta il».
+ */
+export function etichettaEsempio(adesso: Date = new Date()): string {
+  const stato = oggiItalia(adesso) > SCADENZA_ESEMPIO ? 'scaduta il' : 'valida fino al';
+  return `esempio reale, offerta ufficiale ${stato} ${dataBreve(SCADENZA_ESEMPIO)}`;
+}
 
 /**
  * Preventivo d'esempio della home (test del 31/10: mancava un esempio pronto). Offerta ufficiale Peugeot 208 Style

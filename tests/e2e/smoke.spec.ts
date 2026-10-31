@@ -46,7 +46,7 @@ test('preventivo d’esempio in home e blocco fiducia', async ({ page }) => {
   await expect(page.locator('[data-fiducia]')).toContainText('progetto indipendente');
   await page.getByRole('button', { name: "Prova con un preventivo d'esempio" }).click();
   await expect(page.locator('[data-totale]')).toHaveText('18.253,25 €');
-  await expect(page.locator('[data-etichetta-esempio]')).toHaveText('esempio reale, offerta scaduta il 31/10/2026');
+  await expect(page.locator('[data-etichetta-esempio]')).toHaveText(/^esempio reale, offerta ufficiale (valida fino al|scaduta il) 31\/10\/2026$/);
 });
 
 test('tre strade e richiesta di noleggio con Turnstile di test', async ({ page }) => {

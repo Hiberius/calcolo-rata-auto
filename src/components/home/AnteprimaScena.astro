@@ -1,7 +1,7 @@
 ---
 import { analizza } from '~/lib/calc';
 import { BASE_ANTEPRIMA, fraseAnteprima, serieAnteprima } from '~/lib/calc/anteprima';
-import { euroIntero, numero, percentuale } from '~/lib/calc/format';
+import { importo, quota } from '~/lib/formato';
 import { ripartizioneTotale } from '~/lib/calc/ripartizione';
 import { ETICHETTA_STIMA } from '~/lib/calc/valore';
 import { preventivoDaForm } from '~/lib/client/campi';
@@ -22,25 +22,33 @@ const fraseIniziale = fraseAnteprima(serieAnteprima(BASE_ANTEPRIMA.anticipo));
   </div>
   {ripartizione && (
     <div class="grid gap-2" aria-hidden="true">
-      <p class="numeri flex items-baseline justify-between gap-3 text-xs text-[var(--scena-tenue)]"><span>01 · dove vanno i tuoi euro</span><span class="text-sm text-[var(--scena-carta)]">{euroIntero(ripartizione.totale)}</span></p>
+      <p class="numeri flex items-baseline justify-between gap-3 text-xs text-[var(--scena-tenue)]"><span>01 · dove vanno i tuoi euro</span><span class="text-sm text-[var(--scena-carta)]">{importo(ripartizione.totale, 'anteprima')}</span></p>
       <div class="flex h-2.5 w-full gap-[2px]">
         {voci.map((c) => <span class="block h-full" style={`flex: ${c.importo} 1 0; background: ${COLORE_CONTENITORE[c.chiave]};`} />)}
       </div>
       <ul class="numeri flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--scena-tenue)]">
-        {voci.map((c) => <li><span style={`color: ${COLORE_CONTENITORE[c.chiave]};`}>■</span> {c.etichetta.toLowerCase()} {percentuale(c.importo / ripartizione.totale, c.importo / ripartizione.totale < 0.01 ? 1 : 0)}</li>)}
+        {voci.map((c) => <li><span style={`color: ${COLORE_CONTENITORE[c.chiave]};`}>■</span> {c.etichetta.toLowerCase()} {quota(c.importo, ripartizione.totale)}</li>)}
       </ul>
     </div>
   )}
   <p class="numeri mt-2 text-xs text-[var(--scena-tenue)]" aria-hidden="true">02 · valore contro debito</p>
-  <canvas class="block h-[170px] w-full sm:h-[210px] lg:h-[230px]" data-tela-anteprima aria-hidden="true"></canvas>
+  <div class="relative h-[170px] w-full sm:h-[210px] lg:h-[230px]">
+    <canvas class="block h-full w-full" data-tela-anteprima aria-hidden="true"></canvas>
+    <noscript>
+      <picture>
+        <source type="image/avif" srcset="/img/scena-poster-800.avif 800w, /img/scena-poster-1200.avif 1200w" sizes="(min-width: 1024px) 28rem, 100vw" />
+        <img class="anteprima-poster" src="/img/scena-poster-800.webp" srcset="/img/scena-poster-800.webp 800w, /img/scena-poster-1200.webp 1200w" sizes="(min-width: 1024px) 28rem, 100vw" width="1200" height="751" alt="" decoding="async" />
+      </picture>
+    </noscript>
+  </div>
   <div class="numeri flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs text-[var(--scena-tenue)]" aria-hidden="true">
     <span class="flex items-center gap-2"><span class="h-0.5 w-5 bg-[var(--scena-carta)]"></span>valore stimato</span>
     <span class="flex items-center gap-2"><span class="h-[3px] w-5 bg-[var(--scena-segnale)]"></span>debito</span>
-    <span>anticipo <span class="text-[var(--scena-carta)]" data-anteprima-anticipo>{numero(BASE_ANTEPRIMA.anticipo, 0)} €</span></span>
+    <span>anticipo <span class="text-[var(--scena-carta)]" data-anteprima-anticipo>{importo(BASE_ANTEPRIMA.anticipo, 'anteprima')}</span></span>
   </div>
   <p class="numeri text-xs text-[var(--scena-segnale)]" aria-hidden="true" data-anteprima-incrocio>{fraseIniziale}</p>
   <figcaption id="anteprima-didascalia" class="text-sm text-[var(--scena-tenue)]">
-    La Peugeot 208 dell’esempio: dove vanno i {ripartizione ? euroIntero(ripartizione.totale) : 'soldi'} che paghi, e il valore stimato dell’auto contro il debito residuo mentre l’anticipo scende a zero. Meno anticipo, prima devi all’auto più di quanto vale.
+    La Peugeot 208 dell’esempio: dove vanno i {ripartizione ? importo(ripartizione.totale, 'anteprima') : 'soldi'} che paghi, e il valore stimato dell’auto contro il debito residuo mentre l’anticipo scende a zero. Meno anticipo, prima devi all’auto più di quanto vale.
   </figcaption>
 </figure>
 <script>

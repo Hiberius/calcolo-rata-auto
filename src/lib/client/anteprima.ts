@@ -1,6 +1,6 @@
-import { numero } from '../calc/format';
+import { importo } from '../formato';
 import { fotogramma, fraseAnteprima, MASSIMO_ANTEPRIMA, serieAnteprima, TEMPI } from '../calc/anteprima';
-import { menoMovimento } from '../motion';
+import { livelloMovimento } from '../motion';
 import { disegnaCurve } from '../../components/scene/disegno/curve';
 import { prepara } from '../../components/scene/disegno/tela';
 
@@ -11,14 +11,6 @@ import { prepara } from '../../components/scene/disegno/tela';
  */
 const MS_LENTO = 22;
 const CAMPIONI = 30;
-
-interface NavigatorRidotto { connection?: { saveData?: boolean }; deviceMemory?: number }
-
-function livelloRidotto(): boolean {
-  if (menoMovimento()) return true;
-  const n = navigator as Navigator & NavigatorRidotto;
-  return n.connection?.saveData === true || (n.deviceMemory ?? 8) <= 2 || (navigator.hardwareConcurrency || 8) < 4;
-}
 
 function mediana(v: readonly number[]): number {
   const s = [...v].sort((a, b) => a - b);
@@ -41,13 +33,13 @@ export function avviaAnteprima(doc: Document): void {
     const serie = serieAnteprima(f.anticipo);
     const pronto = prepara(tela);
     if (pronto) disegnaCurve(pronto.ctx, pronto.area, { serie, massimo: MASSIMO_ANTEPRIMA, avanzamento: f.avanzamento, senzaAssi: true });
-    scrivi(lettura, `${numero(Math.round(f.anticipo), 0)} €`);
+    scrivi(lettura, importo(Math.round(f.anticipo), 'anteprima'));
     scrivi(incrocio, fraseAnteprima(serie));
   };
 
   // Livello ridotto: un fotogramma statico con le curve complete e l'anticipo del preventivo, nessun loop.
   const FERMO = TEMPI.disegno;
-  radice.dataset.livello = livelloRidotto() || typeof requestAnimationFrame !== 'function' ? 'ridotto' : 'pieno';
+  radice.dataset.livello = typeof requestAnimationFrame !== 'function' ? 'ridotto' : livelloMovimento();
   if (radice.dataset.livello === 'ridotto') {
     disegna(FERMO);
     return;
