@@ -3,6 +3,7 @@ import { analizza, TIPI_CONTRATTO, type Analisi, type TipoContratto } from '~/li
 import { GRUPPI, preventivoDaForm, unisciEstrazione, type DefCampo, type StatoForm } from '~/lib/client/campi';
 import type { RispostaEstrazione } from '~/lib/extract/schema';
 import { inviaEvento } from '~/lib/client/evento';
+import { ESEMPIO_208, ETICHETTA_ESEMPIO } from '~/lib/esempio';
 import { salvaPreventivo } from '~/lib/client/sessione';
 import CreaScheda from './CreaScheda';
 import { MESSAGGIO_TOTALE_INCOERENTE } from '~/lib/calc/totale';
@@ -28,14 +29,33 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
   const [calcolo, setCalcolo] = useState<Calcolo | null>(null);
   const [schedaAperta, setSchedaAperta] = useState(false);
   const [letto, setLetto] = useState(false);
+  const [esempio, setEsempio] = useState(false);
   const preventivo = useMemo(() => preventivoDaForm(stato), [stato]);
 
+  function vaiAlRisultato() {
+    requestAnimationFrame(() => document.getElementById('risultato')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
+
   function cambia(chiave: DefCampo['chiave'] | 'tipo', valore: string) {
+    setEsempio(false);
     setStato((s) => ({ ...s, [chiave]: valore }));
     setDaConfermare((d) => new Set([...d].filter((k) => k !== chiave)));
   }
 
+  /** Carica il preventivo d'esempio e mostra subito il risultato, con l'etichetta che dice cos'è. */
+  function provaEsempio() {
+    setStato(ESEMPIO_208);
+    setDaConfermare(new Set());
+    setLetto(false);
+    setModo('manuale');
+    setCalcolo(calcola(ESEMPIO_208));
+    setSchedaAperta(false);
+    setEsempio(true);
+    vaiAlRisultato();
+  }
+
   function estratto(r: RispostaEstrazione) {
+    setEsempio(false);
     setStato((s) => unisciEstrazione(s, r.campi));
     setDaConfermare(new Set(r.daConfermare));
     setLetto(true);
@@ -49,8 +69,8 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
     setCalcolo(risultato);
     setSchedaAperta(false);
     if (risultato.analisi) {
-      if (daConfermare.size === 0 && !letto) inviaEvento('decodifica_manuale');
-      requestAnimationFrame(() => document.getElementById('risultato')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+      if (daConfermare.size === 0 && !letto && !esempio) inviaEvento('decodifica_manuale');
+      vaiAlRisultato();
     } else {
       // Il focus va sul primo campo da correggere, anche se è in un gruppo più in alto.
       requestAnimationFrame(() => (document.querySelector('form[aria-label="Numeri del preventivo"] [aria-invalid="true"]') as HTMLElement | null)?.focus());
@@ -61,13 +81,16 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
   return (
     <div class="grid gap-10">
       <div class="grid gap-6">
-        <div role="group" aria-label="Come vuoi inserire il preventivo" class="inline-flex w-fit border-2 border-inchiostro rounded overflow-hidden">
-          {(['foto', 'manuale'] as const).map((m) => (
-            <button key={m} type="button" aria-pressed={modo === m} onClick={() => setModo(m)}
-              class={`px-4 py-2.5 font-semibold transition-colors ${modo === m ? 'bg-inchiostro text-carta' : 'hover:bg-carta-scura'}`}>
-              {m === 'foto' ? 'Carica una foto' : 'Scrivi i numeri'}
-            </button>
-          ))}
+        <div class="flex flex-wrap items-center gap-3">
+          <div role="group" aria-label="Come vuoi inserire il preventivo" class="inline-flex w-fit border-2 border-inchiostro rounded overflow-hidden">
+            {(['foto', 'manuale'] as const).map((m) => (
+              <button key={m} type="button" aria-pressed={modo === m} onClick={() => setModo(m)}
+                class={`px-4 py-2.5 font-semibold transition-colors ${modo === m ? 'bg-inchiostro text-carta' : 'hover:bg-carta-scura'}`}>
+                {m === 'foto' ? 'Carica una foto' : 'Scrivi i numeri'}
+              </button>
+            ))}
+          </div>
+          <button type="button" class="btn btn-secondario" onClick={provaEsempio} data-prova-esempio>Prova con un preventivo d'esempio</button>
         </div>
 
         {modo === 'foto' && <UploadDropzone siteKey={siteKey} onEstratto={estratto} />}
@@ -105,10 +128,12 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
         {calcolo?.analisi && (
           <ResultCard
             analisi={calcolo.analisi}
+            etichetta={esempio ? ETICHETTA_ESEMPIO : undefined}
             azioni={
               <>
                 <div class="flex flex-wrap gap-3">
-                  {!calcolo.analisi.totali.messaggi.includes(MESSAGGIO_TOTALE_INCOERENTE) && (
+                  {/* L'esempio non diventa una scheda: l'archivio raccoglie solo preventivi veri delle persone. */}
+                  {!esempio && !calcolo.analisi.totali.messaggi.includes(MESSAGGIO_TOTALE_INCOERENTE) && (
                     <button type="button" class="btn btn-primario" aria-expanded={schedaAperta} onClick={() => setSchedaAperta((v) => !v)}>Crea la scheda da condividere</button>
                   )}
                   <a class="btn btn-secondario" href="/noleggio" onClick={() => salvaPreventivo(preventivo)}>Confronta le tre strade</a>
