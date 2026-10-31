@@ -19,7 +19,6 @@ const PREVENTIVO: readonly Campo[] = [
   { chiave: 'maxiRata', etichetta: 'Maxi rata finale', unita: '€', aiuto: 'Lascia vuoto se non c’è' },
 ];
 const IPOTESI: readonly Campo[] = [
-  { chiave: 'tanPrestito', etichetta: 'TAN del prestito', unita: '%' },
   { chiave: 'taegPrestito', etichetta: 'TAEG del prestito', unita: '%', aiuto: 'Il totale della strada A usa il TAEG' },
   { chiave: 'canoneNoleggio', etichetta: 'Canone di noleggio', unita: '€/mese', aiuto: 'Dall’offerta di noleggio che hai visto' },
   { chiave: 'mesiNoleggio', etichetta: 'Durata', unita: 'mesi' },
@@ -42,7 +41,6 @@ function numeri(valori: Valori, chiavi: readonly Campo[]): Record<string, number
 }
 
 const IPOTESI_INIZIALI: Valori = {
-  tanPrestito: aTesto(IPOTESI_PREDEFINITE.tanPrestito),
   taegPrestito: aTesto(IPOTESI_PREDEFINITE.taegPrestito),
   kmAnnui: String(IPOTESI_PREDEFINITE.kmAnnui),
 };

@@ -1,4 +1,5 @@
-import { arrotonda } from './format';
+import { TOLLERANZA_EURO } from './config';
+import { arrotonda, euro, numero } from './format';
 import type { Ipotesi, Preventivo, PrezzoRiferimentoTipo, Ricostruzione, Totali } from './tipi';
 
 export interface PrezzoRiferimento {
@@ -8,9 +9,9 @@ export interface PrezzoRiferimento {
 
 /** prezzoContanti ?? prezzoPromo ?? prezzoListino, con il tipo usato. */
 export function prezzoDiRiferimento(p: Preventivo): PrezzoRiferimento {
-  if (p.prezzoContanti != null) return { valore: p.prezzoContanti, tipo: 'contanti' };
-  if (p.prezzoPromo != null) return { valore: p.prezzoPromo, tipo: 'promo' };
-  if (p.prezzoListino != null) return { valore: p.prezzoListino, tipo: 'listino' };
+  if (p.prezzoContanti != null && p.prezzoContanti > 0) return { valore: p.prezzoContanti, tipo: 'contanti' };
+  if (p.prezzoPromo != null && p.prezzoPromo > 0) return { valore: p.prezzoPromo, tipo: 'promo' };
+  if (p.prezzoListino != null && p.prezzoListino > 0) return { valore: p.prezzoListino, tipo: 'listino' };
   return { valore: null, tipo: 'assente' };
 }
 
@@ -29,7 +30,7 @@ export function durataMesi(p: Preventivo): number {
   return p.nRate + (p.maxiRata ? 1 : 0);
 }
 
-function speseAccessorie(p: Preventivo): number {
+export function speseAccessorie(p: Preventivo): number {
   if (p.accessoriInclusiNelPrezzo) return 0;
   return (p.ipt ?? 0) + (p.messaSuStrada ?? 0) + (p.polizzeAbbinate ?? 0) + (p.serviziAbbinati ?? 0);
 }
@@ -48,8 +49,23 @@ export function costoKmEccedenti(p: Preventivo, ipotesi: Ipotesi): { kmStimati: 
   return { kmStimati, kmEccedenti, costo: arrotonda(kmEccedenti * p.costoKmEccedente) };
 }
 
-function messaggi(p: Preventivo, prezzo: PrezzoRiferimento, r: Ricostruzione): string[] {
+/** Il totale pagato non può essere più basso del prezzo: se lo è, manca un numero. */
+export function totaleIncoerente(prezzo: number | null, totale: number, tipo: Preventivo['tipo']): boolean {
+  return tipo !== 'noleggio' && prezzo != null && prezzo > 0 && totale < prezzo - TOLLERANZA_EURO;
+}
+
+export const MESSAGGIO_TOTALE_INCOERENTE =
+  'Il totale è più basso del prezzo: manca qualcosa (maxi rata, numero di rate, rata?). Controlla i numeri.';
+
+function messaggi(p: Preventivo, prezzo: PrezzoRiferimento, r: Ricostruzione, totale: number, km: { kmStimati: number; costo: number }): string[] {
   const lista: string[] = [];
+  if (totaleIncoerente(prezzo.valore, totale, p.tipo)) lista.push(MESSAGGIO_TOTALE_INCOERENTE);
+  if (prezzo.valore != null && p.tipo !== 'noleggio' && p.anticipo >= prezzo.valore) {
+    lista.push("L'anticipo è pari o superiore al prezzo: controlla i numeri.");
+  }
+  if (p.tipo === 'noleggio' && km.costo > 0) {
+    lista.push(`Il totale comprende circa ${euro(km.costo)} di km oltre quelli inclusi, stimati su ${numero(km.kmStimati, 0)} km.`);
+  }
   if (p.tipo === 'noleggio') {
     lista.push("Nel noleggio non c'è un costo del credito: conta il totale, e a fine contratto l'auto non è tua.");
   } else if (prezzo.valore == null) {
@@ -70,10 +86,13 @@ export function calcolaTotali(p: Preventivo, r: Ricostruzione, ipotesi: Ipotesi)
   const unaTantum = speseUnaTantum(p, r);
   const km = costoKmEccedenti(p, ipotesi);
   const base = p.anticipo + rate + unaTantum + ricorrenti + r.speseImplicite;
-  const totaleTenendo = arrotonda(base + (p.maxiRata ?? 0));
   const totaleRestituendo = arrotonda(base + km.costo);
-  const conCredito = p.tipo !== 'noleggio' && prezzo.valore != null && prezzo.valore > 0;
-  const costo = conCredito ? arrotonda(totaleTenendo - (prezzo.valore as number)) : null;
+  // Il noleggio si restituisce sempre: il totale che paghi davvero comprende i km eccedenti stimati.
+  const totaleTenendo = p.tipo === 'noleggio' ? totaleRestituendo : arrotonda(base + (p.maxiRata ?? 0));
+  const incoerente = totaleIncoerente(prezzo.valore, totaleTenendo, p.tipo);
+  const conCredito = p.tipo !== 'noleggio' && prezzo.valore != null && !incoerente;
+  // Le spese accessorie fuori prezzo (IPT, messa su strada, polizze, servizi) sono costi dell'auto, non del credito.
+  const costo = conCredito ? arrotonda(totaleTenendo - (prezzo.valore as number) - speseAccessorie(p)) : null;
   return {
     prezzoRiferimento: prezzo.valore,
     prezzoRiferimentoTipo: prezzo.tipo,
@@ -86,6 +105,6 @@ export function calcolaTotali(p: Preventivo, r: Ricostruzione, ipotesi: Ipotesi)
     totalePagatoRestituendo: totaleRestituendo,
     costoCredito: costo,
     costoCreditoPct: costo != null ? costo / (prezzo.valore as number) : null,
-    messaggi: messaggi(p, prezzo, r),
+    messaggi: messaggi(p, prezzo, r, totaleTenendo, km),
   };
 }

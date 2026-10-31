@@ -1,8 +1,12 @@
 import { z } from 'zod';
 import { IPOTESI_PREDEFINITE as D } from './config';
+import { normalizzaMarca, normalizzaModello, normalizzaVersione } from './veicolo';
+
+/** Tetto agli importi: nessun preventivo d'auto supera 10 milioni; evita Infinity e notazione esponenziale. */
+export const EURO_MAX = 10_000_000;
 
 /** Importo in euro: numero finito, non negativo. Le stringhe vanno normalizzate prima (vedi extract/validate). */
-const euro = z.number({ error: 'Deve essere un numero' }).nonnegative({ error: 'Non può essere negativo' });
+const euro = z.number({ error: 'Deve essere un numero' }).nonnegative({ error: 'Non può essere negativo' }).max(EURO_MAX, { error: 'Importo troppo alto' });
 const percento = z.number({ error: 'Deve essere un numero' }).min(0).max(100, { error: 'Percentuale fuori scala' });
 const testo = (max: number) => z.string().trim().max(max);
 
@@ -10,9 +14,10 @@ export const TIPI_CONTRATTO = ['finanziamento', 'leasing', 'noleggio'] as const;
 export type TipoContratto = (typeof TIPI_CONTRATTO)[number];
 
 export const PreventivoSchema = z.object({
-  marca: testo(40).optional(),
-  modello: testo(60).optional(),
-  versione: testo(80).optional(),
+  // Testi pubblici sulla scheda: se non sembrano marca, modello o versione vengono scartati (vedi veicolo.ts).
+  marca: testo(40).optional().transform(normalizzaMarca),
+  modello: testo(60).optional().transform(normalizzaModello),
+  versione: testo(80).optional().transform(normalizzaVersione),
   tipo: z.enum(TIPI_CONTRATTO).default('finanziamento'),
   prezzoListino: euro.optional(),
   prezzoPromo: euro.optional(),

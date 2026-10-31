@@ -34,7 +34,8 @@ export const PromoSchema = z
     requisiti: z.array(z.enum(REQUISITI)).default([]),
     validoDal: data.optional(),
     validoAl: data,
-    urlFonte: z.url({ protocol: /^https$/ }),
+    // La fonte è la pagina della promozione, non la home del marchio (§1.5).
+    urlFonte: z.url({ protocol: /^https$/ }).refine((u) => new URL(u).pathname.replace(/\/+$/, '') !== '', { error: 'urlFonte deve essere la pagina della promozione, non la home' }),
     dataVerifica: data,
     note: z.string().max(400).optional(),
     /** Note del controllo aritmetico fatto in raccolta (il calcolo vivo le ricava comunque dai numeri). */

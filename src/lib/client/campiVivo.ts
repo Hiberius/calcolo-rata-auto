@@ -27,11 +27,13 @@ export const CAMPI_PER_VARIANTE: Record<Variante, readonly ChiaveVivo[]> = {
   fine: [...BASE, 'tanRifinanziamento'],
   taeg: [...BASE, 'speseIstruttoria', 'speseIncassoRata'],
   noleggio: [...BASE, 'canoneNoleggio', 'mesiNoleggio', 'taegPrestito'],
-  promo: ['anticipo', 'canoneNoleggio', 'mesiNoleggio', 'taegPrestito'],
+  // Nella promo l'anticipo non si cambia: rata, maxi rata e credito dichiarati valgono solo con l'anticipo della casa.
+  promo: ['canoneNoleggio', 'mesiNoleggio', 'taegPrestito'],
 };
 
 const IPOTESI: ReadonlySet<ChiaveVivo> = new Set(['tanRifinanziamento', 'canoneNoleggio', 'mesiNoleggio', 'taegPrestito']);
 const INTERI: ReadonlySet<ChiaveVivo> = new Set(['nRate', 'mesiNoleggio']);
+const OBBLIGATORI: ReadonlySet<ChiaveVivo> = new Set(['anticipo', 'nRate', 'rata']);
 
 export type ValoriVivo = Readonly<Partial<Record<ChiaveVivo, string>>>;
 
@@ -39,13 +41,14 @@ export function aTesto(n: number | undefined): string {
   return n == null ? '' : String(n).replace('.', ',');
 }
 
-/** Dai campi (stringhe) ai numeri del calcolo. null se un campo scritto non è un numero valido. */
+/** Dai campi (stringhe) ai numeri del calcolo. null se un campo scritto non è un numero valido o se manca anticipo, numero di rate o rata. */
 export function daValori(valori: ValoriVivo, base: NumeriLeggeri | null): { numeri: NumeriLeggeri; ipotesi: IpotesiLeggere } | null {
   const numeri: Record<string, unknown> = { ...(base ?? { anticipo: 0, nRate: 0, rata: 0 }) };
   const ipotesi: Record<string, number> = {};
   for (const [k, grezzo] of Object.entries(valori) as [ChiaveVivo, string | undefined][]) {
     if (grezzo == null || grezzo.trim() === '') {
-      if (!IPOTESI.has(k) && !['anticipo', 'nRate', 'rata'].includes(k)) delete numeri[k === 'prezzo' ? 'prezzoContanti' : k];
+      if (OBBLIGATORI.has(k)) return null;
+      if (!IPOTESI.has(k)) delete numeri[k === 'prezzo' ? 'prezzoContanti' : k];
       continue;
     }
     const n = normalizzaNumero(grezzo);

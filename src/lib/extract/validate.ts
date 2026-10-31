@@ -1,4 +1,5 @@
 import { normalizzaNumero } from '../numeri';
+import { NORMALIZZA_TESTO_VEICOLO } from '../calc/veicolo';
 import {
   CAMPI_NUMERICI, CAMPI_TESTO, EstrazioneGrezzaSchema,
   type CampoEstratto, type CampoNumerico, type CampoTesto, type EstrazioneGrezza, type RispostaEstrazione,
@@ -39,10 +40,10 @@ function numeroPlausibile(campo: CampoNumerico, valore: number | null): number |
   return limite.intero ? Math.round(valore) : valore;
 }
 
-function testoPulito(valore: string | null | undefined): string | null {
+function testoPulito(campo: (typeof CAMPI_TESTO)[number], valore: string | null | undefined): string | null {
   const t = valore?.trim().slice(0, 60);
   if (!t || contieneDatiPersonali(t)) return null;
-  return t;
+  return NORMALIZZA_TESTO_VEICOLO[campo](t) ?? null;
 }
 
 function tipoDa(valore: string | null | undefined): 'finanziamento' | 'leasing' | 'noleggio' | null {
@@ -69,7 +70,7 @@ export function validaEstrazione(grezzo: unknown): { ok: true; risposta: Rispost
   const plausibili = numerici
     .filter(([c, v]) => !(c === 'prezzoContanti' && promo != null && v === promo))
     .map(([c, v]) => [c, numeroPlausibile(c, v)] as const);
-  const testi = CAMPI_TESTO.map((c) => [c, testoPulito(g[c])] as const).filter(([, v]) => v != null);
+  const testi = CAMPI_TESTO.map((c) => [c, testoPulito(c, g[c])] as const).filter(([, v]) => v != null);
   const tipo = tipoDa(g.tipo);
   const campi: Campi = Object.fromEntries([
     ...plausibili.filter(([, v]) => v != null),

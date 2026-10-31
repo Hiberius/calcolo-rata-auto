@@ -26,7 +26,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   if (!form || !(immagine instanceof File)) return jsonErrore(400, MESSAGGI.corpo);
 
   const ip = ipDa(request);
-  const turnstile = await verificaTurnstile(String(form.get('cf-turnstile-response') ?? ''), env.TURNSTILE_SECRET_KEY, ip);
+  const turnstile = await verificaTurnstile(String(form.get('cf-turnstile-response') ?? ''), env.TURNSTILE_SECRET_KEY, ip, request.url);
   if (!turnstile.ok) return jsonErrore(403, MESSAGGI.turnstile);
 
   const ipHash = await hashIpGiornaliero(ip, env.HASH_SALT);

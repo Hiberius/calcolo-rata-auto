@@ -1,4 +1,5 @@
 import { SOGLIE_VERDETTO } from './config';
+import { MESSAGGIO_TOTALE_INCOERENTE } from './totale';
 import { percentuale } from './format';
 import type { Totali, Verdetto } from './tipi';
 
@@ -12,10 +13,14 @@ function fraseQuota(t: Totali): { quota: number | null; frase: string | null } {
 export function verdetto(t: Totali): Verdetto {
   const { quota, frase } = fraseQuota(t);
   const pct = t.costoCreditoPct;
+  if (t.messaggi.includes(MESSAGGIO_TOTALE_INCOERENTE)) {
+    return { livello: 'non_applicabile', etichetta: MESSAGGIO_TOTALE_INCOERENTE, quotaRata: quota, fraseQuotaRata: frase };
+  }
   if (pct == null) {
     return { livello: 'non_applicabile', etichetta: 'Costo del credito non calcolabile: conta il totale.', quotaRata: quota, fraseQuotaRata: frase };
   }
-  if (pct < SOGLIE_VERDETTO.basso) return { livello: 'basso', etichetta: 'Costo del credito basso', quotaRata: quota, fraseQuotaRata: frase };
-  if (pct <= SOGLIE_VERDETTO.alto) return { livello: 'medio', etichetta: 'Costo del credito nella media delle promozioni attuali', quotaRata: quota, fraseQuotaRata: frase };
-  return { livello: 'alto', etichetta: 'Costo del credito sopra la media delle promozioni attuali', quotaRata: quota, fraseQuotaRata: frase };
+  const quanto = `Costo del credito: ${percentuale(pct, 1)} del prezzo`;
+  if (pct < SOGLIE_VERDETTO.basso) return { livello: 'basso', etichetta: `${quanto}, sotto il 5%`, quotaRata: quota, fraseQuotaRata: frase };
+  if (pct <= SOGLIE_VERDETTO.alto) return { livello: 'medio', etichetta: `${quanto}, tra il 5% e il 12%`, quotaRata: quota, fraseQuotaRata: frase };
+  return { livello: 'alto', etichetta: `${quanto}, oltre il 12%`, quotaRata: quota, fraseQuotaRata: frase };
 }

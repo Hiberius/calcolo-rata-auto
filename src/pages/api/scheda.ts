@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { analizza } from '~/lib/calc';
+import { MESSAGGIO_TOTALE_INCOERENTE } from '~/lib/calc/totale';
 import { CONSENSI } from '~/lib/consent';
 import { creaScheda } from '~/lib/db/queries';
 import { hashIpGiornaliero } from '~/lib/hash';
@@ -30,7 +31,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   if (!corpo.success) return jsonErrore(400, MESSAGGI.corpo);
 
   const ip = ipDa(request);
-  const turnstile = await verificaTurnstile(corpo.data.turnstileToken, env.TURNSTILE_SECRET_KEY, ip);
+  const turnstile = await verificaTurnstile(corpo.data.turnstileToken, env.TURNSTILE_SECRET_KEY, ip, request.url);
   if (!turnstile.ok) return jsonErrore(403, MESSAGGI.turnstile);
 
   const ipHash = await hashIpGiornaliero(ip, env.HASH_SALT);
@@ -41,6 +42,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const { fonte: _fonte, ...preventivo } = corpo.data.preventivo;
   const esito = analizza(preventivo);
   if (!esito.ok) return jsonErrore(422, MSG.numeri, { campi: esito.errori.map((e) => e.campo) });
+  if (esito.analisi.totali.messaggi.includes(MESSAGGIO_TOTALE_INCOERENTE)) return jsonErrore(422, MESSAGGIO_TOTALE_INCOERENTE);
 
   const consenso = CONSENSI.archivio;
   if (corpo.data.consensoArchivio && corpo.data.versioneConsenso !== consenso.versione) return jsonErrore(409, MSG.consenso);

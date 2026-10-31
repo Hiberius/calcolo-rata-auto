@@ -72,7 +72,7 @@ export async function controllaModulo<S extends z.ZodType>(
   const esito = schema.safeParse(campi);
   if (!esito.success) return { ok: false, codice: 'dati', campi: [...new Set(esito.error.issues.map((i) => i.path.join('.') || 'modulo'))] };
   const ip = ipDa(request);
-  const turnstile = await verificaTurnstile(token, env.TURNSTILE_SECRET_KEY, ip);
+  const turnstile = await verificaTurnstile(token, env.TURNSTILE_SECRET_KEY, ip, request.url);
   if (!turnstile.ok) return { ok: false, codice: 'turnstile' };
   const ipHash = await hashIpGiornaliero(ip, env.HASH_SALT);
   const frequenza = await controllaLimiti(env.KV, ipHash, [limite]);

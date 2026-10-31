@@ -2,23 +2,32 @@ import { describe, expect, it } from 'vitest';
 import { euro } from '~/lib/calc/format';
 import { decodificaPromo, eScaduta, ordinaPerCostoCredito, preventivoDaPromo, slugDi, tutteLePromo, validaPromo } from '~/lib/promo';
 import { PromoSchema } from '~/lib/promo/schema';
+import fiat from './fixtures/promos-ritirate/fiat-grande-panda-pop-2026-10.json';
+import peugeot from './fixtures/promos-ritirate/peugeot-208-style-2026-10.json';
 
 const OGGI = new Date('2026-10-31T10:00:00Z');
 
 describe('dataset promozioni', () => {
   const promo = tutteLePromo(OGGI);
 
-  it('le 3 promo del §4 sono valide, con fonte https e data di verifica', () => {
-    expect(promo).toHaveLength(3);
+  it('le promo pubblicate sono valide, con fonte https sulla pagina della promozione e data di verifica', () => {
+    expect(promo.length).toBeGreaterThan(0);
     for (const d of promo) {
       expect(d.promo.urlFonte.startsWith('https://')).toBe(true);
+      expect(new URL(d.promo.urlFonte).pathname.length).toBeGreaterThan(1);
       expect(d.promo.dataVerifica).toBe('2026-10-31');
     }
   });
 
-  it('la 208 decodificata dà 18.253,25 €', () => {
-    const p208 = promo.find((d) => d.promo.id === 'peugeot-208-style-2026-10');
-    expect(euro(p208?.analisi.totali.totalePagatoTenendo)).toBe('18.253,25 €');
+  it('Fiat e Peugeot ritirate: la fonte era la home del marchio e lo schema le rifiuta', () => {
+    expect(PromoSchema.safeParse(fiat).success).toBe(false);
+    expect(PromoSchema.safeParse(peugeot).success).toBe(false);
+    expect(PromoSchema.safeParse({ ...peugeot, urlFonte: 'https://www.peugeot.it/offerte/208' }).success).toBe(true);
+  });
+
+  it('la 208 decodificata (con fonte valida) dà 18.253,25 €', () => {
+    const p208 = decodificaPromo(PromoSchema.parse({ ...peugeot, urlFonte: 'https://www.peugeot.it/offerte/208' }), OGGI);
+    expect(euro(p208.analisi.totali.totalePagatoTenendo)).toBe('18.253,25 €');
   });
 
   it('ordinate per costo del credito in % crescente', () => {
@@ -27,16 +36,12 @@ describe('dataset promozioni', () => {
     expect(promo[0]?.promo.marca).toBe('SEAT');
   });
 
-  it('la Grande Panda porta le discrepanze dal modulo calcolo', () => {
-    const panda = promo.find((d) => d.promo.modello === 'Grande Panda');
-    expect(panda?.analisi.ricostruzione.discrepanze.length).toBeGreaterThan(0);
-  });
-
   it('scadenza: valida fino al giorno incluso, scaduta dal giorno dopo', () => {
     expect(eScaduta({ validoAl: '2026-10-31' }, OGGI)).toBe(false);
     expect(eScaduta({ validoAl: '2026-10-31' }, new Date('2026-11-01T08:00:00Z'))).toBe(true);
     const scadute = tutteLePromo(new Date('2026-11-15T08:00:00Z')).filter((d) => d.scaduta).map((d) => d.promo.marca);
-    expect(scadute.sort()).toEqual(['Fiat', 'Peugeot']);
+    expect(scadute).toEqual([]);
+    expect(tutteLePromo(new Date('2026-12-15T08:00:00Z')).filter((d) => d.scaduta).map((d) => d.promo.marca)).toEqual(['SEAT']);
   });
 });
 
@@ -78,8 +83,8 @@ describe('schema Promo', () => {
 describe('promo sulla scheda (§6)', () => {
   it('trova la promo dello stesso modello senza badare a maiuscole e la ignora se scaduta', async () => {
     const { promoDelloStessoModello } = await import('~/lib/promo');
-    expect(promoDelloStessoModello('peugeot', '208', OGGI)?.promo.id).toBe('peugeot-208-style-2026-10');
-    expect(promoDelloStessoModello('Peugeot', '208', new Date('2026-11-02T00:00:00Z'))).toBeNull();
-    expect(promoDelloStessoModello('Peugeot', undefined, OGGI)).toBeNull();
+    expect(promoDelloStessoModello('seat', 'arona', OGGI)?.promo.id).toBe('seat-arona-black-edition-2026-11');
+    expect(promoDelloStessoModello('SEAT', 'Arona', new Date('2026-12-02T00:00:00Z'))).toBeNull();
+    expect(promoDelloStessoModello('SEAT', undefined, OGGI)).toBeNull();
   });
 });

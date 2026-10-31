@@ -2,7 +2,6 @@
 import Base from '~/layouts/Base.astro';
 import PromoBox from '~/components/compare/PromoBox.astro';
 import CalcoloVivo from '~/components/compare/CalcoloVivo';
-import { aTesto } from '~/lib/client/campiVivo';
 import ResultCard from '~/components/decode/ResultCard';
 import { dataBreve } from '~/lib/date';
 import { euro } from '~/lib/calc/format';
@@ -39,8 +38,8 @@ const { fonte: _fonte, ...base } = a.preventivo;
 
   <section class="contenitore grid gap-6 pb-8" aria-labelledby="strade-titolo">
     <h2 id="strade-titolo" class="text-2xl font-semibold tracking-tight">Stessa auto, tre strade</h2>
-    <p class="max-w-prose text-tenue">Cambia anticipo, canone di noleggio e TAEG del prestito: le colonne si aggiornano. Le ipotesi sono tue, i numeri della promo restano quelli della fonte.</p>
-    <CalcoloVivo client:visible variante="promo" base={base} iniziale={{ anticipo: aTesto(p.anticipo), taegPrestito: '8,5', mesiNoleggio: String(p.nRate + (p.maxiRata ? 1 : 0)) }} />
+    <p class="max-w-prose text-tenue">Cambia canone di noleggio, durata e TAEG del prestito: le colonne si aggiornano. Le ipotesi sono tue, i numeri della promo restano quelli della fonte, anticipo compreso.</p>
+    <CalcoloVivo client:visible variante="promo" base={base} iniziale={{ taegPrestito: '8,5', mesiNoleggio: String(p.nRate + (p.maxiRata ? 1 : 0)) }} />
   </section>
 </Base>
 

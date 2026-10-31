@@ -9,6 +9,8 @@ export interface Flusso {
 
 const TASSO_MENSILE_MAX = 0.05;
 const ITERAZIONI = 200;
+/** Mezzo centesimo: sotto questa soglia il valore attuale a tasso zero è rumore di arrotondamento. */
+const TOLLERANZA_VA = 0.005;
 
 /**
  * Flussi dal punto di vista del cliente: al mese 0 riceve il credito meno le spese anticipate,
@@ -33,7 +35,9 @@ export function valoreAttuale(flussi: readonly Flusso[], tassoMensile: number): 
 
 /** Tasso mensile che azzera il valore attuale, per bisezione tra 0 e 5%. null se fuori intervallo. */
 export function tassoMensile(flussi: readonly Flusso[]): number | null {
-  if (valoreAttuale(flussi, 0) > 0) return null;
+  const vaZero = valoreAttuale(flussi, 0);
+  if (Math.abs(vaZero) <= TOLLERANZA_VA) return 0;
+  if (vaZero > 0) return null;
   if (valoreAttuale(flussi, TASSO_MENSILE_MAX) < 0) return null;
   let basso = 0;
   let alto = TASSO_MENSILE_MAX;

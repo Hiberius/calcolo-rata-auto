@@ -22,6 +22,9 @@ const dati = scheda ? datiScheda(scheda.analisi, id, sito) : null;
 const a = scheda?.analisi;
 const og = `${Astro.url.origin}/s/${id}/og.png`;
 if (scheda) Astro.response.headers.set('cache-control', 'public, max-age=300');
+const TIPO_PREZZO = { contanti: 'Prezzo in contanti', promo: 'Prezzo promozionale', listino: 'Prezzo di listino', assente: 'Prezzo' } as const;
+// La scheda è visibile a chi ha il link ma non va nei motori di ricerca.
+Astro.response.headers.set('x-robots-tag', 'noindex');
 const promo = a ? promoDelloStessoModello(a.preventivo.marca, a.preventivo.modello) : null;
 ---
 {dati && a ? (
@@ -30,6 +33,7 @@ const promo = a ? promoDelloStessoModello(a.preventivo.marca, a.preventivo.model
     description={testoCondivisione(dati)}
     ogImage={og}
     canonical={dati.url}
+    noindex
   >
     <section class="contenitore sezione grid gap-12 lg:grid-cols-[minmax(0,34rem)_1fr] lg:items-start">
       <article class="scontrino rounded-t px-6 py-10 sm:px-10 grid gap-6" aria-labelledby="scheda-titolo">
@@ -43,7 +47,7 @@ const promo = a ? promoDelloStessoModello(a.preventivo.marca, a.preventivo.model
           <span class="numeri totale-grande">{euro(a.totali.totalePagatoTenendo)}</span>
         </p>
         <div class="grid">
-          {a.totali.prezzoRiferimento != null && <NumberRow etichetta="Prezzo" valore={euro(a.totali.prezzoRiferimento)} />}
+          {a.totali.prezzoRiferimento != null && <NumberRow etichetta={TIPO_PREZZO[a.totali.prezzoRiferimentoTipo]} valore={euro(a.totali.prezzoRiferimento)} />}
           {a.totali.costoCredito != null && (
             <NumberRow etichetta="Costo del credito" valore={`${euro(a.totali.costoCredito)} · ${percentuale(a.totali.costoCreditoPct)}`} tono="segnale" />
           )}
@@ -53,6 +57,8 @@ const promo = a ? promoDelloStessoModello(a.preventivo.marca, a.preventivo.model
           {a.taeg.taegRicostruito != null && <NumberRow etichetta="TAEG ricostruito dai numeri" valore={punti(a.taeg.taegRicostruito)} tono="tenue" />}
         </div>
         <p class="font-medium">{a.verdetto.etichetta}</p>
+        {a.totali.messaggi[0] && <p class="text-sm border-l-4 border-attenzione pl-3">{a.totali.messaggi[0]}</p>}
+        {a.taeg.stato === 'da_verificare' && <p class="text-sm border-l-4 border-attenzione pl-3">TAEG da verificare: {a.taeg.nota}</p>}
         {a.ricostruzione.discrepanze.map((d) => <p class="text-sm border-l-4 border-attenzione pl-3">{d.messaggio}</p>)}
         <Disclaimer />
       </article>

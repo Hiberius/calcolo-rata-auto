@@ -1,7 +1,7 @@
 import { arrotonda, euro, numero, punti } from './format';
 import { rataCostante, tanNominaleDaTaeg } from './rata';
 import type { Ipotesi, Preventivo, Strada, Totali } from './tipi';
-import { durataMesi } from './totale';
+import { durataMesi, speseAccessorie } from './totale';
 
 function stradaContanti(p: Preventivo, t: Totali, ipotesi: Ipotesi): Strada {
   const titolo = 'Contanti o prestito personale';
@@ -13,16 +13,18 @@ function stradaContanti(p: Preventivo, t: Totali, ipotesi: Ipotesi): Strada {
   const mesi = ipotesi.mesiPrestito ?? Math.max(12, durataMesi(p));
   const capitale = Math.max(0, prezzo - p.anticipo);
   const rata = rataCostante(capitale, tanNominaleDaTaeg(ipotesi.taegPrestito), mesi);
-  const totale = arrotonda(p.anticipo + rata * mesi);
+  const accessori = speseAccessorie(p);
+  const totale = arrotonda(p.anticipo + rata * mesi + accessori);
   return {
     id: 'A',
     titolo,
     totaleUscito: totale,
     possiediAllaFine: possiedi,
     ipotesi: [
-      `TAN prestito ${punti(ipotesi.tanPrestito)}, TAEG ${punti(ipotesi.taegPrestito)} (il totale usa il TAEG, che comprende le spese)`,
+      `TAEG del prestito ${punti(ipotesi.taegPrestito)} (comprende le spese)`,
       `${mesi} mesi`,
       `Stesso anticipo del preventivo: ${euro(p.anticipo)}`,
+      ...(accessori > 0 ? [`Stesse spese fuori prezzo del preventivo: ${euro(accessori)}`] : []),
     ],
     dettaglio: `In contanti paghi ${euro(prezzo)}. Con un prestito di ${euro(capitale)} in ${mesi} mesi la rata è circa ${euro(rata)}.`,
   };
