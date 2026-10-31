@@ -18,3 +18,5 @@ export const IPOTESI_PREDEFINITE = {
   anticipoNoleggio: 0,
   kmAnnui: 15_000,
 } as const;
+/** Ipotesi di valore residuo quando non c'è la maxi rata: dopo circa 3 anni un'auto vale intorno al 45% del prezzo. */
+export const QUOTA_VALORE_RESIDUO = 0.45;

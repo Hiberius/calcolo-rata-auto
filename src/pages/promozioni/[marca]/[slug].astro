@@ -1,0 +1,50 @@
+---
+import Base from '~/layouts/Base.astro';
+import PromoBox from '~/components/compare/PromoBox.astro';
+import CalcoloVivo from '~/components/compare/CalcoloVivo';
+import { aTesto } from '~/lib/client/campiVivo';
+import ResultCard from '~/components/decode/ResultCard';
+import { dataBreve } from '~/lib/date';
+import { euro } from '~/lib/calc/format';
+import { tutteLePromo, type PromoDecodificata } from '~/lib/promo';
+
+export const prerender = true;
+
+export function getStaticPaths() {
+  return tutteLePromo().map((d) => ({ params: { marca: d.slugMarca, slug: d.slug }, props: { d } }));
+}
+
+const { d } = Astro.props as { d: PromoDecodificata };
+const p = d.promo;
+const a = d.analisi;
+const titolo = [p.marca, p.modello, p.versione].filter(Boolean).join(' ');
+const { fonte: _fonte, ...base } = a.preventivo;
+---
+<Base
+  title={`${titolo} a ${euro(p.rata, 0)} al mese: quanto paghi davvero | Rata Vera`}
+  description={`Promozione ${titolo} decodificata: totale pagato ${euro(a.totali.totalePagatoTenendo)}, costo del credito, TAEG e fine contratto. Fonte ufficiale, valida fino al ${dataBreve(p.validoAl)}.`}
+>
+  <section class="contenitore pt-8 sm:pt-14 grid gap-4">
+    <p class="text-sm"><a class="link" href="/promozioni">Promozioni</a> / {p.marca}</p>
+    <h1 class="font-semibold tracking-tight leading-[1.05] text-[length:var(--testo-titolo)] max-w-[22ch]">{titolo}: i conti della promozione</h1>
+  </section>
+
+  <section class="contenitore sezione grid gap-12 lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start">
+    <div class="grid gap-6 lg:sticky lg:top-6">
+      <PromoBox decodificata={d} />
+      <p><a class="btn btn-primario w-full" href="/#decodifica">Decodifica il tuo preventivo</a></p>
+    </div>
+    <ResultCard analisi={a} azioni={null} />
+  </section>
+
+  <section class="contenitore grid gap-6 pb-8" aria-labelledby="strade-titolo">
+    <h2 id="strade-titolo" class="text-2xl font-semibold tracking-tight">Stessa auto, tre strade</h2>
+    <p class="max-w-prose text-tenue">Cambia anticipo, canone di noleggio e TAEG del prestito: le colonne si aggiornano. Le ipotesi sono tue, i numeri della promo restano quelli della fonte.</p>
+    <CalcoloVivo client:visible variante="promo" base={base} iniziale={{ anticipo: aTesto(p.anticipo), taegPrestito: '8,5', mesiNoleggio: String(p.nRate + (p.maxiRata ? 1 : 0)) }} />
+  </section>
+</Base>
+
+<script>
+  import { segnalaScadute } from '~/lib/client/filtriPromo';
+  segnalaScadute(document);
+</script>

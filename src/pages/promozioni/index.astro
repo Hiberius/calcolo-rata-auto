@@ -1,0 +1,57 @@
+---
+import Base from '~/layouts/Base.astro';
+import PromoBox from '~/components/compare/PromoBox.astro';
+import { tutteLePromo } from '~/lib/promo';
+
+export const prerender = true;
+const tutte = tutteLePromo();
+const inVigore = tutte.filter((d) => !d.scaduta);
+const marche = [...new Set(inVigore.map((d) => d.promo.marca))].sort();
+---
+<Base
+  title="Promozioni auto ufficiali con i conti fatti: totale e costo del credito | Rata Vera"
+  description="Le offerte ufficiali delle case auto nel riquadro unico: rata, anticipo, maxi rata, TAN, TAEG, totale pagato e costo del credito, con fonte e scadenza."
+>
+  <section class="contenitore pt-8 pb-10 sm:pt-14 grid gap-5">
+    <h1 class="font-semibold tracking-tight leading-[1.05] text-[length:var(--testo-titolo)] max-w-[20ch]">Promozioni ufficiali, con i conti fatti.</h1>
+    <p class="text-lg max-w-prose text-tenue">
+      Ogni offerta è nello stesso riquadro: rata, anticipo, maxi rata, TAN, TAEG, prezzo, validità e fonte. Accanto c'è quello che paghi in tutto e il costo del credito.
+    </p>
+    <p class="text-sm max-w-prose">
+      Ordine unico: costo del credito in percentuale del prezzo, dal più basso. Nessuna posizione a pagamento. <a class="link" href="/criteri">Come scegliamo e ordiniamo</a>.
+    </p>
+  </section>
+
+  <section class="contenitore grid gap-8" aria-label="Elenco delle promozioni">
+    <form class="grid gap-3 sm:grid-cols-4 border-y border-riga py-4" data-filtri aria-label="Filtri">
+      <label class="grid gap-1 text-sm"><span class="font-medium">Marca</span>
+        <select class="campo" name="marca"><option value="">Tutte</option>{marche.map((m) => <option value={m}>{m}</option>)}</select>
+      </label>
+      <label class="grid gap-1 text-sm"><span class="font-medium">Anticipo fino a</span>
+        <input class="campo" name="anticipo" inputmode="numeric" placeholder="€" />
+      </label>
+      <label class="grid gap-1 text-sm"><span class="font-medium">Rata fino a</span>
+        <input class="campo" name="rata" inputmode="numeric" placeholder="€ al mese" />
+      </label>
+      <label class="grid gap-1 text-sm"><span class="font-medium">Maxi rata finale</span>
+        <select class="campo" name="maxi"><option value="">Indifferente</option><option value="1">Sì</option><option value="0">No</option></select>
+      </label>
+    </form>
+
+    <div class="grid gap-10 lg:grid-cols-2" data-elenco>
+      {inVigore.map((d) => <PromoBox decodificata={d} link />)}
+    </div>
+    <p class="text-tenue" data-vuoto hidden={inVigore.length > 0}>Nessuna promozione in vigore con questi filtri.</p>
+    <p class="text-sm text-tenue max-w-prose">
+      Le offerte scadute escono dall'elenco in automatico. Il dataset cresce ogni settimana: ogni riquadro riporta la data in cui abbiamo controllato la fonte.
+    </p>
+  </section>
+</Base>
+
+<script>
+  import { applicaFiltri } from '~/lib/client/filtriPromo';
+  const modulo = document.querySelector<HTMLFormElement>('[data-filtri]');
+  const aggiorna = () => modulo && applicaFiltri(document, new FormData(modulo));
+  modulo?.addEventListener('input', aggiorna);
+  aggiorna();
+</script>

@@ -12,6 +12,18 @@ interface Env {
   readonly TURNSTILE_SECRET_KEY?: string;
   readonly HASH_SALT?: string;
   readonly ANTHROPIC_API_KEY?: string;
+  readonly BREVO_API_KEY?: string;
+  readonly NOTIFY_EMAIL?: string;
+  readonly EMAIL_MITTENTE?: string;
+  readonly ADMIN_TOKEN?: string;
+  readonly PUBLIC_STRIPE_LINK_VERDETTO?: string;
+  readonly PUBLIC_STRIPE_LINK_B2B_149?: string;
+  readonly PUBLIC_STRIPE_LINK_B2B_299?: string;
+}
+
+interface ImportMetaEnv {
+  /** Token di Cloudflare Web Analytics, letto a build time: se vuoto il beacon non viene caricato. */
+  readonly PUBLIC_CF_ANALYTICS_TOKEN?: string;
 }
 
 type Runtime = import('@astrojs/cloudflare').Runtime<Env>;

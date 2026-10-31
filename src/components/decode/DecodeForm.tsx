@@ -2,12 +2,13 @@ import { useMemo, useState } from 'preact/hooks';
 import { analizza, TIPI_CONTRATTO, type Analisi, type TipoContratto } from '~/lib/calc';
 import { GRUPPI, preventivoDaForm, unisciEstrazione, type DefCampo, type StatoForm } from '~/lib/client/campi';
 import type { RispostaEstrazione } from '~/lib/extract/schema';
+import { inviaEvento } from '~/lib/client/evento';
+import { salvaPreventivo } from '~/lib/client/sessione';
 import CreaScheda from './CreaScheda';
 import FieldGroup from './FieldGroup';
 import ResultCard from './ResultCard';
 import UploadDropzone from './UploadDropzone';
 
-export const CHIAVE_SESSIONE = 'ratavera:preventivo';
 const ETICHETTE_TIPO: Record<TipoContratto, string> = { finanziamento: 'Finanziamento', leasing: 'Leasing', noleggio: 'Noleggio' };
 
 type Modo = 'foto' | 'manuale';
@@ -19,20 +20,13 @@ function calcola(stato: StatoForm): Calcolo {
   return { analisi: null, errori: new Map(esito.errori.map((e) => [e.campo, e.messaggio])) };
 }
 
-function salvaInSessione(preventivo: Record<string, unknown>): void {
-  try {
-    sessionStorage.setItem(CHIAVE_SESSIONE, JSON.stringify(preventivo));
-  } catch {
-    // sessionStorage può essere bloccato: il confronto parte comunque con l'inserimento manuale.
-  }
-}
-
 export default function DecodeForm({ siteKey }: { siteKey: string }) {
   const [modo, setModo] = useState<Modo>('foto');
   const [stato, setStato] = useState<StatoForm>({});
   const [daConfermare, setDaConfermare] = useState<ReadonlySet<string>>(new Set());
   const [calcolo, setCalcolo] = useState<Calcolo | null>(null);
   const [schedaAperta, setSchedaAperta] = useState(false);
+  const [letto, setLetto] = useState(false);
   const preventivo = useMemo(() => preventivoDaForm(stato), [stato]);
 
   function cambia(chiave: DefCampo['chiave'] | 'tipo', valore: string) {
@@ -43,6 +37,7 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
   function estratto(r: RispostaEstrazione) {
     setStato((s) => unisciEstrazione(s, r.campi));
     setDaConfermare(new Set(r.daConfermare));
+    setLetto(true);
     setModo('manuale');
     setCalcolo(null);
   }
@@ -53,6 +48,7 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
     setCalcolo(risultato);
     setSchedaAperta(false);
     if (risultato.analisi) {
+      if (daConfermare.size === 0 && !letto) inviaEvento('decodifica_manuale');
       requestAnimationFrame(() => document.getElementById('risultato')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
     }
   }
@@ -105,7 +101,7 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
               <>
                 <div class="flex flex-wrap gap-3">
                   <button type="button" class="btn btn-primario" aria-expanded={schedaAperta} onClick={() => setSchedaAperta((v) => !v)}>Crea la scheda da condividere</button>
-                  <a class="btn btn-secondario" href="/noleggio" onClick={() => salvaInSessione(preventivo)}>Confronta le tre strade</a>
+                  <a class="btn btn-secondario" href="/noleggio" onClick={() => salvaPreventivo(preventivo)}>Confronta le tre strade</a>
                 </div>
                 {schedaAperta && <CreaScheda siteKey={siteKey} preventivo={preventivo} />}
               </>
