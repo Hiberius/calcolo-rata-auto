@@ -1,6 +1,7 @@
 import type { Analisi } from '../calc';
 import { composizioneTotale, type VoceTotale } from '../calc/composizione';
 import { euro, euroIntero, numero, percentuale, punti } from '../calc/format';
+import { baseScena, cursoriIniziali, rigaIncrocio, serieScena } from '../calc/scena';
 
 export interface DatiScheda {
   readonly id: string;
@@ -14,6 +15,8 @@ export interface DatiScheda {
   readonly costoCreditoPct: string | null;
   readonly composizione: string;
   readonly taeg: string;
+  /** «Dal mese N devi all'auto più di quanto vale, stima.» se il debito supera il valore stimato. */
+  readonly incrocio: string | null;
   readonly url: string;
   readonly urlBreve: string;
 }
@@ -38,6 +41,11 @@ function breve(v: VoceTotale, a: Analisi): string {
   return `${BREVI[v.chiave] ?? v.etichetta} ${compatto(v.importo)}`;
 }
 
+function incrocioDi(a: Analisi): string | null {
+  const base = baseScena(a);
+  return rigaIncrocio(serieScena(base, cursoriIniziali(base)));
+}
+
 function titoloDi(a: Analisi): string {
   const p = a.preventivo;
   return [p.marca, p.modello, p.versione].filter(Boolean).join(' ') || 'Il preventivo';
@@ -60,6 +68,7 @@ export function datiScheda(a: Analisi, id: string, sito: string): DatiScheda {
     costoCreditoPct: t.costoCreditoPct != null ? percentuale(t.costoCreditoPct, 0) : null,
     composizione: `${parti.join(' + ')} = ${euro(t.totalePagatoTenendo)}`,
     taeg: p.taegDichiarato != null ? `TAEG ${punti(p.taegDichiarato)}` : 'TAEG non indicato',
+    incrocio: incrocioDi(a),
     url: `${sito.replace(/\/$/, '')}/s/${id}`,
     urlBreve: `${host}/s/${id}`,
   };
@@ -69,5 +78,6 @@ export function datiScheda(a: Analisi, id: string, sito: string): DatiScheda {
 export function testoCondivisione(d: DatiScheda): string {
   const prezzo = d.prezzo ? ` (prezzo ${d.prezzo})` : '';
   const costo = d.costoCredito ? ` Costo del credito ${d.costoCredito} (${d.costoCreditoPct}).` : '';
-  return `${d.titolo} «a ${d.rataPubblicizzata}». Paghi davvero ${d.totaleEsatto}${prezzo}.${costo} ${d.composizione}. ${d.taeg}. ${d.urlBreve} (Rata Vera non è un mediatore creditizio: chiedi il SECCI prima di firmare.)`;
+  const incrocio = d.incrocio ? ` ${d.incrocio}` : '';
+  return `${d.titolo} «a ${d.rataPubblicizzata}». Paghi davvero ${d.totaleEsatto}${prezzo}.${costo} ${d.composizione}. ${d.taeg}.${incrocio} ${d.urlBreve} (Rata Vera non è un mediatore creditizio: chiedi il SECCI prima di firmare.)`;
 }

@@ -11,6 +11,7 @@ import { caricaScheda } from '~/lib/scheda';
 import PromoBox from '~/components/compare/PromoBox.astro';
 import EliminaScheda from '~/components/ui/EliminaScheda.astro';
 import { promoDelloStessoModello } from '~/lib/promo';
+import { datiScena } from '~/lib/og/scena';
 
 export const prerender = false;
 
@@ -31,6 +32,8 @@ const TIPO_PREZZO = { contanti: 'Prezzo in contanti', promo: 'Prezzo promozional
 // La scheda è visibile a chi ha il link ma non va nei motori di ricerca.
 Astro.response.headers.set('x-robots-tag', 'noindex');
 const promo = a ? promoDelloStessoModello(a.preventivo.marca, a.preventivo.modello) : null;
+// Atto 2 della scena come immagine statica: c'è solo se il preventivo ha un prezzo e un piano (non nel noleggio).
+const scena = a && dati ? datiScena(a, dati.urlBreve) : null;
 ---
 {dati && a ? (
   <Base
@@ -72,6 +75,16 @@ const promo = a ? promoDelloStessoModello(a.preventivo.marca, a.preventivo.model
 
       <div class="grid gap-10">
         <ShareButtons testo={testoCondivisione(dati)} url={dati.url} immagineQuadrata={`/s/${id}/og.png?formato=quadrato&scarica=1`} />
+        {scena && (
+          <figure class="grid gap-3" data-immagine-scena>
+            <img src={`/s/${id}/scena.png`} width="1200" height="630" loading="lazy" decoding="async" class="block h-auto w-full rounded-[0.375rem] bg-inchiostro"
+              alt={`Grafico: valore stimato dell'auto contro il debito residuo. ${scena.frase} A fine piano il debito è ${scena.debitoFinale}, l'auto vale circa ${scena.valoreFinale}.`} />
+            <figcaption class="flex flex-wrap items-baseline justify-between gap-3 text-sm text-tenue">
+              <span>Valore contro debito, mese per mese: stima, non quotazione.</span>
+              <a class="link tocco" href={`/s/${id}/scena.png?scarica=1`} download>Scarica il grafico</a>
+            </figcaption>
+          </figure>
+        )}
         <EliminaScheda id={id} />
         {promo && (
           <div class="grid gap-3">

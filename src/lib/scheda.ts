@@ -6,9 +6,9 @@ export const TTL_CACHE_SCHEDA = 60 * 60 * 24 * 30;
 /** Versione dell'immagine OG: cambiarla rigenera tutte le immagini (le vecchie scadono da sole in KV). */
 export const VERSIONE_OG = 'v7';
 
-/** Tutte le chiavi KV di una scheda: dati in cache e le due immagini. Servono anche alla cancellazione. */
+/** Tutte le chiavi KV di una scheda: dati in cache, le due immagini dello scontrino e quella della scena. Servono anche alla cancellazione. */
 export function chiaviCacheScheda(id: string): readonly string[] {
-  return [`scheda:${id}`, `og:${VERSIONE_OG}:${id}:orizzontale`, `og:${VERSIONE_OG}:${id}:quadrato`];
+  return [`scheda:${id}`, `og:${VERSIONE_OG}:${id}:orizzontale`, `og:${VERSIONE_OG}:${id}:quadrato`, `og:${VERSIONE_OG}:${id}:scena`];
 }
 
 export interface SchedaCaricata {

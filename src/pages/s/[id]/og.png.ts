@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { DIMENSIONI_OG, nodoScheda, testoUsato, type FormatoOg } from '~/lib/og/card';
+import { rendiPng } from '~/lib/og/render';
 import { datiScheda } from '~/lib/og/template';
 import { caricaScheda, TTL_CACHE_SCHEDA, VERSIONE_OG } from '~/lib/scheda';
 
@@ -10,21 +11,7 @@ async function generaPng(id: string, formato: FormatoOg, env: Env): Promise<Arra
   const scheda = await caricaScheda(env, id);
   if (!scheda) return null;
   const dati = datiScheda(scheda.analisi, id, env.PUBLIC_SITE_URL);
-  const { ImageResponse, loadGoogleFont } = await import('workers-og');
-  // workers-og non codifica il parametro text: lo codifichiamo qui (€, ×, · e + altrimenti si perdono).
-  const testo = encodeURIComponent([...new Set(testoUsato(dati))].join(''));
-  const [sans, mono] = await Promise.all([
-    loadGoogleFont({ family: 'Instrument Sans', weight: 600, text: testo }),
-    loadGoogleFont({ family: 'JetBrains Mono', weight: 500, text: testo }),
-  ]);
-  const risposta = new ImageResponse(nodoScheda(dati, formato) as unknown as string, {
-    ...DIMENSIONI_OG[formato],
-    fonts: [
-      { name: 'Instrument Sans', data: sans, weight: 600, style: 'normal' },
-      { name: 'JetBrains Mono', data: mono, weight: 500, style: 'normal' },
-    ],
-  });
-  return risposta.arrayBuffer();
+  return rendiPng(nodoScheda(dati, formato), DIMENSIONI_OG[formato], testoUsato(dati));
 }
 
 export const GET: APIRoute = async ({ params, url, locals }) => {
