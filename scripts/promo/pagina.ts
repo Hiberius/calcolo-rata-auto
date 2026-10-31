@@ -1,6 +1,7 @@
 import { mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { chromium } from '@playwright/test';
+import { dominioUfficiale } from './fonti';
 
 const MAX_TESTO = 24_000;
 const RIFIUTA = /rifiuta|solo necessari|solo i necessari|continua senza accettare|nega/i;
@@ -12,6 +13,8 @@ export interface PaginaLetta {
 
 /** Apre la pagina ufficiale in italiano, rifiuta i cookie non necessari, legge il testo visibile e fa lo screenshot. */
 export async function leggiPagina(url: string, percorsoScreenshot: string): Promise<PaginaLetta> {
+  const u = new URL(url);
+  if (u.protocol !== 'https:' || !dominioUfficiale(u.hostname)) throw new Error(`URL rifiutato (solo https su domini ufficiali): ${url}`);
   const browser = await chromium.launch();
   try {
     const contesto = await browser.newContext({ locale: 'it-IT', viewport: { width: 1366, height: 900 } });
