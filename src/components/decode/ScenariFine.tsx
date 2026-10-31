@@ -25,7 +25,7 @@ export default function ScenariFine({ scenari }: { scenari: Scenari }) {
           <p>Paghi la maxi rata di {euro(tieni.maxiRata)}.</p>
           <p>
             Se la rifinanzi (ipotesi TAN {punti(tieni.rifinanziamento.tan)} su {tieni.rifinanziamento.mesi} mesi): rata {euro(tieni.rifinanziamento.rata)}, costano{' '}
-            <span class="text-segnale font-semibold">{euro(tieni.rifinanziamento.costoAggiuntivo)}</span> in più, totale {euro(tieni.rifinanziamento.totale)}.
+            <span class="text-segnale-scuro font-semibold">{euro(tieni.rifinanziamento.costoAggiuntivo)}</span> in più, totale {euro(tieni.rifinanziamento.totale)}.
           </p>
         </Colonna>
         <Colonna titolo="La restituisci" totale={restituisci.totale}>

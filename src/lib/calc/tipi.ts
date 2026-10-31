@@ -15,9 +15,9 @@ export type TipoContratto = (typeof TIPI_CONTRATTO)[number];
 
 export const PreventivoSchema = z.object({
   // Testi pubblici sulla scheda: se non sembrano marca, modello o versione vengono scartati (vedi veicolo.ts).
-  marca: testo(40).optional().transform(normalizzaMarca),
-  modello: testo(60).optional().transform(normalizzaModello),
-  versione: testo(80).optional().transform(normalizzaVersione),
+  marca: testo(40).transform(normalizzaMarca).optional(),
+  modello: testo(60).transform(normalizzaModello).optional(),
+  versione: testo(80).transform(normalizzaVersione).optional(),
   tipo: z.enum(TIPI_CONTRATTO).default('finanziamento'),
   prezzoListino: euro.optional(),
   prezzoPromo: euro.optional(),

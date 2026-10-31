@@ -16,9 +16,9 @@ export const CONSENSI = {
   },
   contatto_noleggio: {
     finalita: 'contatto_noleggio',
-    versione: '2026-10-31',
+    versione: '2026-10-31-v2',
     testo:
-      'Accetto di essere contattato da un partner di noleggio a lungo termine selezionato da Rata Vera, per questa richiesta. I miei dati non vengono usati per altro e posso chiederne la cancellazione in ogni momento.',
+      'Accetto di essere contattato da Rata Vera, via email o telefono, per ricevere offerte di noleggio a lungo termine sul modello che ho indicato. I miei dati non vengono passati a nessun altro senza un mio nuovo consenso, che indicherà il nome del partner. Posso chiederne la cancellazione in ogni momento.',
   },
   contatto_b2b: {
     finalita: 'contatto_b2b',

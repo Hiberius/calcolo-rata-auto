@@ -8,6 +8,7 @@ export const MODELLO_ANTHROPIC = 'claude-haiku-4-5';
 export async function estraiConAnthropic(chiave: string, base64: string, mediaType: string): Promise<EsitoModello> {
   const risposta = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
+    signal: AbortSignal.timeout(12_000),
     headers: { 'x-api-key': chiave, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
     body: JSON.stringify({
       model: MODELLO_ANTHROPIC,

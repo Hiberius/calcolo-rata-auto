@@ -25,8 +25,8 @@ const siteKey = Astro.locals.runtime?.env?.PUBLIC_TURNSTILE_SITE_KEY || TURNSTIL
   <section class="contenitore sezione grid gap-8 lg:grid-cols-[1fr_1.4fr]" aria-labelledby="richiesta-titolo">
     <div class="grid content-start gap-4">
       <h2 id="richiesta-titolo" class="text-2xl font-semibold tracking-tight">Vuoi un preventivo di noleggio vero?</h2>
-      <p class="max-w-prose">Indica modello, durata e chilometri: un partner di noleggio a lungo termine selezionato da Rata Vera ti manda un'offerta. Il noleggio non è un finanziamento: a fine contratto riconsegni l'auto.</p>
-      <p class="text-sm text-tenue max-w-prose">Rata Vera può ricevere un compenso dal partner se firmi un contratto. Il compenso non cambia i conti mostrati qui sopra.</p>
+      <p class="max-w-prose">Indica modello, durata e chilometri: Rata Vera cerca le offerte di noleggio a lungo termine e ti scrive. Il noleggio non è un finanziamento: a fine contratto riconsegni l'auto.</p>
+      <p class="text-sm text-tenue max-w-prose">Se più avanti ti proponiamo un partner di noleggio, te lo nominiamo e ti chiediamo un nuovo consenso. Rata Vera può ricevere un compenso dal partner se firmi un contratto: il compenso non cambia i conti mostrati qui sopra.</p>
     </div>
     <ModuloNoleggio siteKey={siteKey} />
   </section>

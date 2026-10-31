@@ -49,5 +49,5 @@ export function datiScheda(a: Analisi, id: string, sito: string): DatiScheda {
 export function testoCondivisione(d: DatiScheda): string {
   const prezzo = d.prezzo ? ` (prezzo ${d.prezzo})` : '';
   const costo = d.costoCredito ? ` Costo del credito ${d.costoCredito} (${d.costoCreditoPct}).` : '';
-  return `${d.titolo} «a ${d.rataPubblicizzata}». Paghi davvero ${d.totale}${prezzo}.${costo} ${d.composizione}. ${d.taeg}. ${d.urlBreve}`;
+  return `${d.titolo} «a ${d.rataPubblicizzata}». Paghi davvero ${d.totale}${prezzo}.${costo} ${d.composizione}. ${d.taeg}. ${d.urlBreve} (Rata Vera non è un mediatore creditizio: chiedi il SECCI prima di firmare.)`;
 }

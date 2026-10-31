@@ -30,7 +30,7 @@ export function emailRichiesta(r: RichiestaDaConsegnare): Email {
       `Km all'anno: ${r.kmAnnui}`,
       `Preferisce anticipo zero: ${r.anticipoZero ? 'sì' : 'no'}`,
       '',
-      'Consenso al contatto da parte di un partner di noleggio registrato in D1 (tabella consensi).',
+      'Consenso al contatto da parte di Rata Vera registrato in D1 (tabella consensi). Per passare i dati a un partner serve un nuovo consenso che lo nomini.',
     ].join('\n'),
   };
 }

@@ -32,8 +32,10 @@ describe('modulo noleggio (§9)', () => {
     expect(RichiestaNoleggioSchema.safeParse({ ...NOLEGGIO, telefono: 'chiamami' }).success).toBe(false);
   });
 
-  it('il testo del consenso è quello della specifica', () => {
-    expect(CONSENSI.contatto_noleggio.testo).toContain('accetto di essere contattato da un partner di noleggio a lungo termine selezionato da Rata Vera'.replace('accetto', 'Accetto'));
+  it('il consenso nomina chi contatta davvero (Rata Vera) e non promette un partner che non c’è', () => {
+    expect(CONSENSI.contatto_noleggio.testo).toContain('Accetto di essere contattato da Rata Vera');
+    expect(CONSENSI.contatto_noleggio.testo).toContain('senza un mio nuovo consenso');
+    expect(CONSENSI.contatto_noleggio.versione.length).toBeLessThanOrEqual(20);
   });
 });
 

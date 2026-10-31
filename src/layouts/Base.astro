@@ -19,7 +19,6 @@ const PIEDE = [
   ['/metodologia', 'Metodologia'], ['/criteri', 'Criteri delle promozioni'], ['/chi-siamo', 'Chi siamo'], ['/privacy', 'Privacy'],
   ['/cookie', 'Cookie'], ['/verdetto', 'Verdetto esperto'], ['/per-concessionari', 'Per le concessionarie'],
 ] as const;
-const FONT_SANS = 'https://fonts.gstatic.com/s/instrumentsans/v4/pxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2';
 ---
 <!doctype html>
 <html lang="it">
@@ -41,10 +40,9 @@ const FONT_SANS = 'https://fonts.gstatic.com/s/instrumentsans/v4/pxiTypc9vsFDm05
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#F6F3EE" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" href={FONT_SANS} as="font" type="font/woff2" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@400..600&display=swap" />
+    <!-- Font serviti da noi (OFL): nessuna richiesta a server di terzi prima di qualsiasi scelta del visitatore. -->
+    <link rel="preload" href="/fonts/instrument-sans-latin-wght.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/jetbrains-mono-latin-wght.woff2" as="font" type="font/woff2" crossorigin />
   </head>
   <body class="min-h-dvh flex flex-col">
     <a href="#contenuto" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 btn btn-primario">Vai al contenuto</a>
@@ -53,8 +51,8 @@ const FONT_SANS = 'https://fonts.gstatic.com/s/instrumentsans/v4/pxiTypc9vsFDm05
         <span class="font-semibold tracking-tight text-lg">Rata Vera</span>
         <span class="numeri text-xs text-tenue hidden sm:inline transition-colors group-hover:text-segnale">quanto paghi davvero</span>
       </a>
-      <nav aria-label="Navigazione principale" class="flex flex-wrap justify-end gap-x-4 gap-y-1 text-sm">
-        {NAV.map(([href, testo]) => <a class="link" href={href}>{testo}</a>)}
+      <nav aria-label="Navigazione principale" class="flex flex-wrap justify-end gap-x-4 text-sm">
+        {NAV.map(([href, testo]) => <a class="link tocco" href={href}>{testo}</a>)}
       </nav>
     </header>
     <main id="contenuto" class="flex-1">
@@ -64,15 +62,15 @@ const FONT_SANS = 'https://fonts.gstatic.com/s/instrumentsans/v4/pxiTypc9vsFDm05
       <div class="contenitore py-8 text-sm text-tenue grid gap-3 md:grid-cols-[2fr_1fr]">
         <p class="max-w-prose">{AVVERTENZA}</p>
         <p class="md:text-right">Nessun nome di banca o finanziaria, solo aritmetica. Le immagini dei preventivi non vengono mai salvate.</p>
-        <nav aria-label="Informazioni" class="md:col-span-2 flex flex-wrap gap-x-5 gap-y-2">
-          {PIEDE.map(([href, testo]) => <a class="link" href={href}>{testo}</a>)}
+        <nav aria-label="Informazioni" class="md:col-span-2 flex flex-wrap gap-x-5">
+          {PIEDE.map(([href, testo]) => <a class="link tocco" href={href}>{testo}</a>)}
         </nav>
       </div>
     </footer>
-    <div class="fixed inset-x-0 bottom-0 z-50 border-t border-inchiostro bg-carta px-4 py-3 text-sm shadow-[0_-8px_24px_-16px_rgb(21_23_26/0.4)]" data-banner-cookie hidden role="region" aria-label="Informativa sui cookie">
-      <div class="mx-auto flex max-w-[72rem] flex-wrap items-center justify-between gap-3">
-        <p class="max-w-prose">Usiamo solo cookie tecnici e una misura del traffico senza cookie. Nessuna profilazione. <a class="link" href="/cookie">Dettagli</a></p>
-        <button type="button" class="btn btn-secondario min-h-10 py-1.5" data-chiudi-banner>Ho capito</button>
+    <div class="fixed inset-x-0 bottom-0 z-50 border-t border-inchiostro bg-carta px-4 py-2 text-sm shadow-[0_-8px_24px_-16px_rgb(21_23_26/0.4)]" data-banner-cookie hidden role="region" aria-label="Informativa sui cookie">
+      <div class="mx-auto flex max-w-[72rem] items-center justify-between gap-3">
+        <p>Solo cookie tecnici, nessuna profilazione. <a class="link" href="/cookie">Dettagli</a></p>
+        <button type="button" class="btn btn-secondario min-h-11 shrink-0 py-1.5" data-chiudi-banner>Ho capito</button>
       </div>
     </div>
     {tokenAnalytics && <script is:inline defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={JSON.stringify({ token: tokenAnalytics })}></script>}

@@ -55,7 +55,7 @@ const righe: readonly (readonly [string, string])[] = [
     <span class="text-sm">Paghi in tutto, tenendo l'auto</span>
     <span class="numeri text-2xl font-semibold">{euro(t.totalePagatoTenendo)}</span>
     {t.costoCredito != null && (
-      <span class="numeri text-segnale font-semibold">Costo del credito {euro(t.costoCredito)} · {percentuale(t.costoCreditoPct)}</span>
+      <span class="numeri text-segnale-scuro font-semibold">Costo del credito {euro(t.costoCredito)} · {percentuale(t.costoCreditoPct)}</span>
     )}
   </p>
   {p.requisiti.length > 0 && <p class="text-sm"><span class="font-medium">Condizioni: </span>{p.requisiti.join(', ')}</p>}

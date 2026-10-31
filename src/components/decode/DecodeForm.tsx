@@ -5,6 +5,7 @@ import type { RispostaEstrazione } from '~/lib/extract/schema';
 import { inviaEvento } from '~/lib/client/evento';
 import { salvaPreventivo } from '~/lib/client/sessione';
 import CreaScheda from './CreaScheda';
+import { MESSAGGIO_TOTALE_INCOERENTE } from '~/lib/calc/totale';
 import FieldGroup from './FieldGroup';
 import ResultCard from './ResultCard';
 import UploadDropzone from './UploadDropzone';
@@ -50,6 +51,9 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
     if (risultato.analisi) {
       if (daConfermare.size === 0 && !letto) inviaEvento('decodifica_manuale');
       requestAnimationFrame(() => document.getElementById('risultato')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    } else {
+      // Il focus va sul primo campo da correggere, anche se è in un gruppo più in alto.
+      requestAnimationFrame(() => (document.querySelector('form[aria-label="Numeri del preventivo"] [aria-invalid="true"]') as HTMLElement | null)?.focus());
     }
   }
 
@@ -78,7 +82,7 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
             <fieldset class="flex flex-wrap gap-2 py-2">
               <legend class="text-sm font-medium mb-2">Tipo di contratto</legend>
               {TIPI_CONTRATTO.map((t) => (
-                <label key={t} class={`cursor-pointer rounded border-2 px-3 py-1.5 text-sm transition-colors ${(stato.tipo || 'finanziamento') === t ? 'border-inchiostro bg-inchiostro text-carta' : 'border-riga hover:border-inchiostro'}`}>
+                <label key={t} class={`cursor-pointer rounded border-2 px-3 py-2.5 text-sm transition-colors ${(stato.tipo || 'finanziamento') === t ? 'border-inchiostro bg-inchiostro text-carta' : 'border-riga hover:border-inchiostro'}`}>
                   <input type="radio" name="tipo" value={t} class="sr-only" checked={(stato.tipo || 'finanziamento') === t} onChange={() => cambia('tipo', t)} />
                   {ETICHETTE_TIPO[t]}
                 </label>
@@ -87,8 +91,12 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
             {GRUPPI.map((g) => (
               <FieldGroup key={g.titolo} gruppo={g} stato={stato} daConfermare={daConfermare} errori={errori} onCambia={cambia} />
             ))}
-            {errori.size > 0 && <p class="text-sm text-segnale-scuro" role="alert">Controlla i campi segnalati: servono almeno anticipo, numero di rate e rata.</p>}
-            <div class="pt-4"><button type="submit" class="btn btn-primario w-full sm:w-auto">Calcola quanto paghi davvero</button></div>
+            <div class="grid gap-2 pt-4">
+              <p id="errori-form" class="text-sm text-segnale-scuro" role="alert">
+                {errori.size > 0 ? `Controlla ${errori.size === 1 ? 'il campo segnalato' : `i ${errori.size} campi segnalati`}: servono almeno anticipo, numero di rate e rata.` : ''}
+              </p>
+              <button type="submit" class="btn btn-primario w-full sm:w-auto" aria-describedby={errori.size > 0 ? 'errori-form' : undefined}>Calcola quanto paghi davvero</button>
+            </div>
           </form>
         )}
       </div>
@@ -100,7 +108,9 @@ export default function DecodeForm({ siteKey }: { siteKey: string }) {
             azioni={
               <>
                 <div class="flex flex-wrap gap-3">
-                  <button type="button" class="btn btn-primario" aria-expanded={schedaAperta} onClick={() => setSchedaAperta((v) => !v)}>Crea la scheda da condividere</button>
+                  {!calcolo.analisi.totali.messaggi.includes(MESSAGGIO_TOTALE_INCOERENTE) && (
+                    <button type="button" class="btn btn-primario" aria-expanded={schedaAperta} onClick={() => setSchedaAperta((v) => !v)}>Crea la scheda da condividere</button>
+                  )}
                   <a class="btn btn-secondario" href="/noleggio" onClick={() => salvaPreventivo(preventivo)}>Confronta le tre strade</a>
                 </div>
                 {schedaAperta && <CreaScheda siteKey={siteKey} preventivo={preventivo} />}

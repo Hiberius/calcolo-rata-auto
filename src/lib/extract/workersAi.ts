@@ -13,6 +13,16 @@ export class QuotaEsaurita extends Error {}
 
 type EseguiAi = (modello: string, input: unknown) => Promise<unknown>;
 
+/** Tempo massimo totale della lettura lato server: il browser smette di aspettare a 15 secondi. */
+export const SCADENZA_MS = 12_000;
+const MINIMO_PER_TENTATIVO_MS = 1_500;
+
+export function conScadenza<T>(promessa: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const scadenza = new Promise<never>((_, rifiuta) => { timer = setTimeout(() => rifiuta(new Error('Tempo scaduto')), ms); });
+  return Promise.race([promessa, scadenza]).finally(() => clearTimeout(timer));
+}
+
 function richiesta(dataUrl: string): unknown {
   return {
     messages: [
@@ -34,9 +44,12 @@ function eQuota(errore: unknown): boolean {
 export async function estraiConWorkersAi(ai: Ai, dataUrl: string): Promise<EsitoModello> {
   const esegui = (ai as unknown as { run: EseguiAi }).run.bind(ai);
   let ultimoErrore: unknown = null;
+  const inizio = Date.now();
   for (const modello of MODELLI_WORKERS_AI) {
+    const restante = SCADENZA_MS - (Date.now() - inizio);
+    if (restante < MINIMO_PER_TENTATIVO_MS) break;
     try {
-      const risposta = (await esegui(modello, richiesta(dataUrl))) as { response?: unknown };
+      const risposta = (await conScadenza(esegui(modello, richiesta(dataUrl)), restante)) as { response?: unknown };
       const grezzo = leggiJson(risposta?.response ?? risposta);
       if (grezzo && typeof grezzo === 'object') return { grezzo, modello };
     } catch (errore) {

@@ -25,7 +25,7 @@ function Totale({ a }: { a: Analisi }) {
         <span class="numeri text-4xl font-semibold tracking-tight" data-totale-vivo>{euro(t.totalePagatoTenendo)}</span>
       </p>
       {t.costoCredito != null && (
-        <p class="numeri text-segnale font-semibold">Costo del credito {euro(t.costoCredito)} · {percentuale(t.costoCreditoPct)} del prezzo</p>
+        <p class="numeri text-segnale-scuro font-semibold">Costo del credito {euro(t.costoCredito)} · {percentuale(t.costoCreditoPct)} del prezzo</p>
       )}
       {a.verdetto.fraseQuotaRata && <p class="text-sm text-tenue">{a.verdetto.fraseQuotaRata}</p>}
     </div>

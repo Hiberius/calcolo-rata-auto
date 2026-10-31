@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+/* Font serviti dal nostro dominio (licenza OFL, sottoinsieme latino, assi variabili). */
+@font-face {
+  font-family: "Instrument Sans";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/fonts/instrument-sans-latin-wght.woff2") format("woff2");
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/jetbrains-mono-latin-wght.woff2") format("woff2");
+}
+
 /* Direzione visiva §12: editoriale svizzero, numeri protagonisti. Solo tema chiaro, per scelta. */
 @theme {
   --color-carta: #F6F3EE;
@@ -40,6 +56,8 @@ body {
 .numeri, .font-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
 :focus-visible { outline: 3px solid var(--color-segnale); outline-offset: 3px; border-radius: 2px; }
+/* Input nascosti dentro una label (dropzone, radio del tipo di contratto): l'anello va sulla label che si vede. */
+label:has(> input.sr-only:focus-visible), label:has(input.sr-only:focus-visible) { outline: 3px solid var(--color-segnale); outline-offset: 3px; }
 
 .sezione { padding-block: var(--spazio-sezione); }
 .contenitore { width: min(100% - 2rem, 72rem); margin-inline: auto; }
@@ -57,6 +75,7 @@ body {
 .btn-primario:hover:not([disabled]) { transform: translate(-1px, -1px); box-shadow: 6px 6px 0 var(--color-segnale); }
 .btn-secondario { background: transparent; color: var(--color-inchiostro); border: 2px solid var(--color-inchiostro); }
 .btn-secondario:hover:not([disabled]) { background: var(--color-inchiostro); color: var(--color-carta); }
+.tocco { display: inline-flex; align-items: center; min-height: 2.75rem; }
 .link { text-decoration: underline; text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
 .link:hover { text-decoration-color: var(--color-segnale); text-decoration-thickness: 2px; }
 

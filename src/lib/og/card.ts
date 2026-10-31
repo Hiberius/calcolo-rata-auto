@@ -7,6 +7,9 @@ export interface Nodo {
 }
 
 export type FormatoOg = 'orizzontale' | 'quadrato';
+/** §1.9 in forma breve: l'immagine esce dal sito, l'avvertenza deve uscire con lei. */
+export const AVVERTENZA_BREVE = 'Non siamo un mediatore creditizio. Chiedi il SECCI prima di firmare.';
+
 export const DIMENSIONI_OG: Readonly<Record<FormatoOg, { width: number; height: number }>> = {
   orizzontale: { width: 1200, height: 630 },
   quadrato: { width: 1080, height: 1080 },
@@ -46,7 +49,10 @@ export function nodoScheda(d: DatiScheda, formato: FormatoOg): Nodo {
       h('div', { fontFamily: MONO, fontSize: quadrato ? 150 : 100, lineHeight: 1, letterSpacing: -4 }, d.totale),
     ]),
     h('div', { flexDirection: 'column', width: '100%' }, righe),
-    h('div', { fontFamily: MONO, fontSize: quadrato ? 24 : 20, color: COLORI.tenue, marginTop: 8 }, d.urlBreve),
+    h('div', { justifyContent: 'space-between', fontFamily: SANS, fontSize: quadrato ? 22 : 18, color: COLORI.tenue, marginTop: 8 }, [
+      h('div', { fontFamily: MONO }, d.urlBreve),
+      h('div', {}, AVVERTENZA_BREVE),
+    ]),
   ]);
 }
 

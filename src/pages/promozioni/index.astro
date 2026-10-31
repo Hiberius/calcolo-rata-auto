@@ -3,8 +3,10 @@ import Base from '~/layouts/Base.astro';
 import PromoBox from '~/components/compare/PromoBox.astro';
 import { tutteLePromo } from '~/lib/promo';
 
-export const prerender = true;
-const tutte = tutteLePromo();
+// Reso a ogni richiesta: le promo scadute spariscono dall'HTML il giorno dopo la scadenza, senza ricostruire (§1.5).
+export const prerender = false;
+Astro.response.headers.set('cache-control', 'public, max-age=900');
+const tutte = tutteLePromo(new Date());
 const inVigore = tutte.filter((d) => !d.scaduta);
 const marche = [...new Set(inVigore.map((d) => d.promo.marca))].sort();
 ---

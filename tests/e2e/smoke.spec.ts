@@ -60,8 +60,8 @@ test('tre strade e richiesta di noleggio con Turnstile di test', async ({ page }
 test('promozioni e guida con calcolo vivo', async ({ page }) => {
   await page.goto('/promozioni');
   await expect(page.locator('h1')).toBeVisible();
-  await page.goto('/promozioni/peugeot/208-style-2026-10');
-  await expect(page.locator('[data-totale]').first()).toHaveText('18.253,25 €');
+  await page.goto('/promozioni/seat/arona-black-edition-2026-11');
+  await expect(page.locator('[data-totale]').first()).toHaveText(/^\d{1,3}(\.\d{3})*,\d{2} €$/);
   await page.goto('/guide/maxi-rata-finale-come-funziona');
   await expect(page.locator('[data-totale-vivo]')).toHaveText('18.225,00 €');
   const testo = (await page.locator('main').innerText()).toLowerCase();

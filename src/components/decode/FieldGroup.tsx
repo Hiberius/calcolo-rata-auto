@@ -14,7 +14,7 @@ function Campo({ def, valore, incerto, errore, onCambia }: { def: DefCampo; valo
   return (
     <div class="grid gap-1">
       <label for={id} class="text-sm font-medium flex items-baseline justify-between gap-2">
-        <span>{def.etichetta}{def.obbligatorio && <span class="text-segnale" aria-hidden="true"> *</span>}</span>
+        <span>{def.etichetta}{def.obbligatorio && <span class="text-segnale-scuro" aria-hidden="true"> *</span>}</span>
         {def.unita && <span class="numeri text-xs text-tenue">{def.unita}</span>}
       </label>
       <input
@@ -39,9 +39,10 @@ function Campo({ def, valore, incerto, errore, onCambia }: { def: DefCampo; valo
 
 export default function FieldGroup({ gruppo, stato, daConfermare, errori, onCambia }: Props) {
   const incerti = gruppo.campi.filter((c) => daConfermare.has(c.chiave)).length;
+  const conErrori = gruppo.campi.some((c) => errori.has(c.chiave));
   return (
-    <details class="group border-t border-riga py-4" open={gruppo.aperto || incerti > 0}>
-      <summary class="flex cursor-pointer items-center justify-between gap-3 list-none font-semibold">
+    <details class="group border-t border-riga py-4" open={gruppo.aperto || incerti > 0 || conErrori}>
+      <summary class="flex min-h-11 cursor-pointer items-center justify-between gap-3 list-none py-2 font-semibold">
         <span>{gruppo.titolo}</span>
         <span class="flex items-center gap-3 text-sm font-normal">
           {incerti > 0 && <span class="numeri rounded-sm bg-attenzione/20 px-2 py-0.5 text-[#8A6A00]">{incerti} da confermare</span>}

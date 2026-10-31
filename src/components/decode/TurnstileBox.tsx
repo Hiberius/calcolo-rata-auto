@@ -21,7 +21,7 @@ export default function TurnstileBox({ siteKey, onToken }: { siteKey: string; on
   return (
     <div>
       <div ref={ref} class="min-h-[65px]" />
-      {errore && <p class="text-sm text-segnale">La verifica anti-robot non si carica: controlla la connessione e ricarica la pagina.</p>}
+      {errore && <p class="text-sm text-segnale-scuro">La verifica anti-robot non si carica: controlla la connessione e ricarica la pagina.</p>}
     </div>
   );
 }

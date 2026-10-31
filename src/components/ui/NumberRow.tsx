@@ -7,7 +7,7 @@ interface Props {
 
 const COLORE: Record<NonNullable<Props['tono']>, string> = {
   normale: '',
-  segnale: 'text-segnale font-semibold',
+  segnale: 'text-segnale-scuro font-semibold',
   tenue: 'text-tenue',
   forte: 'font-semibold',
 };

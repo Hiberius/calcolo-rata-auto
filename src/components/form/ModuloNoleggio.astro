@@ -10,7 +10,7 @@ const { siteKey } = Astro.props;
 const consenso = CONSENSI.contatto_noleggio;
 ---
 <form id="modulo" method="post" action="/api/noleggio" class="grid gap-4 scroll-mt-6" data-modulo-noleggio>
-  <EsitoModulo successo="Richiesta inviata. Un partner di noleggio a lungo termine ti contatterà con un preventivo per il modello che hai indicato." />
+  <EsitoModulo successo="Richiesta inviata. Ti scriviamo noi di Rata Vera con le offerte di noleggio per il modello che hai indicato. Nessun altro riceve i tuoi dati senza un tuo nuovo consenso." />
   <div class="grid gap-4 sm:grid-cols-2">
     <Campo nome="nome" etichetta="Nome e cognome" obbligatorio attributi={{ autocomplete: 'name', maxlength: 80 }} />
     <Campo nome="email" etichetta="Email" tipo="email" obbligatorio attributi={{ autocomplete: 'email', maxlength: 120 }} />
