@@ -1,4 +1,5 @@
 import { inviaEvento, type EventoClient } from './evento';
+import { avviaGlossario } from './glossario';
 
 const CHIAVE_BANNER = 'ratavera:banner-cookie';
 const EVENTI_LINK: ReadonlySet<string> = new Set<EventoClient>(['verdetto_click', 'b2b_click']);
@@ -21,6 +22,7 @@ function scrivi(chiave: string, valore: string): void {
 
 /** Banner informativo (nessun consenso da chiedere: niente cookie di profilazione) e click misurati sui pulsanti di pagamento. */
 export function avviaPagina(doc: Document): void {
+  avviaGlossario(doc);
   const banner = doc.querySelector<HTMLElement>('[data-banner-cookie]');
   if (banner && leggi(CHIAVE_BANNER) !== '1') banner.hidden = false;
   doc.querySelector('[data-chiudi-banner]')?.addEventListener('click', () => {

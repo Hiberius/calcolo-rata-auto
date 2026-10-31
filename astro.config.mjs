@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import preact from '@astrojs/preact';
 import tailwindcss from '@tailwindcss/vite';
+import { rehypeGlossario } from './src/lib/glossarioRehype.ts';
 
 export default defineConfig({
   site: 'https://ratavera.it',
@@ -14,6 +15,8 @@ export default defineConfig({
     workerEntryPoint: { path: 'src/worker.ts' },
   }),
   integrations: [preact()],
+  // Glossario in linea nelle guide: prima occorrenza di TAN, TAEG, maxi rata, valore futuro garantito, SECCI, importo totale dovuto.
+  markdown: { rehypePlugins: [rehypeGlossario] },
   vite: {
     // Il plugin Tailwind porta i tipi di una vite più recente di quella di Astro 5: il cast evita il falso errore di tipo.
     plugins: [/** @type {any} */ (tailwindcss())],

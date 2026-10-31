@@ -3,7 +3,9 @@ import { euro, percentuale, punti } from '~/lib/calc/format';
 import { dataBreve } from '~/lib/date';
 import type { PromoDecodificata } from '~/lib/promo';
 import ComposizioneTotale from '~/components/ui/ComposizioneTotale';
-import { SPIEGAZIONE_TAEG_COSTO } from '~/lib/calc/composizione';
+import SpiegazioneTaeg from '~/components/ui/SpiegazioneTaeg';
+import Termine from '~/components/ui/Termine';
+import type { VoceGlossario } from '~/lib/glossario';
 
 interface Props {
   decodificata: PromoDecodificata;
@@ -16,13 +18,14 @@ const p = d.promo;
 const t = d.analisi.totali;
 const titolo = [p.marca, p.modello, p.versione].filter(Boolean).join(' ');
 const href = `/promozioni/${d.slugMarca}/${d.slug}`;
-const righe: readonly (readonly [string, string])[] = [
+const ambito = `promo-${p.id}`;
+const righe: readonly (readonly [string, string, VoceGlossario?])[] = [
   ['Rata', euro(p.rata)],
   ['Numero di rate', String(p.nRate)],
   ['Anticipo', euro(p.anticipo)],
-  ['Maxi rata finale', p.maxiRata ? euro(p.maxiRata) : 'nessuna'],
-  ['TAN', punti(p.tan)],
-  ['TAEG', punti(p.taeg)],
+  ['Maxi rata finale', p.maxiRata ? euro(p.maxiRata) : 'nessuna', 'maxi'],
+  ['TAN', punti(p.tan), 'tan'],
+  ['TAEG', punti(p.taeg), 'taeg'],
   ['Prezzo in contanti', p.prezzoContanti != null ? euro(p.prezzoContanti) : 'non indicato'],
   ['Prezzo promozionale', p.prezzoPromo != null ? euro(p.prezzoPromo) : 'non indicato'],
   ['Validità', `${p.validoDal ? `dal ${dataBreve(p.validoDal)} ` : ''}fino al ${dataBreve(p.validoAl)}`],
@@ -50,9 +53,9 @@ const righe: readonly (readonly [string, string])[] = [
     </p>
   )}
   <dl class="grid grid-cols-2 gap-x-6 sm:grid-cols-3">
-    {righe.map(([k, v]) => (
+    {righe.map(([k, v, voce]) => (
       <div class="riga-tratteggiata flex flex-col py-1.5">
-        <dt class="text-xs text-tenue">{k}</dt>
+        <dt class="text-xs text-tenue">{voce ? <Termine voce={voce} ambito={ambito}>{k}</Termine> : k}</dt>
         <dd class="numeri">{v}</dd>
       </div>
     ))}
@@ -65,7 +68,7 @@ const righe: readonly (readonly [string, string])[] = [
         <span class="numeri text-segnale-scuro font-semibold">Costo del credito {euro(t.costoCredito)} · {percentuale(t.costoCreditoPct)} del prezzo</span>
       )}
     </p>
-    {t.costoCredito != null && <p class="text-xs text-tenue">{SPIEGAZIONE_TAEG_COSTO}</p>}
+    {t.costoCredito != null && <SpiegazioneTaeg classe="text-xs text-tenue" />}
     {composizione && <p class="text-sm font-medium pt-1">Da dove viene il totale</p>}
     {composizione && <ComposizioneTotale analisi={d.analisi} compatta />}
   </div>

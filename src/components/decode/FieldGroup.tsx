@@ -1,4 +1,6 @@
 import type { DefCampo, Gruppo, StatoForm } from '~/lib/client/campi';
+import { GLOSSARIO } from '~/lib/glossario';
+import Termine from '../ui/Termine';
 
 interface Props {
   gruppo: Gruppo;
@@ -8,15 +10,29 @@ interface Props {
   onCambia: (chiave: DefCampo['chiave'], valore: string) => void;
 }
 
+/** Testo di aiuto, con la voce del glossario spiegabile al tocco se compare nel testo. */
+function Aiuto({ def }: { def: DefCampo }) {
+  const testo = def.aiuto ?? '';
+  const voce = def.glossarioAiuto;
+  const parola = voce ? GLOSSARIO[voce].termine : '';
+  const i = voce ? testo.indexOf(parola) : -1;
+  if (!voce || i < 0) return <>{testo}</>;
+  return <>{testo.slice(0, i)}<Termine voce={voce} ambito="modulo-aiuto" />{testo.slice(i + parola.length)}</>;
+}
+
 function Campo({ def, valore, incerto, errore, onCambia }: { def: DefCampo; valore: string; incerto: boolean; errore?: string | undefined; onCambia: Props['onCambia'] }) {
   const id = `campo-${def.chiave}`;
   const descrizione = [def.aiuto && `${id}-aiuto`, incerto && `${id}-incerto`, errore && `${id}-errore`].filter(Boolean).join(' ') || undefined;
   return (
     <div class="grid gap-1">
-      <label for={id} class="text-sm font-medium flex items-baseline justify-between gap-2">
-        <span>{def.etichetta}{def.obbligatorio && <span class="text-segnale-scuro" aria-hidden="true"> *</span>}</span>
+      {/* Il «?» del glossario sta fuori dalla label: un pulsante non può stare dentro una label. */}
+      <div class="text-sm font-medium flex items-center justify-between gap-2">
+        <span class="inline-flex items-center">
+          <label for={id}>{def.etichetta}{def.obbligatorio && <span class="text-segnale-scuro" aria-hidden="true"> *</span>}</label>
+          {def.glossario && <Termine voce={def.glossario} ambito="modulo" icona />}
+        </span>
         {def.unita && <span class="numeri text-xs text-tenue">{def.unita}</span>}
-      </label>
+      </div>
       <input
         id={id}
         name={def.chiave}
@@ -30,7 +46,7 @@ function Campo({ def, valore, incerto, errore, onCambia }: { def: DefCampo; valo
         maxLength={def.chiave === 'provincia' ? 2 : 80}
         onInput={(e) => onCambia(def.chiave, (e.currentTarget as HTMLInputElement).value)}
       />
-      {def.aiuto && <span id={`${id}-aiuto`} class="text-xs text-tenue">{def.aiuto}</span>}
+      {def.aiuto && <span id={`${id}-aiuto`} class="text-xs text-tenue"><Aiuto def={def} /></span>}
       {incerto && <span id={`${id}-incerto`} class="text-xs text-[#8A6A00]">Da confermare: controlla questo numero sul preventivo.</span>}
       {errore && <span id={`${id}-errore`} class="text-xs text-segnale-scuro">{errore}</span>}
     </div>

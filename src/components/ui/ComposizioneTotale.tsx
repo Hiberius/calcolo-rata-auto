@@ -7,15 +7,18 @@ interface Props {
   analisi: Analisi;
   /** Versione stretta per i riquadri delle promo e i calcoli delle guide. */
   compatta?: boolean;
+  /** Con un ambito, «Maxi rata finale» si spiega al tocco (glossario). */
+  ambito?: string | undefined;
 }
 
 /** Le voci del totale una sotto l'altra, il totale, la somma scritta per esteso e le spese già nel credito. */
-export default function ComposizioneTotale({ analisi, compatta = false }: Props) {
+export default function ComposizioneTotale({ analisi, compatta = false, ambito }: Props) {
   const c = composizioneTotale(analisi);
   return (
     <div class={`grid ${compatta ? 'text-sm' : ''}`} data-composizione>
       {c.voci.map((v) => (
-        <NumberRow key={v.chiave} etichetta={v.etichetta} valore={euro(v.importo)} nota={v.dettaglio ?? undefined} tono={v.chiave === 'maxiRata' ? 'forte' : 'normale'} />
+        <NumberRow key={v.chiave} etichetta={v.etichetta} valore={euro(v.importo)} nota={v.dettaglio ?? undefined} tono={v.chiave === 'maxiRata' ? 'forte' : 'normale'}
+          termine={v.chiave === 'maxiRata' ? 'maxi' : undefined} ambito={ambito} />
       ))}
       <NumberRow etichetta="Totale" valore={euro(c.totale)} tono="forte" />
       <p class="numeri text-xs text-tenue pt-2 break-words" data-formula>{formulaTotale(c)}</p>

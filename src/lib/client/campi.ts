@@ -1,4 +1,5 @@
 import type { CampoEstratto } from '../extract/schema';
+import type { VoceGlossario } from '../glossario';
 import { normalizzaNumero } from '../numeri';
 
 export type ChiaveCampo = CampoEstratto | 'provincia';
@@ -11,6 +12,10 @@ export interface DefCampo {
   readonly tipo: 'numero' | 'intero' | 'testo';
   readonly obbligatorio?: boolean;
   readonly aiuto?: string;
+  /** Voce del glossario spiegata da un «?» accanto all'etichetta. */
+  readonly glossario?: VoceGlossario;
+  /** Voce del glossario che compare dentro il testo di aiuto (la parola diventa spiegabile al tocco). */
+  readonly glossarioAiuto?: VoceGlossario;
 }
 
 export interface Gruppo {
@@ -30,7 +35,7 @@ export const GRUPPI: readonly Gruppo[] = [
       euro('anticipo', 'Anticipo', { obbligatorio: true, aiuto: 'Scrivi 0 se non c’è' }),
       { chiave: 'nRate', etichetta: 'Numero di rate', unita: 'mesi', tipo: 'intero', obbligatorio: true, aiuto: 'Senza contare la maxi rata finale' },
       euro('rata', 'Rata mensile', { obbligatorio: true }),
-      euro('maxiRata', 'Maxi rata finale', { aiuto: 'Detta anche valore futuro garantito o rata finale' }),
+      euro('maxiRata', 'Maxi rata finale', { aiuto: 'Detta anche valore futuro garantito o rata finale', glossario: 'maxi', glossarioAiuto: 'vfg' }),
       euro('primaRataDiversa', 'Prima rata, se diversa'),
     ],
   },
@@ -44,8 +49,8 @@ export const GRUPPI: readonly Gruppo[] = [
     titolo: 'Tassi',
     aperto: true,
     campi: [
-      { chiave: 'tan', etichetta: 'TAN', unita: '%', tipo: 'numero' },
-      { chiave: 'taegDichiarato', etichetta: 'TAEG', unita: '%', tipo: 'numero' },
+      { chiave: 'tan', etichetta: 'TAN', unita: '%', tipo: 'numero', glossario: 'tan' },
+      { chiave: 'taegDichiarato', etichetta: 'TAEG', unita: '%', tipo: 'numero', glossario: 'taeg' },
     ],
   },
   {
@@ -62,7 +67,7 @@ export const GRUPPI: readonly Gruppo[] = [
     titolo: 'Importi dichiarati',
     nota: 'Di solito sono nella nota in piccolo: servono a controllare che i conti tornino.',
     aperto: false,
-    campi: [euro('importoCreditoDichiarato', 'Importo totale del credito'), euro('importoTotaleDovutoDichiarato', 'Importo totale dovuto')],
+    campi: [euro('importoCreditoDichiarato', 'Importo totale del credito'), euro('importoTotaleDovutoDichiarato', 'Importo totale dovuto', { glossario: 'totaleDovuto' })],
   },
   {
     titolo: 'Spese',

@@ -100,7 +100,7 @@ export default function TreStrade() {
           ? <ColonneStrade strade={calcolo.analisi.treStrade} valoreResiduo={calcolo.residuo} tipo={calcolo.analisi.preventivo.tipo} />
           : <p class="text-tenue">Scrivi almeno anticipo, numero di rate e rata: le tre colonne si aggiornano mentre scrivi.</p>}
       </div>
-      <Disclaimer />
+      <Disclaimer ambito="tre-strade" />
     </div>
   );
 }

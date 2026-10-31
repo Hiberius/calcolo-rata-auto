@@ -5,7 +5,7 @@ import type { Analisi } from '~/lib/calc/tipi';
 import Disclaimer from '../ui/Disclaimer';
 import NumberRow from '../ui/NumberRow';
 import ComposizioneTotale from '../ui/ComposizioneTotale';
-import { SPIEGAZIONE_TAEG_COSTO } from '~/lib/calc/composizione';
+import SpiegazioneTaeg from '../ui/SpiegazioneTaeg';
 import { CAMPI_PER_VARIANTE, CAMPI_VIVO, daValori, type ValoriVivo, type Variante } from '~/lib/client/campiVivo';
 import CampoNumero from './CampoNumero';
 import ColonneStrade from './ColonneStrade';
@@ -29,7 +29,7 @@ function Totale({ a }: { a: Analisi }) {
       {t.costoCredito != null && (
         <p class="numeri text-segnale-scuro font-semibold">Costo del credito {euro(t.costoCredito)} · {percentuale(t.costoCreditoPct)} del prezzo</p>
       )}
-      {t.costoCredito != null && <p class="text-xs text-tenue">{SPIEGAZIONE_TAEG_COSTO}</p>}
+      {t.costoCredito != null && <SpiegazioneTaeg classe="text-xs text-tenue" />}
       {a.verdetto.fraseQuotaRata && <p class="text-sm text-tenue">{a.verdetto.fraseQuotaRata}</p>}
       <ComposizioneTotale analisi={a} compatta />
     </div>
@@ -86,7 +86,7 @@ export default function CalcoloVivo({ variante, iniziale, base, titolo }: Props)
           {(variante === 'noleggio' || variante === 'promo') && <ColonneStrade strade={analisi.treStrade} />}
         </div>
       )}
-      <Disclaimer />
+      <Disclaimer ambito={`calcolo-${variante}`} />
     </section>
   );
 }

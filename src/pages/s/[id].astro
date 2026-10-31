@@ -4,7 +4,7 @@ import ShareButtons from '~/components/ui/ShareButtons.astro';
 import Disclaimer from '~/components/ui/Disclaimer';
 import NumberRow from '~/components/ui/NumberRow';
 import ComposizioneTotale from '~/components/ui/ComposizioneTotale';
-import { SPIEGAZIONE_TAEG_COSTO } from '~/lib/calc/composizione';
+import SpiegazioneTaeg from '~/components/ui/SpiegazioneTaeg';
 import { euro, percentuale, punti } from '~/lib/calc/format';
 import { datiScheda, testoCondivisione } from '~/lib/og/template';
 import { caricaScheda } from '~/lib/scheda';
@@ -55,16 +55,16 @@ const promo = a ? promoDelloStessoModello(a.preventivo.marca, a.preventivo.model
           )}
           {a.taeg.taegRicostruito != null && <NumberRow etichetta="TAEG ricostruito dai numeri" valore={punti(a.taeg.taegRicostruito)} tono="tenue" />}
         </div>
-        {a.totali.costoCredito != null && <p class="text-sm text-tenue">{SPIEGAZIONE_TAEG_COSTO}</p>}
+        {a.totali.costoCredito != null && <SpiegazioneTaeg ambito="scheda-costo" />}
         <div class="grid gap-2">
           <h2 class="font-semibold">Da dove viene il totale</h2>
-          <ComposizioneTotale analisi={a} />
+          <ComposizioneTotale analisi={a} ambito="scheda-voci" />
         </div>
         <p class="font-medium">{a.verdetto.etichetta}</p>
         {a.totali.messaggi[0] && <p class="text-sm border-l-4 border-attenzione pl-3">{a.totali.messaggi[0]}</p>}
         {a.taeg.stato === 'da_verificare' && <p class="text-sm border-l-4 border-attenzione pl-3">TAEG da verificare: {a.taeg.nota}</p>}
         {a.ricostruzione.discrepanze.map((d) => <p class="text-sm border-l-4 border-attenzione pl-3">{d.messaggio}</p>)}
-        <Disclaimer />
+        <Disclaimer ambito="scheda-avvertenza" />
       </article>
 
       <div class="grid gap-10">
