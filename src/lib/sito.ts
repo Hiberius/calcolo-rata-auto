@@ -1,4 +1,4 @@
-/** Dati fissi del sito, usati da privacy, chi siamo e contatti. */
+/** Dati fissi del sito, usati da privacy, chi siamo e contatti. Il titolare sta nelle variabili pubbliche (PUBLIC_TITOLARE). */
 /**
  * Indirizzo pubblico del sito, una sola fonte per canonical, og, sitemap, robots, testo condiviso e immagini.
  * Finché ratavera.it non è comprato (non risolve) vale l'indirizzo provvisorio del Worker: un link condiviso deve aprirsi.
@@ -6,6 +6,5 @@
  */
 export const URL_SITO = 'https://ratavera.hiberius.workers.dev';
 
-export const TITOLARE = 'Christian Calabrò';
 export const EMAIL_CONTATTO = 'ciao@ratavera.it';
 export const DATA_AGGIORNAMENTO_TESTI = '2026-10-31';

@@ -1,15 +1,15 @@
 ---
 import Testo from '~/layouts/Testo.astro';
 import Fiducia from '~/components/ui/Fiducia.astro';
-import { datiTitolare } from '~/lib/fiducia';
-import { EMAIL_CONTATTO, TITOLARE } from '~/lib/sito';
-// Resa a richiesta: P.IVA e sede del titolare arrivano dalle variabili pubbliche del Worker.
+import { datiTitolare, IN_AGGIORNAMENTO } from '~/lib/fiducia';
+import { EMAIL_CONTATTO } from '~/lib/sito';
+// Resa a richiesta: nome, P.IVA e sede del titolare arrivano dalle variabili pubbliche del Worker.
 export const prerender = false;
 const titolare = datiTitolare(Astro.locals.runtime?.env, import.meta.env);
 ---
 <Testo title="Privacy: cosa salviamo e cosa no | Rata Vera" description="Rata Vera non salva le immagini dei preventivi né i dati di credito. Salva solo schede anonime con consenso e richieste di noleggio con consenso." titolo="Privacy" sopratitolo="Informativa">
   <h2>Titolare</h2>
-  <p>{TITOLARE}, P.IVA {titolare.piva}, {titolare.sede}. Contatto <a href={`mailto:${EMAIL_CONTATTO}`}>{EMAIL_CONTATTO}</a>.</p>
+  <p>{titolare.nome || `Titolare ${IN_AGGIORNAMENTO}`}, P.IVA {titolare.piva}, {titolare.sede}. Contatto <a href={`mailto:${EMAIL_CONTATTO}`}>{EMAIL_CONTATTO}</a>.</p>
 
   <Fiducia />
 

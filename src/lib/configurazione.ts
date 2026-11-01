@@ -2,7 +2,7 @@ import { TURNSTILE_SITE_KEY_TEST } from './turnstile';
 
 /**
  * Controllo della configurazione prima del deploy (revisione del 31/10): con la chiave Turnstile di test o senza
- * segreti i moduli non funzionano fuori da localhost, senza P.IVA e sede l'informativa privacy è incompleta.
+ * segreti i moduli non funzionano fuori da localhost, senza titolare, P.IVA e sede l'informativa privacy è incompleta.
  * Funzione pura: lo script `scripts/controlla-deploy.ts` le passa i vars di wrangler.jsonc e i nomi dei segreti.
  */
 export interface ConfigurazioneDeploy {
@@ -23,6 +23,7 @@ export function problemiConfigurazione(c: ConfigurazioneDeploy): string[] {
   for (const nome of SEGRETI_NECESSARI) {
     if (!c.segreti.includes(nome)) problemi.push(`Manca il segreto ${nome} (wrangler secret put ${nome}).`);
   }
+  if (!(c.vars.PUBLIC_TITOLARE ?? '').trim()) problemi.push('PUBLIC_TITOLARE è vuota: la privacy non dice chi è il titolare.');
   if (!(c.vars.PUBLIC_PIVA ?? '').trim()) problemi.push('PUBLIC_PIVA è vuota: la privacy pubblica il titolare senza partita IVA.');
   if (!(c.vars.PUBLIC_SEDE ?? '').trim()) problemi.push('PUBLIC_SEDE è vuota: la privacy pubblica il titolare senza sede.');
   return problemi;

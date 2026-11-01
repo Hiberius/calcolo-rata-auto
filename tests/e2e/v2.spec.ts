@@ -14,7 +14,7 @@ async function chiudiBanner(page: Page) {
   if (await chiudi.isVisible()) await chiudi.click();
 }
 
-test('home (v2 §1): la promessa, due azioni sopra la piega, chi c’è dietro, anteprima, menu', async ({ page }) => {
+test('home (v2 §1): la promessa, due azioni sopra la piega, nessun nome di persona, anteprima, menu', async ({ page }) => {
   const errori: string[] = [];
   page.on('pageerror', (e) => errori.push(e.message));
   await page.goto('/');

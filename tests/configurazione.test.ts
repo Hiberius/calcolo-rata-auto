@@ -6,7 +6,7 @@ import { messaggioErrore } from '~/lib/moduli';
 import { URL_SITO } from '~/lib/sito';
 
 const COMPLETA = {
-  vars: { PUBLIC_TURNSTILE_SITE_KEY: '0x4AAAAAAAvera', PUBLIC_PIVA: '01234567890', PUBLIC_SEDE: 'Via Roma 1, Torino' },
+  vars: { PUBLIC_TURNSTILE_SITE_KEY: '0x4AAAAAAAvera', PUBLIC_TITOLARE: 'Maria Rossi', PUBLIC_PIVA: '01234567890', PUBLIC_SEDE: 'Via Roma 1, Torino' },
   segreti: [...SEGRETI_NECESSARI],
 };
 
@@ -15,10 +15,11 @@ describe('controllo della configurazione prima del deploy (revisione del 31/10)'
     expect(problemiConfigurazione(COMPLETA)).toEqual([]);
   });
 
-  it('chiave Turnstile di test, segreto mancante, P.IVA e sede vuote: tutti segnalati', () => {
-    const p = problemiConfigurazione({ vars: { PUBLIC_TURNSTILE_SITE_KEY: TURNSTILE_SITE_KEY_TEST, PUBLIC_PIVA: '', PUBLIC_SEDE: ' ' }, segreti: ['HASH_SALT', 'ADMIN_TOKEN'] });
+  it('chiave Turnstile di test, segreto mancante, titolare, P.IVA e sede vuoti: tutti segnalati', () => {
+    const p = problemiConfigurazione({ vars: { PUBLIC_TURNSTILE_SITE_KEY: TURNSTILE_SITE_KEY_TEST, PUBLIC_TITOLARE: '', PUBLIC_PIVA: '', PUBLIC_SEDE: ' ' }, segreti: ['HASH_SALT', 'ADMIN_TOKEN'] });
     expect(p.join('\n')).toMatch(/chiave di test/);
     expect(p.join('\n')).toMatch(/TURNSTILE_SECRET_KEY/);
+    expect(p.join('\n')).toMatch(/PUBLIC_TITOLARE/);
     expect(p.join('\n')).toMatch(/PUBLIC_PIVA/);
     expect(p.join('\n')).toMatch(/PUBLIC_SEDE/);
   });

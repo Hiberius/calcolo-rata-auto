@@ -1,7 +1,17 @@
 {
   "name": "ratavera",
+  "version": "1.0.0",
+  "description": "Rata Vera: reads an Italian car finance quote (photo or numbers) and shows the real total, the cost of credit, the recomputed APR and what happens with the balloon payment. Astro + Cloudflare Workers.",
+  "license": "MIT",
+  "homepage": "https://ratavera.hiberius.workers.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hiberius/ratavera.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Hiberius/ratavera/issues"
+  },
   "type": "module",
-  "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "astro dev",
@@ -17,7 +27,8 @@
     "cf-typegen": "wrangler types",
     "promo:raccogli": "vite-node --config vitest.config.ts scripts/promo/raccogli.ts",
     "deploy:controlla": "vite-node --config vitest.config.ts scripts/controlla-deploy.ts",
-    "immagini": "vite-node --config vitest.config.ts scripts/immagini.ts"
+    "immagini": "vite-node --config vitest.config.ts scripts/immagini.ts",
+    "readme:immagini": "vite-node --config vitest.config.ts scripts/readme-immagini.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.6.13",

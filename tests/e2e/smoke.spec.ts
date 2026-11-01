@@ -45,9 +45,8 @@ test('scheda creata via API, aperta, con immagine OG png', async ({ page, reques
   expect((await request.get(`/s/${id}/og.png`)).status()).toBe(404);
 });
 
-test('preventivo d’esempio in home e blocco fiducia', async ({ page }) => {
+test('preventivo d’esempio in home', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('[data-fiducia]')).toContainText('Chi c’è dietro: Christian Calabrò');
   await page.getByRole('link', { name: /Guarda l’esempio/ }).click();
   await expect(page.locator('[data-totale]')).toHaveText('18.253,25 €');
   await expect(page.locator('[data-etichetta-esempio]')).toHaveText(/^esempio reale, offerta ufficiale (valida fino al|scaduta il) 31\/10\/2026$/);
