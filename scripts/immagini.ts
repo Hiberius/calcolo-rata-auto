@@ -4,7 +4,7 @@
  *
  * - hero-poster-chatgpt.png → public/img/scena-poster-{1200,800}.{avif,webp}: poster dell'anteprima della scena in home
  *   quando il canvas non può disegnare (senza JavaScript) e illustrazione di «Come facciamo i conti».
- * - og-default-chatgpt.png → public/og-default.png 1200×630: immagine di condivisione predefinita (le schede hanno la loro).
+ * - public/og-default.png (1200×630, immagine di condivisione predefinita) NON è più qui: la produce scripts/og-marchio.ts.
  * - icona-chatgpt.png → public/icone/: apple-touch 180, manifest 192 e 512, favicon PNG 32 e 16 accanto a favicon.svg.
  * - grana: public/img/grana.webp, tile 256 px di granuli grigi con l'intensità nell'alfa (specifica di movimento, d),
  *   generato da un generatore pseudo-casuale con seme fisso: sempre lo stesso file, senza giunture (ogni pixel è indipendente).
@@ -42,17 +42,6 @@ async function poster(): Promise<string[]> {
     righe.push(scrivi(join(PUBBLICO, 'img', `scena-poster-${larghezza}.webp`), await base.clone().webp({ quality: 72, effort: 6 }).toBuffer()));
   }
   return righe;
-}
-
-async function og(): Promise<string[]> {
-  // Ritaglio centrato: l'originale è 1731×909 (1,904:1), quasi lo stesso rapporto di 1200×630, lo scontrino resta intero.
-  const png = await sharp(fonte('og-default-chatgpt.png'))
-    .resize({ width: 1200, height: 630, fit: 'cover', position: 'centre' })
-    // La fibra della carta, a piena nitidezza, non sta sotto i 200 kB della specifica: un velo di sfocatura (0,8 px) sì.
-    .blur(0.8)
-    .png({ palette: true, colours: 96, dither: 0, effort: 10, compressionLevel: 9 })
-    .toBuffer();
-  return [scrivi(join(PUBBLICO, 'og-default.png'), png)];
 }
 
 async function icone(): Promise<string[]> {
@@ -96,5 +85,5 @@ async function grana(): Promise<string[]> {
   return [scrivi(join(PUBBLICO, 'img', 'grana.webp'), webp)];
 }
 
-const righe = [...(await poster()), ...(await og()), ...(await icone()), ...(await grana())];
+const righe = [...(await poster()), ...(await icone()), ...(await grana())];
 console.log(righe.join('\n'));

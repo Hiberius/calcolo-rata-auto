@@ -8,7 +8,8 @@ export default defineConfig({
   timeout: 30_000,
   use: { baseURL: `http://localhost:${PORTA}`, locale: 'it-IT' },
   webServer: {
-    command: `npm run build && npx wrangler dev --port ${PORTA}`,
+    // DB e KV locali vergini a ogni corsa: i test contano righe (contatore officina da 25) e limiti (5 noleggi al giorno).
+    command: `rm -rf .wrangler/state/v3 && npm run db:migrate:local && npm run build && npx wrangler dev --port ${PORTA}`,
     url: `http://localhost:${PORTA}`,
     reuseExistingServer: true,
     timeout: 180_000,
