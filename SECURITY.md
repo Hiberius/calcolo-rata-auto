@@ -4,7 +4,7 @@
 
 Please do not open a public issue for security problems.
 
-Use GitHub's private vulnerability reporting: **Security → Report a vulnerability** on this repository. If that is not available to you, email **hello@hiberius.com** with a description, the affected URL or file, and steps to reproduce.
+Use GitHub's private vulnerability reporting: **Security → Report a vulnerability** on this repository. If that is not available to you, email **hiberius@gmail.com** with a description, the affected URL or file, and steps to reproduce.
 
 You will get an answer within 72 hours. Fixes for confirmed issues ship as soon as they are ready; credit is given in the changelog unless you prefer otherwise.
 

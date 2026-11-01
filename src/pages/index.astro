@@ -4,10 +4,29 @@ import DecodeForm from '~/components/decode/DecodeForm';
 import TitoloRighe from '~/components/ui/TitoloRighe.astro';
 import AnteprimaScena from '~/components/home/AnteprimaScena.astro';
 import { chiaveAntiRobot } from '~/lib/turnstile';
+import { REPO_GITHUB, URL_SITO } from '~/lib/sito';
 
 export const prerender = false;
 const env = Astro.locals.runtime?.env;
 const siteKey = chiaveAntiRobot(env, Astro.url.href);
+// Dati strutturati della home: cosa è il sito, gratis, codice aperto, come contattarci. Nessun nome di persona.
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Rata Vera',
+  alternateName: 'calcolo rata auto',
+  url: URL_SITO,
+  inLanguage: 'it',
+  applicationCategory: 'FinanceApplication',
+  operatingSystem: 'Web',
+  description: 'Legge il preventivo di finanziamento auto (foto o numeri) e mostra il totale pagato davvero, il costo del credito, il TAEG ricalcolato e cosa succede alla fine con la maxi rata. Gratis, senza registrazione, la foto non viene salvata.',
+  isAccessibleForFree: true,
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+  license: 'https://opensource.org/license/mit',
+  sameAs: [REPO_GITHUB],
+  featureList: ['Totale pagato davvero', 'Costo del credito', 'TAEG ricalcolato', 'Scenari di fine contratto con maxi rata', 'Valore stimato contro debito residuo', 'Stessa auto, tre strade', 'Promozioni ufficiali decodificate', 'Indice mensile'],
+  author: { '@type': 'Organization', name: 'Hiberius', url: 'https://github.com/Hiberius', email: 'hiberius@gmail.com' },
+};
 ---
 <Base
   title="Rata Vera: quanto paghi davvero per l’auto a rate"
@@ -66,6 +85,7 @@ const siteKey = chiaveAntiRobot(env, Astro.url.href);
       </li>
     </ol>
   </section>
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />
 </Base>
 
 <script>

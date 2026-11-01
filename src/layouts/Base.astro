@@ -1,7 +1,7 @@
 ---
 import '~/styles/global.css';
 import { AVVERTENZA } from '~/lib/calc';
-import { URL_SITO } from '~/lib/sito';
+import { REPO_GITHUB, URL_SITO } from '~/lib/sito';
 
 interface Props {
   title: string;
@@ -32,7 +32,7 @@ function corrente(href: string): boolean {
 }
 const PIEDE = [
   ['/metodologia', 'Metodologia'], ['/criteri', 'Criteri delle promozioni'], ['/chi-siamo', 'Chi siamo'], ['/privacy', 'Privacy'],
-  ['/cookie', 'Cookie'], ['/officina', 'Officina'], ['/indice/metodologia', 'Metodologia dell’Indice'],
+  ['/cookie', 'Cookie'], ['/officina', 'Officina'], ['/indice/metodologia', 'Metodologia dell’Indice'], [REPO_GITHUB, 'Codice sorgente'],
 ] as const;
 ---
 <!doctype html>

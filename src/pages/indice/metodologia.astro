@@ -1,4 +1,5 @@
 ---
+import { EMAIL_CONTATTO } from '~/lib/sito';
 import Testo from '~/layouts/Testo.astro';
 import { dataLunga } from '~/lib/date';
 import { CRITERIO, LICENZA, PRIMA_EDIZIONE, SOGLIA_PUBBLICAZIONE } from '~/lib/indice';
@@ -32,5 +33,5 @@ export const prerender = true;
   <p>I dati sono rilasciati con licenza <a href={LICENZA.url} rel="license">{LICENZA.nome}</a>: puoi riusarli e rielaborarli citando la fonte con la frase «Fonte: Indice Rata Vera, novembre 2026» (con il mese dell’edizione).</p>
 
   <h2>Correzioni</h2>
-  <p>Se un numero non corrisponde alla fonte scrivi a <a href="mailto:ciao@ratavera.it">ciao@ratavera.it</a>: verifichiamo, correggiamo e aggiorniamo la data di verifica. Fa sempre fede il documento della casa. Nessuna posizione è a pagamento e nessuna casa può chiedere di comparire o di sparire.</p>
+  <p>Se un numero non corrisponde alla fonte scrivi a <a href={`mailto:${EMAIL_CONTATTO}`}>{EMAIL_CONTATTO}</a>: verifichiamo, correggiamo e aggiorniamo la data di verifica. Fa sempre fede il documento della casa. Nessuna posizione è a pagamento e nessuna casa può chiedere di comparire o di sparire.</p>
 </Testo>

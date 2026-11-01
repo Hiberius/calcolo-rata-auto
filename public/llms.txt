@@ -1,0 +1,26 @@
+# Rata Vera (calcolo rata auto)
+
+> Open-source car finance calculator for Italy. Photograph the dealer's quote, or type the numbers: real total paid, cost of credit, recomputed APR (TAEG), balloon-payment (maxi rata) scenarios, estimated car value against remaining debt month by month, and the same car on three roads (the quote, cash or a personal loan, long-term rental). Free, no sign-up, photos never stored, no lender names, no advice. Astro + Cloudflare Workers + Workers AI. MIT.
+
+In italiano: legge il preventivo di finanziamento auto e mostra quanto paghi davvero, quanto costa il credito, il TAEG ricalcolato e cosa succede alla fine con la maxi rata.
+
+Source code: https://github.com/Hiberius/calcolo-rata-auto
+Contact: hiberius@gmail.com (open to acquisition, licensing, white-label, paid pilots, collaboration)
+
+## Pages
+
+- [Read a quote](https://ratavera.hiberius.workers.dev/): photo or manual input, result card, three-act scene, show-it-to-the-salesperson view
+- [Worked example](https://ratavera.hiberius.workers.dev/?esempio=1#risultato): Peugeot 208 advertised at EUR 99/month: EUR 18,253.25 paid in total, EUR 3,303.25 cost of credit, EUR 10,434 balloon at month 36
+- [Methodology](https://ratavera.hiberius.workers.dev/metodologia): every formula, the value model and its limits
+- [Promotions](https://ratavera.hiberius.workers.dev/promozioni): official manufacturer offers decoded in a single box with source and expiry
+- [Promotion criteria](https://ratavera.hiberius.workers.dev/criteri)
+- [Index](https://ratavera.hiberius.workers.dev/indice): monthly ranking of promotions by cost of credit, CSV under CC BY 4.0
+- [Index methodology](https://ratavera.hiberius.workers.dev/indice/metodologia)
+- [Guides](https://ratavera.hiberius.workers.dev/guide): balloon payment, APR, guaranteed future value, long-term rental
+- [Three roads](https://ratavera.hiberius.workers.dev/noleggio): quote vs. cash or personal loan vs. long-term rental
+- [Who is behind this](https://ratavera.hiberius.workers.dev/chi-siamo)
+- [Privacy](https://ratavera.hiberius.workers.dev/privacy)
+
+## Optional
+
+- [GitHub repository](https://github.com/Hiberius/calcolo-rata-auto): code, tests, architecture, changelog

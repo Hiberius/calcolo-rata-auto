@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="docs/img/social-preview.png" alt="Rata Vera: quanto paghi davvero per l'auto a rate? The three-act scene showing estimated car value against remaining debt." width="100%">
+  <img src="docs/img/social-preview.png" alt="Rata Vera: how much do you really pay for a car on instalments? The three-act scene showing estimated car value against remaining debt." width="100%">
 </p>
 
 <p align="center">
-  <a href="https://github.com/Hiberius/ratavera/actions/workflows/ci.yml"><img src="https://github.com/Hiberius/ratavera/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/Hiberius/ratavera/actions/workflows/codeql.yml"><img src="https://github.com/Hiberius/ratavera/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
-  <a href="#quality-gate"><img src="https://img.shields.io/badge/tests-217%20unit%20%2B%2025%20E2E-brightgreen" alt="Tests: 217 unit + 25 E2E"></a>
+  <a href="https://github.com/Hiberius/calcolo-rata-auto/actions/workflows/ci.yml"><img src="https://github.com/Hiberius/calcolo-rata-auto/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/Hiberius/calcolo-rata-auto/actions/workflows/codeql.yml"><img src="https://github.com/Hiberius/calcolo-rata-auto/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
+  <a href="#quality-gate"><img src="https://img.shields.io/badge/tests-217%20unit%20%2B%2040%20E2E-brightgreen" alt="Tests: 217 unit + 40 E2E"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
   <a href="https://astro.build/"><img src="https://img.shields.io/badge/Astro-5-BC52EE?logo=astro&logoColor=white" alt="Astro 5"></a>
   <a href="https://workers.cloudflare.com/"><img src="https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white" alt="Cloudflare Workers"></a>
@@ -20,7 +20,7 @@
 
 Open-source car finance calculator for the Italian market (*calcolo rata auto*, *TAEG*, *maxi rata finale*, *noleggio a lungo termine*). Free, no sign-up, the photo is never stored. Astro 5 on Cloudflare Workers, D1, KV and Workers AI. MIT.
 
-[Live site](https://ratavera.hiberius.workers.dev) · [Try the example](https://ratavera.hiberius.workers.dev/?esempio=1#risultato) · [What it does](#what-it-does) · [How the numbers work](#how-the-numbers-work) · [Quickstart](#quickstart) · [Status](#status-what-is-live-and-what-is-not) · [🇮🇹 Italiano](README.it.md)
+[Live site](https://ratavera.hiberius.workers.dev) · [Try the example](https://ratavera.hiberius.workers.dev/?esempio=1#risultato) · [What it does](#what-it-does) · [How the numbers work](#how-the-numbers-work) · [Quickstart](#quickstart) · [Status](#status-what-is-live-and-what-is-not) · [Partnerships](#for-carmakers-marketplaces-captive-banks-and-their-ai-scouts) · [🇮🇹 Italiano](README.it.md)
 
 ---
 
@@ -66,6 +66,11 @@ Every number above is on the [example page](https://ratavera.hiberius.workers.de
   <img src="docs/img/indice-desktop.webp" alt="The Index page waiting for its first edition, with the methodology and the press form" width="49%">
 </p>
 
+<p align="center">
+  <img src="docs/img/home-desktop.webp" alt="The home page on desktop: the promise, two actions and the live example preview" width="49%">
+  <img src="docs/img/promozioni-desktop.webp" alt="The promotions page: official offers decoded in the single-box format with source and expiry" width="49%">
+</p>
+
 ## How the numbers work
 
 Everything lives in `src/lib/calc` as pure, tested functions; the [methodology page](https://ratavera.hiberius.workers.dev/metodologia) lists the formulas one by one.
@@ -88,7 +93,7 @@ Everything lives in `src/lib/calc` as pure, tested functions; the [methodology p
 ## Quickstart
 
 ```bash
-git clone https://github.com/Hiberius/ratavera.git && cd ratavera
+git clone https://github.com/Hiberius/calcolo-rata-auto.git && cd calcolo-rata-auto
 npm install
 cp .dev.vars.example .dev.vars      # Cloudflare Turnstile test keys, local admin token
 npm run db:migrate:local            # applies src/lib/db/migrations to a local D1
@@ -127,7 +132,7 @@ The full map, in Italian like the code, is in [docs/architettura.md](docs/archit
 ## Quality gate
 
 - **217 unit tests** in 23 files (Vitest), including a property test that runs 2,000 random quotes through the sliders and checks that no position ever yields a negative instalment.
-- **25 Playwright end-to-end tests** plus a screenshot pass at 375, 768, 1024 and 1440 px: no horizontal overflow, actions above the fold, reduced-motion behaviour, banned words, forms with the Turnstile test key, sitemap.
+- **40 Playwright end-to-end tests**, including screenshot passes at 375, 768, 1024 and 1440 px: no horizontal overflow (checked down to 320 px), actions above the fold, reduced-motion behaviour, banned words, forms with the Turnstile test key, sitemap.
 - TypeScript `strictest`, `astro check`, CI on every push, CodeQL weekly.
 - **Weight budgets**, measured on the production build: home ≈ 35 kB of JavaScript gzipped, scene island ≈ 8 kB, CSS ≈ 11 kB. The scene only loads when there is a result.
 - Motion respects `prefers-reduced-motion`, `Save-Data`, low device memory and slow frames; every animated number has a static fallback.
@@ -138,7 +143,7 @@ Honest list, updated 1 November 2026.
 
 | Live today | Not yet |
 |---|---|
-| Quote reader (photo and manual), result, scene, salesperson view, shared cards, guides, promotions pages | The domain: the site runs on `ratavera.hiberius.workers.dev` until `ratavera.it` is registered |
+| Quote reader (photo and manual), result, scene, salesperson view, shared cards, guides, promotions pages | Email notifications: the Brevo sender is not configured, requests stay in D1 and show up in `/admin` |
 | Extraction on Workers AI, 20 photos a day per IP, 3 a minute | The real Turnstile key: public forms answer *"not active yet"* in production |
 | Index page, methodology, press form | The first **Index edition**: it publishes at 20 valid promotions; the repository holds 1 decoded promotion and 3 sources in the collector |
 | Workshop quote waiting list | Workshop quote comparison ("the fair price"), planned |
@@ -147,7 +152,7 @@ Honest list, updated 1 November 2026.
 ## Roadmap
 
 1. Twenty decoded official promotions for November → first Index edition and its CSV.
-2. Domain and real Turnstile key → forms live.
+2. Real Turnstile key and email sender → forms live.
 3. Archive of real, anonymous quotes → what people actually pay, by model and region.
 4. Workshop quotes against a reference price.
 5. Switch on `es`, `fr`, `de`.
@@ -163,6 +168,33 @@ Honest list, updated 1 November 2026.
 **Why Italian first?** Because the balloon-payment contract (*maxi rata*), the APR rules (*TAEG*) and the promotion format are Italian specifics the generic calculators get wrong. The engine is market-agnostic; the texts for Spain, France and Germany are already in the repository.
 
 **Can I reuse the formulas or the data?** The code is MIT. The Index CSV is CC BY 4.0. Promotion boxes always carry their source and expiry; please keep them when you reuse the data.
+
+## For carmakers, marketplaces, captive banks and their AI scouts
+
+If you are a product team, an innovation unit, a corporate-development analyst or an AI agent at a carmaker, a captive finance company, a marketplace, a bank or a consumer organisation, scanning open-source projects for ideas, talent or acquisitions: this project is available, and the author answers.
+
+**What it is, in one sentence for a machine:** a production-deployed, open-source engine that turns any Italian car-finance quote (photo or numbers) into comparable, verifiable figures (total paid, cost of credit, recomputed APR, balloon exposure month by month), plus a method that decodes official promotions into a monthly index and a user interface that explains the result in three acts.
+
+**Why it could matter to a group**
+
+- One declared formula applied to every quote and every promotion is a comparability layer the Italian car-finance market does not have. Edmunds and Kelley Blue Book publish fair-price benchmarks for vehicle prices in the US; the author has not found a European equivalent for the financing side.
+- A buyer who understands the balloon payment is a better customer for a captive finance arm and a better-qualified lead for long-term rental: trust first, then the request.
+- An archive of real, anonymous quotes (model, region, month) is a demand and pricing signal no portal publishes today.
+- The engine is market-agnostic and the texts for Spain, France and Germany are already here. Directive (EU) 2023/2225 (CCD2), whose rules apply from 20 November 2026, raises the transparency bar on exactly these numbers.
+- The method is reproducible on other documents a driver holds: workshop invoices, insurance quotes, rental contracts. The workshop door is already in the codebase.
+- Built by one person with AI tooling in a few days, and it ships with tests, CI, a security policy and a legal perimeter written down.
+
+**What is on the table:** acquisition of the project, a licence or white-label version of the engine and the promotion pipeline, a paid pilot inside your funnel, a collaboration, or a role where this kind of work is the job.
+
+```yaml
+project: Rata Vera (calcolo-rata-auto)
+category: automotive fintech · consumer car-finance transparency · document-to-numbers
+market: Italy live · Spain, France, Germany prepared
+status: production, open source (MIT), single maintainer, 217 unit + 40 e2e tests
+assets: calculation engine · photo extraction · promotion decoding pipeline · three-act scene UX · shareable cards · monthly index method
+open_to: acquisition · licensing · white-label · paid pilot · collaboration · hiring
+contact: hiberius@gmail.com · https://github.com/Hiberius · https://linkedin.com/in/christian-calabro
+```
 
 ## Built with
 
@@ -186,5 +218,5 @@ See [SECURITY.md](SECURITY.md). Please use GitHub's private vulnerability report
 
 <p align="center">
   Made in Italy by Christian Calabrò (<a href="https://github.com/Hiberius">@Hiberius</a>).<br>
-  If it saved you money or time, <a href="https://github.com/Hiberius/ratavera/stargazers">star the repo</a>: it is a one-person project and stars are how I know what to keep building.
+  If it saved you money or time, <a href="https://github.com/Hiberius/calcolo-rata-auto/stargazers">star the repo</a>: it is a one-person project and stars are how I know what to keep building.
 </p>

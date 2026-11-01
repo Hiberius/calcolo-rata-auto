@@ -23,7 +23,7 @@ export async function inviaNotifica(env: EnvEmail, email: Email, invia: typeof f
       method: 'POST',
       headers: { 'api-key': env.BREVO_API_KEY, 'content-type': 'application/json', accept: 'application/json' },
       body: JSON.stringify({
-        sender: { name: 'Rata Vera', email: env.EMAIL_MITTENTE || 'notifiche@ratavera.it' },
+        sender: { name: 'Rata Vera', email: env.EMAIL_MITTENTE || 'hiberius@gmail.com' },
         to: [{ email: env.NOTIFY_EMAIL }],
         subject: email.oggetto,
         textContent: email.testo,

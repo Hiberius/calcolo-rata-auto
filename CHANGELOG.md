@@ -15,4 +15,5 @@ First public release.
 - Long-term rental request form (no purchase option), workshop quote waiting list, press notification form; all behind Cloudflare Turnstile with strict schemas and KV rate limits.
 - Markets: `it` live; `es`, `fr`, `de` prepared.
 - Per-request CSP nonce, security headers, nightly retention job, admin area behind a secret token.
-- 217 unit tests, Playwright end-to-end suite with screenshots at four widths, CI and CodeQL workflows.
+- `llms.txt` and SoftwareApplication structured data on the home page, for search engines and AI agents.
+- 217 unit tests, 40 Playwright end-to-end tests with screenshots at four widths, CI and CodeQL workflows.

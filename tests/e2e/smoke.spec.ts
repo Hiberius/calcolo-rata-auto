@@ -55,10 +55,12 @@ test('preventivo d’esempio in home', async ({ page }) => {
 test('tre strade e richiesta di noleggio con Turnstile di test', async ({ page }) => {
   await page.goto('/noleggio');
   await expect(page.locator('h1')).toBeVisible();
-  for (const [campo, valore] of Object.entries({ prezzoContanti: '14950', anticipo: '4326', nRate: '35', rata: '99', maxiRata: '10434', canoneNoleggio: '299', mesiNoleggio: '36' })) {
-    await page.locator(`[data-tre-strade] input[name="${campo}"]`).fill(valore);
-  }
-  await expect(page.locator('[data-strada="B"]')).toContainText('18.225,00 €');
+  // Le tre strade sono un'isola: sotto carico (due worker) i valori scritti prima dell'idratazione vanno persi, si riprova finché la strada B risponde.
+  const CAMPI = { prezzoContanti: '14950', anticipo: '4326', nRate: '35', rata: '99', maxiRata: '10434', canoneNoleggio: '299', mesiNoleggio: '36' };
+  await expect(async () => {
+    for (const [campo, valore] of Object.entries(CAMPI)) await page.locator(`[data-tre-strade] input[name="${campo}"]`).fill(valore);
+    await expect(page.locator('[data-strada="B"]')).toContainText('18.225,00 €', { timeout: 1_500 });
+  }).toPass({ timeout: 20_000 });
   await expect(page.locator('[data-strada="C"]')).toContainText('10.764,00 €');
 
   const modulo = page.locator('[data-modulo-noleggio]');

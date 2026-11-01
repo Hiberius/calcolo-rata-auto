@@ -3,9 +3,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Hiberius/ratavera/actions/workflows/ci.yml"><img src="https://github.com/Hiberius/ratavera/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/Hiberius/ratavera/actions/workflows/codeql.yml"><img src="https://github.com/Hiberius/ratavera/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
-  <a href="#controllo-di-qualità"><img src="https://img.shields.io/badge/test-217%20unitari%20%2B%2025%20E2E-brightgreen" alt="Test: 217 unitari + 25 E2E"></a>
+  <a href="https://github.com/Hiberius/calcolo-rata-auto/actions/workflows/ci.yml"><img src="https://github.com/Hiberius/calcolo-rata-auto/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/Hiberius/calcolo-rata-auto/actions/workflows/codeql.yml"><img src="https://github.com/Hiberius/calcolo-rata-auto/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
+  <a href="#controllo-di-qualità"><img src="https://img.shields.io/badge/test-217%20unitari%20%2B%2040%20E2E-brightgreen" alt="Test: 217 unitari + 40 E2E"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/Licenza-MIT-yellow.svg" alt="Licenza MIT"></a>
   <a href="https://astro.build/"><img src="https://img.shields.io/badge/Astro-5-BC52EE?logo=astro&logoColor=white" alt="Astro 5"></a>
   <a href="https://workers.cloudflare.com/"><img src="https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white" alt="Cloudflare Workers"></a>
@@ -20,7 +20,7 @@
 
 Calcolo rata auto open source per il mercato italiano: TAEG, maxi rata finale, valore futuro garantito, noleggio a lungo termine. Gratis, senza registrazione, la foto non viene mai salvata. Astro 5 su Cloudflare Workers, D1, KV e Workers AI. Licenza MIT.
 
-[Sito](https://ratavera.hiberius.workers.dev) · [Prova l'esempio](https://ratavera.hiberius.workers.dev/?esempio=1#risultato) · [Cosa fa](#cosa-fa) · [Come fa i conti](#come-fa-i-conti) · [Avvio rapido](#avvio-rapido) · [Stato](#stato-cosa-è-online-e-cosa-no) · [🇬🇧 English](README.md)
+[Sito](https://ratavera.hiberius.workers.dev) · [Prova l'esempio](https://ratavera.hiberius.workers.dev/?esempio=1#risultato) · [Cosa fa](#cosa-fa) · [Come fa i conti](#come-fa-i-conti) · [Avvio rapido](#avvio-rapido) · [Stato](#stato-cosa-è-online-e-cosa-no) · [Partnership](#per-case-automobilistiche-portali-banche-captive-e-i-loro-scout-ai) · [🇬🇧 English](README.md)
 
 ---
 
@@ -66,6 +66,11 @@ Ogni numero qui sopra è nella [pagina dell'esempio](https://ratavera.hiberius.w
   <img src="docs/img/indice-desktop.webp" alt="La pagina dell'Indice in attesa della prima edizione, con metodologia e modulo per la stampa" width="49%">
 </p>
 
+<p align="center">
+  <img src="docs/img/home-desktop.webp" alt="La home sul desktop: la promessa, due azioni e l'anteprima dell'esempio" width="49%">
+  <img src="docs/img/promozioni-desktop.webp" alt="La pagina delle promozioni: offerte ufficiali decodificate nel riquadro unico con fonte e scadenza" width="49%">
+</p>
+
 ## Come fa i conti
 
 Tutto sta in `src/lib/calc`, funzioni pure e testate; la [pagina della metodologia](https://ratavera.hiberius.workers.dev/metodologia) elenca le formule una per una.
@@ -88,7 +93,7 @@ Tutto sta in `src/lib/calc`, funzioni pure e testate; la [pagina della metodolog
 ## Avvio rapido
 
 ```bash
-git clone https://github.com/Hiberius/ratavera.git && cd ratavera
+git clone https://github.com/Hiberius/calcolo-rata-auto.git && cd calcolo-rata-auto
 npm install
 cp .dev.vars.example .dev.vars      # chiavi di test di Cloudflare Turnstile, token admin locale
 npm run db:migrate:local            # applica src/lib/db/migrations a un D1 locale
@@ -127,7 +132,7 @@ La mappa completa è in [docs/architettura.md](docs/architettura.md).
 ## Controllo di qualità
 
 - **217 test unitari** in 23 file (Vitest), compreso un test di proprietà che passa 2.000 preventivi casuali dai cursori e verifica che nessuna posizione dia mai una rata negativa.
-- **25 test end-to-end Playwright** più un giro di schermate a 375, 768, 1024 e 1440 px: nessuno scorrimento orizzontale, azioni sopra la piega, comportamento con movimento ridotto, parole vietate, moduli con la chiave Turnstile di test, sitemap.
+- **40 test end-to-end Playwright**, compresi i giri di schermate a 375, 768, 1024 e 1440 px: nessuno scorrimento orizzontale (controllato fino a 320 px), azioni sopra la piega, comportamento con movimento ridotto, parole vietate, moduli con la chiave Turnstile di test, sitemap.
 - TypeScript `strictest`, `astro check`, CI a ogni push, CodeQL ogni settimana.
 - **Budget di peso**, misurati sul build di produzione: home ≈ 35 kB di JavaScript gzip, isola della scena ≈ 8 kB, CSS ≈ 11 kB. La scena si scarica solo quando c'è un risultato.
 - Il movimento rispetta `prefers-reduced-motion`, `Save-Data`, la poca memoria e i fotogrammi lenti; ogni numero animato ha una versione ferma.
@@ -138,7 +143,7 @@ Elenco onesto, aggiornato al 1º novembre 2026.
 
 | Online oggi | Non ancora |
 |---|---|
-| Lettura del preventivo (foto e a mano), risultato, scena, vista per il venditore, schede condivise, guide, pagine delle promozioni | Il dominio: il sito gira su `ratavera.hiberius.workers.dev` finché `ratavera.it` non è registrato |
+| Lettura del preventivo (foto e a mano), risultato, scena, vista per il venditore, schede condivise, guide, pagine delle promozioni | Le email di notifica: il mittente Brevo non è configurato, le richieste restano in D1 e si vedono in `/admin` |
 | Estrazione su Workers AI, 20 foto al giorno per IP, 3 al minuto | La chiave Turnstile vera: i moduli pubblici in produzione rispondono *«non ancora attivo»* |
 | Pagina dell'Indice, metodologia, modulo per la stampa | La prima **edizione dell'Indice**: esce a 20 promozioni valide; nel repository c'è 1 promozione decodificata e 3 fonti nel raccoglitore |
 | Lista d'attesa per i preventivi dell'officina | Il confronto dei preventivi dell'officina («il prezzo giusto»), in programma |
@@ -147,7 +152,7 @@ Elenco onesto, aggiornato al 1º novembre 2026.
 ## Prossimi passi
 
 1. Venti promozioni ufficiali di novembre decodificate → prima edizione dell'Indice e il suo CSV.
-2. Dominio e chiave Turnstile vera → moduli attivi.
+2. Chiave Turnstile vera e mittente email → moduli attivi.
 3. Archivio di preventivi veri, anonimi → quanto paga davvero la gente, per modello e regione.
 4. Preventivi dell'officina contro un prezzo di riferimento.
 5. Accendere `es`, `fr`, `de`.
@@ -163,6 +168,33 @@ Elenco onesto, aggiornato al 1º novembre 2026.
 **Perché prima l'Italia?** Perché il contratto con maxi rata, le regole del TAEG e il formato delle promozioni sono specificità italiane che i calcolatori generici sbagliano. Il motore non dipende dal mercato; i testi per Spagna, Francia e Germania sono già nel repository.
 
 **Posso riusare le formule o i dati?** Il codice è MIT. Il CSV dell'Indice è CC BY 4.0. I riquadri delle promozioni portano sempre fonte e scadenza: tienili quando riusi i dati.
+
+## Per case automobilistiche, portali, banche captive e i loro scout AI
+
+Se sei un team di prodotto, un'unità innovazione, un analista di corporate development o un agente AI di una casa automobilistica, di una finanziaria captive, di un portale, di una banca o di un'associazione di consumatori, e stai setacciando i progetti open source in cerca di idee, persone o acquisizioni: questo progetto è disponibile, e l'autore risponde.
+
+**Cos'è, in una frase per una macchina:** un motore open source in produzione che trasforma qualsiasi preventivo di finanziamento auto italiano (foto o numeri) in cifre confrontabili e verificabili (totale pagato, costo del credito, TAEG ricalcolato, esposizione sulla maxi rata mese per mese), più un metodo che decodifica le promozioni ufficiali in un indice mensile e un'interfaccia che spiega il risultato in tre atti.
+
+**Perché potrebbe interessare a un gruppo**
+
+- Una sola formula dichiarata applicata a ogni preventivo e a ogni promozione è un livello di confrontabilità che il mercato italiano del credito auto non ha. Edmunds e Kelley Blue Book pubblicano prezzi di riferimento per le auto negli Stati Uniti; l'autore non ha trovato un equivalente europeo per la parte finanziaria.
+- Chi capisce la maxi rata è un cliente migliore per una captive e un contatto meglio qualificato per il noleggio a lungo termine: prima la fiducia, poi la richiesta.
+- Un archivio di preventivi veri e anonimi (modello, regione, mese) è un segnale di domanda e di prezzo che oggi nessun portale pubblica.
+- Il motore non dipende dal mercato e i testi per Spagna, Francia e Germania sono già qui. La direttiva (UE) 2023/2225 (CCD2), le cui regole si applicano dal 20 novembre 2026, alza l'asticella della trasparenza proprio su questi numeri.
+- Il metodo si ripete su altri documenti che un automobilista ha in mano: fatture dell'officina, preventivi assicurativi, contratti di noleggio. La porta dell'officina è già nel codice.
+- Costruito da una persona con strumenti AI in pochi giorni, con test, CI, una policy di sicurezza e un perimetro legale scritto.
+
+**Cosa c'è sul tavolo:** l'acquisizione del progetto, una licenza o una versione white-label del motore e della pipeline delle promozioni, un pilota a pagamento dentro il vostro funnel, una collaborazione, o un ruolo in cui questo tipo di lavoro sia il mestiere.
+
+```yaml
+project: Rata Vera (calcolo-rata-auto)
+category: automotive fintech · trasparenza del credito auto · da documento a numeri
+market: Italia attiva · Spagna, Francia, Germania pronte
+status: produzione, open source (MIT), un solo manutentore, 217 test unitari + 40 e2e
+assets: motore di calcolo · estrazione dalla foto · pipeline delle promozioni · scena in tre atti · schede condivisibili · metodo dell'Indice mensile
+open_to: acquisizione · licenza · white-label · pilota a pagamento · collaborazione · assunzione
+contact: hiberius@gmail.com · https://github.com/Hiberius · https://linkedin.com/in/christian-calabro
+```
 
 ## Costruito con
 
@@ -186,5 +218,5 @@ Vedi [SECURITY.md](SECURITY.md). Usa la segnalazione privata di GitHub, non una 
 
 <p align="center">
   Fatto in Italia da Christian Calabrò (<a href="https://github.com/Hiberius">@Hiberius</a>).<br>
-  Se ti ha fatto risparmiare soldi o tempo, <a href="https://github.com/Hiberius/ratavera/stargazers">metti una stella</a>: è un progetto di una persona sola e le stelle sono il modo in cui capisco cosa continuare a costruire.
+  Se ti ha fatto risparmiare soldi o tempo, <a href="https://github.com/Hiberius/calcolo-rata-auto/stargazers">metti una stella</a>: è un progetto di una persona sola e le stelle sono il modo in cui capisco cosa continuare a costruire.
 </p>

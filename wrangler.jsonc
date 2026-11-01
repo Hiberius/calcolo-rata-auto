@@ -22,13 +22,13 @@
   ],
   "ai": { "binding": "AI", "remote": true },
   // Variabili pubbliche. La chiave Turnstile qui sotto e' quella di TEST di Cloudflare (passa sempre):
-  // sostituirla con la chiave vera quando il sito e' sul dominio. I segreti vanno con `wrangler secret put`.
+  // sostituirla con la chiave vera creando il widget Turnstile per l'indirizzo del Worker. I segreti vanno con `wrangler secret put`.
   "vars": {
     "PUBLIC_TURNSTILE_SITE_KEY": "1x00000000000000000000AA",
     "PUBLIC_SITE_URL": "https://ratavera.hiberius.workers.dev",
     "ESTRAZIONE_LIMITE_GIORNO": "20",
     "ESTRAZIONE_LIMITE_MINUTO": "3",
-    "EMAIL_MITTENTE": "notifiche@ratavera.it",
+    "EMAIL_MITTENTE": "hiberius@gmail.com",
     // Titolare del sito nelle pagine legali (chi siamo, privacy, metodologia, noleggio), mai in home. P.IVA e sede vuote = "in aggiornamento".
     "PUBLIC_TITOLARE": "Christian Calabrò",
     "PUBLIC_PIVA": "",

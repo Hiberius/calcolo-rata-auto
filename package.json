@@ -6,10 +6,10 @@
   "homepage": "https://ratavera.hiberius.workers.dev",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Hiberius/ratavera.git"
+    "url": "git+https://github.com/Hiberius/calcolo-rata-auto.git"
   },
   "bugs": {
-    "url": "https://github.com/Hiberius/ratavera/issues"
+    "url": "https://github.com/Hiberius/calcolo-rata-auto/issues"
   },
   "type": "module",
   "private": true,

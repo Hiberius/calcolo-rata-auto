@@ -1,6 +1,7 @@
 /**
- * Immagini del README dal sito pubblicato → docs/img: schermate (WebP) a 1440 e 390, scena in tre atti, vista «Mostralo al
- * venditore», Indice, promozioni, scheda condivisa, anteprima social per GitHub (1280×640) e GIF della scena.
+ * Immagini del README dal sito pubblicato → docs/img: schermate (WebP) a 1440 e 390 (home, risultato, vista «Mostralo al
+ * venditore», Indice, promozioni, scheda condivisa), anteprima social per GitHub (1280×640) e GIF della scena. Solo file
+ * citati dai README: tutto il resto resta nella cartella temporanea.
  * Uso: npm run readme:immagini [indirizzo]. Idempotente: stessi nomi di file a ogni esecuzione. Nessuna immagine
  * sopra PESO_MAX_IMMAGINE, GIF sotto PESO_MAX_GIF: il comando fallisce se sfora. La GIF richiede ffmpeg nel PATH
  * (brew install ffmpeg); senza ffmpeg si salta con un avviso e le schermate si fanno comunque.
@@ -16,7 +17,7 @@ const SITO = join(import.meta.dirname, '..');
 const CARTELLA = join(SITO, 'docs', 'img');
 const INDIRIZZO = (process.argv[2] ?? 'https://ratavera.hiberius.workers.dev').replace(/\/$/, '');
 const PESO_MAX_IMMAGINE = 600 * 1024;
-const PESO_MAX_GIF = 8 * 1024 * 1024;
+const PESO_MAX_GIF = 4 * 1024 * 1024;
 /** Le schermate a 1440 sono catturate a 2× e ridotte a questa larghezza. */
 const LARGHEZZA_FINALE = 1600;
 const ESEMPIO = '/?esempio=1#risultato';
@@ -29,8 +30,8 @@ const TELEFONO: Dispositivo = { larghezza: 390, altezza: 844 };
 const righe: string[] = [];
 const peso = (p: string): string => `${Math.round(statSync(p).size / 1024)} kB`;
 
-async function salvaImmagine(nome: string, dati: Buffer, larghezzaMax = LARGHEZZA_FINALE): Promise<void> {
-  const destinazione = join(CARTELLA, nome);
+async function salvaImmagine(nome: string, dati: Buffer, larghezzaMax = LARGHEZZA_FINALE, cartella = CARTELLA): Promise<void> {
+  const destinazione = join(cartella, nome);
   const immagine = sharp(dati);
   const meta = await immagine.metadata();
   const ridotta = (meta.width ?? 0) > larghezzaMax ? immagine.resize({ width: larghezzaMax }) : immagine;
@@ -40,7 +41,7 @@ async function salvaImmagine(nome: string, dati: Buffer, larghezzaMax = LARGHEZZ
     : await ridotta.webp({ quality: 90, effort: 6, smartSubsample: true }).toBuffer();
   if (codificata.length > PESO_MAX_IMMAGINE) throw new Error(`${nome} pesa ${codificata.length} byte, oltre ${PESO_MAX_IMMAGINE}`);
   writeFileSync(destinazione, codificata);
-  righe.push(`${relative(SITO, destinazione)}  ${peso(destinazione)}`);
+  if (cartella === CARTELLA) righe.push(`${relative(SITO, destinazione)}  ${peso(destinazione)}`);
 }
 
 async function apri(browser: Browser, d: Dispositivo, movimento: 'reduce' | 'no-preference', extra: Record<string, unknown> = {}): Promise<BrowserContext> {
@@ -64,7 +65,7 @@ async function attendiScena(page: Page): Promise<void> {
   }
 }
 
-async function schermate(browser: Browser): Promise<void> {
+async function schermate(browser: Browser, cartellaTemporanea: string): Promise<void> {
   // Desktop, primo schermo.
   const desktop = await apri(browser, DESKTOP, 'reduce');
   const page = await desktop.newPage();
@@ -74,8 +75,8 @@ async function schermate(browser: Browser): Promise<void> {
   await attendiScena(page);
   await page.locator('[data-risultato]').scrollIntoViewIfNeeded();
   await salvaImmagine('risultato-desktop.webp', await page.locator('[data-risultato]').screenshot());
-  for (const n of [1, 2, 3]) await salvaImmagine(`scena-atto-${n}.webp`, await page.locator(`[data-atto="${n}"]`).screenshot());
-  await salvaImmagine('scena-desktop.webp', await page.locator('[data-scena]').screenshot(), 1100);
+  // Il secondo atto serve solo a comporre l'anteprima social: resta nella cartella temporanea.
+  await salvaImmagine('scena-atto-2.webp', await page.locator('[data-atto="2"]').screenshot(), LARGHEZZA_FINALE, cartellaTemporanea);
   await page.getByRole('button', { name: 'Mostralo al venditore' }).click();
   await page.locator('[data-vista-venditore]').waitFor({ state: 'visible' });
   await page.waitForTimeout(400);
@@ -85,8 +86,6 @@ async function schermate(browser: Browser): Promise<void> {
   await salvaImmagine('indice-desktop.webp', await page.screenshot());
   await vai(page, '/promozioni');
   await salvaImmagine('promozioni-desktop.webp', await page.screenshot());
-  await vai(page, '/guide');
-  await salvaImmagine('guide-desktop.webp', await page.screenshot());
   await desktop.close();
 
   // Telefono, primo schermo e scena.
@@ -110,7 +109,7 @@ async function schermate(browser: Browser): Promise<void> {
 /** Anteprima social per GitHub (Settings → Social preview): 1280×640, tipografia del sito, la scena a destra. */
 async function anteprimaSocial(browser: Browser, cartellaTemporanea: string): Promise<void> {
   const carattere = (nome: string) => `file://${join(SITO, 'public', 'fonts', nome)}`;
-  const scena = `file://${join(CARTELLA, 'scena-atto-2.webp')}`;
+  const scena = `file://${join(cartellaTemporanea, 'scena-atto-2.webp')}`;
   const html = `<!doctype html><html lang="it"><head><meta charset="utf-8"><style>
     @font-face{font-family:'Instrument Sans';src:url('${carattere('instrument-sans-latin-wght.woff2')}') format('woff2');font-weight:100 900}
     @font-face{font-family:'JetBrains Mono';src:url('${carattere('jetbrains-mono-latin-wght.woff2')}') format('woff2');font-weight:100 800}
@@ -143,7 +142,7 @@ async function anteprimaSocial(browser: Browser, cartellaTemporanea: string): Pr
   await contesto.close();
 }
 
-/** GIF della scena: video registrato con il movimento acceso, poi ffmpeg (12 fps, 800 px, tavolozza a 128 colori). */
+/** GIF della scena: video registrato con il movimento acceso, poi ffmpeg (8 fps, 720 px, tavolozza a 64 colori). */
 async function gifScena(browser: Browser, cartellaTemporanea: string): Promise<void> {
   const ffmpeg = (() => { try { return execFileSync('which', ['ffmpeg'], { encoding: 'utf8' }).trim(); } catch { return ''; } })();
   if (!ffmpeg) { righe.push('GIF saltata: ffmpeg non trovato nel PATH'); return; }
@@ -153,14 +152,14 @@ async function gifScena(browser: Browser, cartellaTemporanea: string): Promise<v
   await vai(page, ESEMPIO);
   await page.locator('[data-scena]').waitFor({ state: 'visible' });
   await page.locator('[data-atto="1"]').scrollIntoViewIfNeeded();
-  await page.waitForTimeout(2600);
+  await page.waitForTimeout(2000);
   // Scorrimento a passi fino al terzo atto, il tempo che ogni atto si disegni.
   for (const n of [2, 3]) {
     const atto = page.locator(`[data-atto="${n}"]`);
     const y = await atto.evaluate((el) => el.getBoundingClientRect().top);
     const passi = 14;
     for (let i = 0; i < passi; i++) { await page.mouse.wheel(0, (y - 24) / passi); await page.waitForTimeout(55); }
-    await page.waitForTimeout(2600);
+    await page.waitForTimeout(2000);
   }
   await page.waitForTimeout(600);
   const video = page.video();
@@ -168,19 +167,17 @@ async function gifScena(browser: Browser, cartellaTemporanea: string): Promise<v
   const sorgente = video ? await video.path() : null;
   if (!sorgente || !existsSync(sorgente)) { righe.push('GIF saltata: nessun video registrato'); return; }
   const gif = join(CARTELLA, 'scena.gif');
-  const mp4 = join(CARTELLA, 'scena.mp4');
-  const filtri = 'fps=12,scale=800:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=128:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle';
+  const filtri = 'fps=8,scale=720:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=64:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle';
   execFileSync(ffmpeg, ['-y', '-loglevel', 'error', '-ss', '0.6', '-i', sorgente, '-vf', filtri, '-loop', '0', gif]);
-  execFileSync(ffmpeg, ['-y', '-loglevel', 'error', '-ss', '0.6', '-i', sorgente, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '24', '-movflags', '+faststart', '-an', mp4]);
   if (statSync(gif).size > PESO_MAX_GIF) throw new Error(`scena.gif pesa ${statSync(gif).size} byte, oltre ${PESO_MAX_GIF}`);
-  righe.push(`${relative(SITO, gif)}  ${peso(gif)}`, `${relative(SITO, mp4)}  ${peso(mp4)}`);
+  righe.push(`${relative(SITO, gif)}  ${peso(gif)}`);
 }
 
 mkdirSync(CARTELLA, { recursive: true });
 const temporanea = mkdtempSync(join(tmpdir(), 'ratavera-readme-'));
 const browser = await chromium.launch();
 try {
-  await schermate(browser);
+  await schermate(browser, temporanea);
   await anteprimaSocial(browser, temporanea);
   await gifScena(browser, temporanea);
 } finally {
